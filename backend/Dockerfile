@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --upgrade pip && pip install poetry
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-root
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi --no-root
 
 COPY . .
+
+CMD alembic upgrade head && \
+    uvicorn app.main:app --host=0.0.0.0 --port=3000
