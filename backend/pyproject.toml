@@ -3,12 +3,11 @@ name = "MindLog"
 version = "0.1.0"
 description = "FastAPI backend with MySQL,"
 authors = ["Your Name <you@example.com>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.115.6"
-uvicorn = "^0.34.0"
+uvicorn = { version = "^0.34.0", extras = ["standard"] }
 python-multipart = "^0.0.9"
 sqlalchemy = "^2.0.36"
 pydantic-settings = "^2.7.0"
