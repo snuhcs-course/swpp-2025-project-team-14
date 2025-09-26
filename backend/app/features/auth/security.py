@@ -35,11 +35,10 @@ def verify_token(token: str, expected_type: str) -> dict:
 
         if sub is None:
             raise HTTPException(status_code=401, detail="Invalid token: no sub")
-
         if token_type != expected_type:
             raise HTTPException(status_code=401, detail=f"Invalid token type: expected {expected_type}, got {token_type}")
         
-        return {'sub': sub, 'type': token_type, 'payload': payload}
+        return payload
         
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
