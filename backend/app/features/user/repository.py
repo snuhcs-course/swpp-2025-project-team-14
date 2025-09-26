@@ -18,6 +18,6 @@ class UserRepository:
         return user
     
     def get_user_by_login_id(self, login_id: str) -> User | None:
-        return self.session.scalar_one_or_none(
+        return self.session.scalar(
             select(User).filter(User.login_id == login_id)
         )
