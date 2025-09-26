@@ -33,20 +33,10 @@ def signup(
              description="Log in an existing user and return access and refresh tokens.",
              response_model=TokenResponse)
 def login(
-    response: JSONResponse,
     request: LoginRequest, 
     auth_service: Annotated[AuthService, Depends()],
 ):
     access, refresh = auth_service.login(request.login_id, request.password)
-    
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh,
-        httponly=True,
-        secure=True,
-        expires=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        samesite="lax",
-    )
     
     return TokenResponse(access=access, refresh=refresh)
 
@@ -57,16 +47,17 @@ def login(
              description="Log out the current user and invalidate the refresh token.",
              response_model=TokenResponse)
 def logout(
-    request: Request,
-    response: JSONResponse,
+    request: LogoutRequest,
     auth_service: Annotated[AuthService, Depends()],
 ):
-    refresh = request.cookies.get("refresh_token")
+    refresh = request.refresh
     if refresh is None:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
-    response.delete_cookie(key="refresh_token")
+    if auth_service.validate_refresh_token(refresh) is None:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    
     auth_service.block_refresh_token(refresh, datetime.now())
-    return "Success"
+    return JSONResponse({"status": "Success"})
 
 
 @router.post('/refresh',
@@ -76,17 +67,8 @@ def logout(
              response_model=TokenResponse)
 def refresh(
     request: RefreshRequest, 
-    response: JSONResponse,
     auth_service: Annotated[AuthService, Depends()]
 ):
-    refresh = request.cookies.get("refresh_token")
+    refresh = request.refresh
     access, refresh = auth_service.refresh(refresh)
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh,
-        httponly=True,
-        secure=True,
-        expires=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        samesite="lax",
-    )
     return TokenResponse(access=access, refresh=refresh)
