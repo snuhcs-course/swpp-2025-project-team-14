@@ -51,13 +51,12 @@ class AuthService:
     
     def validate_refresh_token(self, token: str) -> str:
         payload = verify_token(token, expected_type='refresh')
-        login_id = payload.get('sub')
         
         # Check if the token is blocked
         if self.blocked_token_repository.is_token_blocked(token):
             raise HTTPException(status_code=401, detail="Token has been revoked")
         
-        return login_id
+        return payload
     
     def refresh(self, refresh: str) -> tuple[str, str]:
         payload = self.validate_refresh_token(refresh)
