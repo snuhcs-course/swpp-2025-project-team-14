@@ -32,7 +32,7 @@ class AuthService:
         
         access_token = create_token(user.login_id, token_type='access')
         refresh_token = create_token(user.login_id, token_type='refresh')
-        return access_token, refresh_token, user.id
+        return access_token, refresh_token
     
     
     def login(self, login_id: str, password: str) -> tuple[str, str]:
@@ -42,7 +42,7 @@ class AuthService:
         
         access_token = create_token(user.login_id, token_type='access')
         refresh_token = create_token(user.login_id, token_type='refresh')
-        return access_token, refresh_token, user.id
+        return access_token, refresh_token
     
     def validate_access_token(self, token: str) -> str:
         payload = verify_token(token, expected_type='access')
