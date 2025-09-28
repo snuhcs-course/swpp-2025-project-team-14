@@ -11,3 +11,6 @@ class UserService:
         user_repository: Annotated[UserRepository, Depends()],
     ) -> None:
         self.user_repository = user_repository
+
+    def get_user_by_login_id(self, login_id: str) -> User | None:
+        return self.user_repository.get_user_by_login_id(login_id)
