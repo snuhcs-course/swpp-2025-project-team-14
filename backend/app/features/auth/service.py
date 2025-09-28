@@ -1,5 +1,5 @@
 from typing import Annotated
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import Depends
 from fastapi import HTTPException
 from app.core.config import settings
@@ -44,14 +44,12 @@ class AuthService:
         refresh_token = create_token(user.login_id, token_type='refresh')
         return access_token, refresh_token
     
-    def validate_access_token(self, token: str) -> str:
+    def validate_access_token(self, token: str) -> dict:
         payload = verify_token(token, expected_type='access')
-        login_id = payload.get('sub')
-        return login_id
+        return payload
     
-    def validate_refresh_token(self, token: str) -> str:
+    def validate_refresh_token(self, token: str) -> dict:
         payload = verify_token(token, expected_type='refresh')
-        
         # Check if the token is blocked
         if self.blocked_token_repository.is_token_blocked(token):
             raise HTTPException(status_code=401, detail="Token has been revoked")
@@ -69,7 +67,7 @@ class AuthService:
         exp_timestamp = payload.get('exp')
         if exp_timestamp is None:
             raise HTTPException(status_code=401, detail="Invalid token: no exp")
-        expired_at = datetime.fromtimestamp(exp_timestamp)
+        expired_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
         self.blocked_token_repository.add_blocked_token(refresh, expired_at)
 
         return new_access, new_refresh
