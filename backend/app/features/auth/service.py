@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import Depends
 from fastapi import HTTPException
 from app.core.config import settings
-from app.features.auth.security import hash_password, verify_password, create_token, verify_token
+from app.features.auth.security import hash_password, verify_password, hash_token, create_token, verify_token
 from app.features.user.models import User
 from app.features.user.repository import UserRepository
 from app.features.auth.models import BlockedToken
@@ -51,7 +51,8 @@ class AuthService:
     def validate_refresh_token(self, token: str) -> dict:
         payload = verify_token(token, expected_type='refresh')
         # Check if the token is blocked
-        if self.blocked_token_repository.is_token_blocked(token):
+        token_id = hash_token(token)
+        if self.blocked_token_repository.is_token_blocked(token_id):
             raise HTTPException(status_code=401, detail="Token has been revoked")
         
         return payload
@@ -68,9 +69,11 @@ class AuthService:
         if exp_timestamp is None:
             raise HTTPException(status_code=401, detail="Invalid token: no exp")
         expired_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
-        self.blocked_token_repository.add_blocked_token(refresh, expired_at)
+        token_id = hash_token(refresh)
+        self.blocked_token_repository.add_blocked_token(token_id, expired_at)
 
         return new_access, new_refresh
 
     def block_refresh_token(self, token: str, expired_at: datetime) -> None:
-        self.blocked_token_repository.add_blocked_token(token, expired_at)
+        token_id = hash_token(token)
+        self.blocked_token_repository.add_blocked_token(token_id, expired_at)
