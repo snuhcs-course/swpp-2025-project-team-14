@@ -1,14 +1,12 @@
 from typing import Annotated
 from datetime import datetime
-from fastapi import APIRouter, Depends, Cookie, Request
+from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from app.database.session import get_db_session
-from app.core.config import settings
+from app.common.schemas import ResponseEnvelope
 from app.features.auth.service import AuthService
-from app.features.auth.schemas import SignupRequest, LoginRequest, LogoutRequest, RefreshRequest, TokenResponse
+from app.features.auth.schemas.requests import SignupRequest, LoginRequest, RefreshTokenRequest
+from app.features.auth.schemas.responses import TokenResponseEnvelope, TokenResponse
 
 
 router = APIRouter(prefix='/auth', tags=['auth'])
@@ -18,35 +16,35 @@ security = HTTPBearer()
              status_code=201,
              summary="Sign up a new user",
              description="Create a new user account and return access and refresh tokens.",
-             response_model=TokenResponse)
+             response_model=TokenResponseEnvelope)
 def signup(
     request: SignupRequest, 
     auth_service: Annotated[AuthService, Depends()],
 ):
     access, refresh = auth_service.signup(request.login_id, request.password, request.username)
-    return TokenResponse(access=access, refresh=refresh)
+    return TokenResponseEnvelope(data=TokenResponse(access=access, refresh=refresh))
 
 
 @router.post('/login', 
              status_code=201,
              summary="Login a user",
              description="Log in an existing user and return access and refresh tokens.",
-             response_model=TokenResponse)
+             response_model=TokenResponseEnvelope)
 def login(
     request: LoginRequest, 
     auth_service: Annotated[AuthService, Depends()],
 ):
     access, refresh = auth_service.login(request.login_id, request.password)
-    
-    return TokenResponse(access=access, refresh=refresh)
+    return TokenResponseEnvelope(data=TokenResponse(access=access, refresh=refresh))
 
 
 @router.post('/logout',
              status_code=200,
              summary="Log out a user",
-             description="Log out the current user and invalidate the refresh token.")
+             description="Log out the current user and invalidate the refresh token.",
+             response_model=ResponseEnvelope)
 def logout(
-    request: LogoutRequest,
+    request: RefreshTokenRequest,
     auth_service: Annotated[AuthService, Depends()],
 ):
     refresh = request.refresh
@@ -56,27 +54,31 @@ def logout(
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     
     auth_service.block_refresh_token(refresh, datetime.now())
-    return JSONResponse({"status": "Success"})
+    return ResponseEnvelope(
+        ok=True,
+        data={'status': 'success'}
+    )
 
 
 @router.post('/refresh',
              status_code=200,
              summary="Refresh access token",
              description="Refresh the access token using the refresh token.",
-             response_model=TokenResponse)
+             response_model=TokenResponseEnvelope)
 def refresh(
-    request: RefreshRequest, 
+    request: RefreshTokenRequest, 
     auth_service: Annotated[AuthService, Depends()]
 ):
     refresh = request.refresh
     access, refresh = auth_service.refresh(refresh)
-    return TokenResponse(access=access, refresh=refresh)
+    return TokenResponseEnvelope(data=TokenResponse(access=access, refresh=refresh))
 
 
 @router.post('/verify',
              status_code=200,
              summary="Verify access token",
-             description="Verify the access token and return the associated user ID.")
+             description="Verify the access token and return the associated user ID.",
+             response_model=ResponseEnvelope)
 def verify(
     authorization: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     auth_service: Annotated[AuthService, Depends()]
@@ -84,4 +86,6 @@ def verify(
     token = authorization.credentials
     payload = auth_service.validate_access_token(token)
 
-    return JSONResponse({"ok": True, "login_id": payload.get('sub')})
+    return ResponseEnvelope(
+        data={'login_id': payload.get('sub')}
+    )
