@@ -44,8 +44,7 @@ def login(
 @router.post('/logout',
              status_code=200,
              summary="Log out a user",
-             description="Log out the current user and invalidate the refresh token.",
-             response_model=TokenResponse)
+             description="Log out the current user and invalidate the refresh token.")
 def logout(
     request: LogoutRequest,
     auth_service: Annotated[AuthService, Depends()],
