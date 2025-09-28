@@ -71,3 +71,17 @@ def refresh(
     refresh = request.refresh
     access, refresh = auth_service.refresh(refresh)
     return TokenResponse(access=access, refresh=refresh)
+
+
+@router.post('/verify',
+             status_code=200,
+             summary="Verify access token",
+             description="Verify the access token and return the associated user ID.")
+def verify(
+    authorization: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    auth_service: Annotated[AuthService, Depends()]
+):
+    token = authorization.credentials
+    payload = auth_service.validate_access_token(token)
+
+    return JSONResponse({"ok": True, "login_id": payload.get('sub')})
