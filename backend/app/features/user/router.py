@@ -23,7 +23,7 @@ def me(
     ):
     token = authorization.credentials
     payload = auth_service.validate_access_token(token)
-    login_id = payload.get('sub')
+    login_id: str = payload.get('sub')
     
     user = user_service.get_user_by_login_id(login_id)
     if not user:
