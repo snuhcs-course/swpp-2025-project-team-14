@@ -18,7 +18,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
-def create_token(login_id: int, token_type='access') -> str:
+def create_token(login_id: str, token_type='access') -> str:
     now = datetime.now(timezone.utc)
     if token_type == 'access':
         expires = now + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)

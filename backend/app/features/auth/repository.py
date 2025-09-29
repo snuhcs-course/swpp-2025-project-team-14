@@ -19,7 +19,6 @@ class BlockedTokenRepository:
         return blocked_token
 
     def is_token_blocked(self, token_id: str) -> bool:
-        print(token_id)
         return self.session.scalar(
             select(BlockedToken).filter(BlockedToken.token_id == token_id)
         ) is not None
