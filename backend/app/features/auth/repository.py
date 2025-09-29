@@ -1,7 +1,7 @@
 from typing import Annotated
 from datetime import datetime
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session
 from .models import BlockedToken
@@ -17,6 +17,8 @@ class BlockedTokenRepository:
         return blocked_token
 
     def is_token_blocked(self, token_id: str) -> bool:
-        return self.session.scalar(
-            select(BlockedToken).filter(BlockedToken.token_id == token_id)
-        ) is not None
+        statement = select(
+            exists().where(BlockedToken.token_id == token_id)
+        )
+        return self.session.scalar(statement)
+    
