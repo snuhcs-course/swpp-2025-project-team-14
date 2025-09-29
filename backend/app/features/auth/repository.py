@@ -14,8 +14,6 @@ class BlockedTokenRepository:
     def add_blocked_token(self, token_id: str, expired_at: datetime) -> BlockedToken:
         blocked_token = BlockedToken(token_id=token_id, expired_at=expired_at)
         self.session.add(blocked_token)
-        self.session.commit()
-        self.session.refresh(blocked_token)
         return blocked_token
 
     def is_token_blocked(self, token_id: str) -> bool:
