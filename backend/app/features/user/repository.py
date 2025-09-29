@@ -13,8 +13,6 @@ class UserRepository:
     def add_user(self, login_id: str, hashed_password: str, username: str) -> User:
         user = User(login_id=login_id, hashed_password=hashed_password, username=username)
         self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
         return user
     
     def get_user_by_login_id(self, login_id: str) -> User | None:
