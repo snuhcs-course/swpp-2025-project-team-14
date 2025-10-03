@@ -14,8 +14,9 @@ class Settings(BaseSettings):
 
     JWT_SECRET: str
     JWT_ALG: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 60
-    
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+
     MYSQL_HOST: str
     MYSQL_PORT: int
     MYSQL_USER: str
