@@ -29,9 +29,9 @@ jobs:
           cd /home/${{ env.AWS_USER }}/swpp-2025-project-team-14
           git pull origin feature/ec2-connect
 
-          docker compose down
-          docker compose build
-          docker compose up -d
+          docker-compose down
+          docker-compose build
+          docker-compose up -d
 
           echo "🚀 배포 완료! 컨테이너 로그:"
           docker logs mindlog-backend --tail 20
