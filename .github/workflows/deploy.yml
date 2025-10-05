@@ -29,8 +29,8 @@ jobs:
           cd /home/${{ env.AWS_USER }}/swpp-2025-project-team-14/backend
           git pull origin main
 
-          docker-compose down
-          docker-compose up -d --build
+          docker-compose.prod down
+          docker-compose.prod up -d --build
 
           echo "🚀 배포 완료! 컨테이너 로그:"
           docker logs mindlog-backend --tail 20
