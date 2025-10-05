@@ -148,13 +148,13 @@ Next steps include:
 
 You can watch the working demo below:
 
-[▶️ Watch Demo Video](https://github.com/snu-swpp/swpp-2025-project-team-14/raw/main/iteration_1_demo_video.mov)
+[▶️ Watch Demo Video](https://drive.google.com/file/d/1vJGqscMJYm-uEAbtdYoyFN1dOe79f0LJ/view?usp=share_link)
 
 > 💡 If the video doesn’t automatically play, right-click the link and choose **“Open in new tab”** or **“Save link as…”** to download it.
 
 Alternatively, you can embed it directly (GitHub will show a player if supported):
 
 <video width="1280" height="720" controls>
-  <source src="iteration_1_demo_video.mov" type="video/quicktime">
+  <source src="https://drive.google.com/file/d/1vJGqscMJYm-uEAbtdYoyFN1dOe79f0LJ/view?usp=share_link" type="video/quicktime">
   Your browser does not support the video tag.
 </video>
