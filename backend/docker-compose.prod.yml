@@ -1,0 +1,21 @@
+services:
+  backend:
+    build: .
+    container_name: mindlog-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.prod
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DATABASE_URL: ${DATABASE_URL}
+    restart: unless-stopped
+    command: >
+      bash -lc "
+      alembic upgrade head &&
+      uvicorn app.main:app --host=0.0.0.0 --port=3000
+      "
