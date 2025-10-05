@@ -2,7 +2,7 @@ name: Build Android App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/ec2-connect ]
 
 jobs:
   build:
