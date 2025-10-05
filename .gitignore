@@ -84,3 +84,6 @@ android/build/
 .LSOverride
 Icon
 ehthumbs.db
+# Media files
+*.mov
+iteration_1_demo_video.mov
