@@ -27,6 +27,9 @@ jobs:
     - name: Build APK
       run: ./gradlew assembleRelease
 
+    - name: Show release folder contents
+      run: ls -R app/build/outputs/apk || echo "No APK directory found"
+
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
