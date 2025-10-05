@@ -16,11 +16,11 @@ class Settings(BaseSettings):
     JWT_ALG: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60
     
-    MYSQL_HOST: str
-    MYSQL_PORT: int
-    MYSQL_USER: str
-    MYSQL_PASSWORD: str
-    MYSQL_DATABASE: str
+    DB_HOST: str
+    DB_PORT: int
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_NAME: str
     
     DATABASE_URL: str
 
