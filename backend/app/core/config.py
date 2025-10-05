@@ -1,7 +1,7 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV = os.getenv("ENV", "local")
+ENV = os.getenv("ENV", "prod")
 assert ENV in ("local", "prod")
 
 class Settings(BaseSettings):
@@ -16,12 +16,12 @@ class Settings(BaseSettings):
     JWT_ALG: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
-
-    MYSQL_HOST: str
-    MYSQL_PORT: int
-    MYSQL_USER: str
-    MYSQL_PASSWORD: str
-    MYSQL_DATABASE: str
+    
+    DB_HOST: str
+    DB_PORT: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_NAME: str
     
     DATABASE_URL: str
 
@@ -29,3 +29,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+print(f"Loaded settings for {ENV} environment. Database URL: {settings.DATABASE_URL}")
