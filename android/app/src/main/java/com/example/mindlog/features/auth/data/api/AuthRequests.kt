@@ -1,4 +1,4 @@
-package com.example.mindlog.features.auth.api.model
+package com.example.mindlog.features.auth.api
 
 data class SignupRequest(
     val login_id: String,
