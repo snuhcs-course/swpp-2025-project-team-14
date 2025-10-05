@@ -151,10 +151,3 @@ You can watch the working demo below:
 [▶️ Watch Demo Video](https://drive.google.com/file/d/1vJGqscMJYm-uEAbtdYoyFN1dOe79f0LJ/view?usp=share_link)
 
 > 💡 If the video doesn’t automatically play, right-click the link and choose **“Open in new tab”** or **“Save link as…”** to download it.
-
-Alternatively, you can embed it directly (GitHub will show a player if supported):
-
-<video width="1280" height="720" controls>
-  <source src="https://drive.google.com/file/d/1vJGqscMJYm-uEAbtdYoyFN1dOe79f0LJ/view?usp=share_link" type="video/quicktime">
-  Your browser does not support the video tag.
-</video>
