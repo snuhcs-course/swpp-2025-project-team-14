@@ -1,11 +1,11 @@
 # SWPP Team 14 - Iteraion 1 Working Demo
 
 This repository contains the working demo of iteraion 1.  
-The demo demonstrates the backend API implementation of user authentication and session management using **JWT tokens**, tested in a local Docker-based environment.
+The demo demonstrates the backend API implementation of user authentication and session management using **JWT tokens**, tested in a local Docker-based environment. AWS EC2 connection and deployment successfully completed. The backend API is now accessible through the EC2 public endpoint.
 
 ---
 
-## 🚀 How to Run the Demo
+## 🚀 How to Run the Demo in Local
 
 ### 1. Prerequisites
 Make sure the following tools are installed on your system:
@@ -61,6 +61,17 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 The API will be available at `http://localhost:8000` by default.
+
+
+---
+
+## ☁️ AWS EC2 Demo Test
+
+- You can access the FastAPI Swagger UI at:
+  ```
+  http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/docs
+  ```
+- If the page loads successfully, the backend is running properly.
 
 ---
 
@@ -135,11 +146,11 @@ This demo serves as a proof-of-concept backend authentication system designed fo
 - Implementing secure user authentication flows
 - Managing user sessions with JWT tokens
 - Extending to support roles, permissions, and other features
+- AWS EC2 connection for deployment
 
 Next steps include:
 
 - Developing a android application to consume these APIs
-- Deploying the system to a production environment
 - Implementing other features such as journaling, statistics, analysis, etc.
 
 ---
