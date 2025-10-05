@@ -14,10 +14,11 @@ class Settings(BaseSettings):
 
     JWT_SECRET: str
     JWT_ALG: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 60
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     
     DB_HOST: str
-    DB_PORT: int
+    DB_PORT: str
     DB_USER: str
     DB_PASSWORD: str
     DB_NAME: str
