@@ -141,3 +141,20 @@ Next steps include:
 - Developing a android application to consume these APIs
 - Deploying the system to a production environment
 - Implementing other features such as journaling, statistics, analysis, etc.
+
+---
+
+## 🎥 Demo Video
+
+You can watch the working demo below:
+
+[▶️ Watch Demo Video](https://github.com/snu-swpp/swpp-2025-project-team-14/raw/main/iteration_1_demo_video.mov)
+
+> 💡 If the video doesn’t automatically play, right-click the link and choose **“Open in new tab”** or **“Save link as…”** to download it.
+
+Alternatively, you can embed it directly (GitHub will show a player if supported):
+
+<video width="1280" height="720" controls>
+  <source src="iteration_1_demo_video.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
