@@ -13,7 +13,7 @@ Thumbs.db
 # Env / Secrets
 # =========================
 *.env*
-!*.env.example
+!*.env.local
 /secrets/*
 /keys/*
 
