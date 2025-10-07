@@ -1,83 +1,70 @@
 package com.example.mindlog.features.auth.data.repository
 
 import android.content.Context
-import android.content.SharedPreferences
-import androidx.core.content.edit
-import com.example.mindlog.features.auth.data.api.LoginRequest
-import com.example.mindlog.features.auth.data.api.RetrofitClient
-import com.example.mindlog.features.auth.data.api.SignupRequest
-import com.example.mindlog.features.auth.data.api.TokenResponseEnvelope
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.example.mindlog.features.auth.data.api.*
+import com.example.mindlog.features.auth.domain.model.Token
+import com.example.mindlog.features.auth.domain.repository.AuthRepository
+import com.example.mindlog.features.auth.util.TokenManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 
-class AuthRepository(private val context: Context) {
+class AuthRepositoryImpl(private val context: Context) : AuthRepository {
 
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+    private val tokenManager = TokenManager(context)
+    private val api = RetrofitClient.getInstance(context)
 
-    fun login(id: String, password: String, callback: (Boolean, String?) -> Unit) {
-        val request = LoginRequest(id, password)
-
-        RetrofitClient.instance.login(request).enqueue(object : Callback<TokenResponseEnvelope> {
-            override fun onResponse(
-                call: Call<TokenResponseEnvelope>,
-                response: Response<TokenResponseEnvelope>
-            ) {
-                if (response.isSuccessful) {
-                    val tokenData = response.body()?.data
-                    tokenData?.let {
-                        saveTokens(it.access, it.refresh)
-                        callback(true, null)
-                    } ?: callback(false, "토큰이 없습니다")
-                } else {
-                    callback(false, "로그인 실패: ${response.code()}")
-                }
+    // ✅ 로그인
+    override suspend fun login(loginId: String, password: String): Token? = withContext(Dispatchers.IO) {
+        val response = api.login(LoginRequest(loginId = loginId, password = password)).execute()
+        return@withContext if (response.isSuccessful) {
+            response.body()?.data?.let {
+                val token = Token(it.access, it.refresh)
+                tokenManager.saveTokens(it.access, it.refresh)
+                token
             }
-
-            override fun onFailure(call: Call<TokenResponseEnvelope>, t: Throwable) {
-                callback(false, t.message)
-            }
-        })
+        } else null
     }
 
-    fun signup(id: String, password: String, name: String, callback: (Boolean, String?) -> Unit) {
-        val request = SignupRequest(id, password, name)
-
-        RetrofitClient.instance.signup(request).enqueue(object : Callback<TokenResponseEnvelope> {
-            override fun onResponse(
-                call: Call<TokenResponseEnvelope>,
-                response: Response<TokenResponseEnvelope>
-            ) {
-                if (response.isSuccessful) {
-                    val tokenData = response.body()?.data
-                    tokenData?.let {
-                        saveTokens(it.access, it.refresh)
-                        callback(true, null)
-                    } ?: callback(false, "토큰이 없습니다")
-                } else {
-                    callback(false, "회원가입 실패: ${response.code()}")
-                }
+    // ✅ 회원가입
+    override suspend fun signup(loginId: String, password: String, username: String): Token? = withContext(Dispatchers.IO) {
+        val response = api.signup(SignupRequest(loginId = loginId, password = password, username = username)).execute()
+        return@withContext if (response.isSuccessful) {
+            response.body()?.data?.let {
+                val token = Token(it.access, it.refresh)
+                tokenManager.saveTokens(it.access, it.refresh)
+                token
             }
-
-            override fun onFailure(call: Call<TokenResponseEnvelope>, t: Throwable) {
-                callback(false, t.message)
-            }
-        })
+        } else null
     }
 
-    private fun saveTokens(access: String, refresh: String) {
-        prefs.edit().apply {
-            putString("access_token", access)
-            putString("refresh_token", refresh)
-            apply()
+    // ✅ 토큰 갱신
+    override suspend fun refreshToken(refresh: String): Token? = withContext(Dispatchers.IO) {
+        val response = api.refreshToken(RefreshTokenRequest(refresh)).execute()
+        return@withContext if (response.isSuccessful) {
+            response.body()?.data?.let {
+                val token = Token(it.access, it.refresh)
+                tokenManager.saveTokens(it.access, it.refresh)
+                token
+            }
+        } else null
+    }
+
+    // ✅ 토큰 유효성 검사
+    override suspend fun verifyToken(): Boolean = withContext(Dispatchers.IO) {
+        val token = tokenManager.getAccessToken() ?: return@withContext false
+        try {
+            val response = api.verifyToken("Bearer $token").execute()
+            return@withContext response.isSuccessful
+        } catch (e: HttpException) {
+            return@withContext false
+        } catch (e: Exception) {
+            return@withContext false
         }
     }
 
-    fun getAccessToken(): String? = prefs.getString("access_token", null)
-    fun getRefreshToken(): String? = prefs.getString("refresh_token", null)
-
-    fun logout() {
-        prefs.edit { clear() }
+    // ✅ 로그아웃
+    override fun logout() {
+        tokenManager.clearTokens()
     }
 }

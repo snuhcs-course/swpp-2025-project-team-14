@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--  로컬 에뮬레이터에서 localhost 대체 (10.0.2.2) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+
+    <!--  EC2 서버 (HTTP 요청 허용) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">ec2-13-125-203-44.ap-northeast-2.compute.amazonaws.com</domain>
+    </domain-config>
+</network-security-config>

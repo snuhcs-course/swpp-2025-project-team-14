@@ -1,10 +1,10 @@
-package com.example.mindlog.features.auth.api
-
-data class TokenResponse(
-    val access: String,
-    val refresh: String
-)
+package com.example.mindlog.features.auth.data.api
 
 data class TokenResponseEnvelope(
-    val data: TokenResponse
+    val data: TokenData
+)
+
+data class TokenData(
+    val access: String,
+    val refresh: String
 )
