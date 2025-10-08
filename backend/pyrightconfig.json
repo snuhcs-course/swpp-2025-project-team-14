@@ -1,0 +1,9 @@
+{
+  "include": ["app", "tests"],
+  "exclude": ["**/__pycache__"],
+  "stubPath": "typings",
+  "reportMissingTypeStubs": false,
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux"
+}
