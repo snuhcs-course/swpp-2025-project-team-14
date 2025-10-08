@@ -1,16 +1,19 @@
-package com.example.mindlog.features.auth.data.api
+package com.example.mindlog.features.auth.data.network
 
-import okhttp3.Authenticator
-import okhttp3.Response
-import okhttp3.Request
-import okhttp3.Route
-import kotlin.concurrent.Volatile
+import com.example.mindlog.features.auth.data.api.RefreshApi
+import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.util.TokenManager
+import okhttp3.Authenticator
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.Route
+import javax.inject.Inject
+import javax.inject.Named
+import kotlin.concurrent.Volatile
 
-
-class TokenAuthenticator(
+class TokenAuthenticator @Inject constructor(
     private val tokenManager: TokenManager,
-    private val refreshApi: RefreshApi
+    @Named("refreshApi") private val refreshApi: RefreshApi
 ) : Authenticator {
 
     @Volatile private var refreshing = false

@@ -1,5 +1,8 @@
 package com.example.mindlog.features.auth.data.api
 
+import com.example.mindlog.features.auth.data.dto.LoginRequest
+import com.example.mindlog.features.auth.data.dto.SignupRequest
+import com.example.mindlog.features.auth.data.dto.TokenResponseEnvelope
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Header

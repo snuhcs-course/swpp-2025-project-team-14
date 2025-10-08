@@ -6,40 +6,25 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mindlog.databinding.ActivitySignupBinding
-import com.example.mindlog.core.network.RetrofitClient
+import com.example.mindlog.core.network.NetworkModule
 import com.example.mindlog.features.auth.data.api.AuthApi
 import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.api.AuthInterceptor
-import com.example.mindlog.features.auth.data.api.TokenAuthenticator
+import com.example.mindlog.features.auth.data.network.AuthInterceptor
+import com.example.mindlog.features.auth.data.network.TokenAuthenticator
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
 import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
 import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
+import dagger.hilt.android.AndroidEntryPoint
 
+
+@AndroidEntryPoint
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
-    private val viewModel by viewModels<SignupViewModel> {
-        val tokenManager = TokenManager(applicationContext)
+    private val viewModel: SignupViewModel by viewModels()
 
-        val bareClient = RetrofitClient.createClient()
-        val bareRetrofit = RetrofitClient.createRetrofit(bareClient)
-        val refreshApi = bareRetrofit.create(RefreshApi::class.java)
-
-        val authInterceptor = AuthInterceptor(tokenManager)
-        val tokenAuthenticator = TokenAuthenticator(tokenManager, refreshApi)
-        val okHttp = RetrofitClient.createClient(
-            authInterceptor = authInterceptor,
-            tokenAuthenticator = tokenAuthenticator
-        )
-        val retrofit = RetrofitClient.createRetrofit(okHttp)
-        val authApi = retrofit.create(AuthApi::class.java)
-
-        val repository = AuthRepositoryImpl(authApi, refreshApi, tokenManager)
-        val useCase = SignupUseCase(repository)
-        SignupViewModelFactory(useCase)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

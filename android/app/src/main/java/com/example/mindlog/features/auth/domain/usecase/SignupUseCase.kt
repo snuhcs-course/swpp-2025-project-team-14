@@ -1,8 +1,11 @@
 package com.example.mindlog.features.auth.domain.usecase
 
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class SignupUseCase(private val repository: AuthRepository) {
+class SignupUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
 
     suspend operator fun invoke(loginId: String, password: String, username: String): Result<Boolean> {
         return try {

@@ -1,8 +1,11 @@
 package com.example.mindlog.features.auth.domain.usecase
 
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class RefreshTokenUseCase(private val repository: AuthRepository) {
+class RefreshTokenUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
 
     suspend operator fun invoke(refresh: String): Result<Boolean> {
         return try {

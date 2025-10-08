@@ -4,9 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.MutableLiveData
 import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SignupViewModel(private val signupUseCase: SignupUseCase): ViewModel() {
+@HiltViewModel
+class SignupViewModel @Inject constructor(
+    private val signupUseCase: SignupUseCase
+): ViewModel() {
     val signupResult = MutableLiveData<Boolean>()
     val errorMessage = MutableLiveData<String?>()
 

@@ -1,4 +1,4 @@
-package com.example.mindlog.features.auth.data.api
+package com.example.mindlog.features.auth.data.dto
 
 data class TokenResponseEnvelope(
     val data: TokenData

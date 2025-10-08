@@ -2,16 +2,21 @@ package com.example.mindlog.features.auth.data.repository
 
 import android.content.Context
 import com.example.mindlog.features.auth.data.api.*
+import com.example.mindlog.features.auth.data.dto.LoginRequest
+import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
+import com.example.mindlog.features.auth.data.dto.SignupRequest
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.util.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import javax.inject.Inject
+import javax.inject.Named
 
-class AuthRepositoryImpl(
+class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
-    private val refreshApi: RefreshApi,
+    @Named("refreshApi") private val refreshApi: RefreshApi,
     private val tokenManager: TokenManager
 ) : AuthRepository {
 

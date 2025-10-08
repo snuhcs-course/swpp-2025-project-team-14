@@ -5,52 +5,34 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.mindlog.core.network.RetrofitClient
+import com.example.mindlog.core.network.NetworkModule
 import com.example.mindlog.databinding.ActivityMainBinding
 import com.example.mindlog.features.auth.data.api.AuthApi
 import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.api.AuthInterceptor
-import com.example.mindlog.features.auth.data.api.TokenAuthenticator
+import com.example.mindlog.features.auth.data.network.AuthInterceptor
+import com.example.mindlog.features.auth.data.network.TokenAuthenticator
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
+import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.util.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var tokenManager: TokenManager
-    private lateinit var authRepository: AuthRepositoryImpl
+    @Inject lateinit var authRepository: AuthRepository
+    @Inject lateinit var tokenManager: TokenManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Log.d("MainActivity", "AuthRepository initialized. Checking for auto-login")
-
-        tokenManager = TokenManager(this)
-        // 1) bare client/retrofit for refresh
-        val bareClient = RetrofitClient.createClient()
-        val bareRetrofit = RetrofitClient.createRetrofit(bareClient)
-        val refreshApi = bareRetrofit.create(RefreshApi::class.java)
-
-        // 2) main client/retrofit with auth pipeline
-        val authInterceptor = AuthInterceptor(tokenManager)
-        val tokenAuthenticator = TokenAuthenticator(tokenManager, refreshApi)
-        val okHttp = RetrofitClient.createClient(
-            authInterceptor = authInterceptor,
-            tokenAuthenticator = tokenAuthenticator
-        )
-        val retrofit = RetrofitClient.createRetrofit(okHttp)
-        val authApi = retrofit.create(AuthApi::class.java)
-
-        // 3) repository (manual DI)
-        authRepository = AuthRepositoryImpl(
-            authApi = authApi,
-            refreshApi = refreshApi,
-            tokenManager = tokenManager
-        )
+        Log.d("MainActivity", "onCreate: MainActivity started, initializing AuthRepository")
 
         lifecycleScope.launch {
             checkAutoLogin()

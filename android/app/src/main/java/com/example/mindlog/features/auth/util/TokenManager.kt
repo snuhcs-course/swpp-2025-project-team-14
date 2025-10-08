@@ -3,11 +3,18 @@ package com.example.mindlog.features.auth.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TokenManager(context: Context) {
+
+@Singleton
+class TokenManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
