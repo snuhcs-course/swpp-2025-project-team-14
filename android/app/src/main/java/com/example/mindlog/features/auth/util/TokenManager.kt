@@ -3,6 +3,8 @@ package com.example.mindlog.features.auth.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
 
 class TokenManager(context: Context) {
@@ -15,12 +17,17 @@ class TokenManager(context: Context) {
         private const val REFRESH_TOKEN = "refresh_token"
     }
 
+    // 로그인 여부를 실시간으로 방출하는 StateFlow
+    private val loggedInState = MutableStateFlow(isLoggedIn())
+
     // 토큰 저장
     fun saveTokens(access: String, refresh: String) {
         prefs.edit()
             .putString(ACCESS_TOKEN, access)
             .putString(REFRESH_TOKEN, refresh)
             .apply()
+
+        loggedInState.value = isLoggedIn()
     }
 
     // 토큰 조회
@@ -53,5 +60,8 @@ class TokenManager(context: Context) {
     // 토큰 삭제
     fun clearTokens() {
         prefs.edit().clear().apply()
+        loggedInState.value = false
     }
+
+    fun isLoggedInFlow(): StateFlow<Boolean> = loggedInState
 }

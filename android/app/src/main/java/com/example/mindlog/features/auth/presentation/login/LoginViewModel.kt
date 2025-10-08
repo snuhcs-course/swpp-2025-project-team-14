@@ -18,8 +18,8 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
             try {
                 isLoading.value = true
 
-                val token = loginUseCase(loginId, password)
-                loginResult.value = token != null
+                val result = loginUseCase(loginId, password)
+                loginResult.value = result.isSuccess
 
             } catch (e: HttpException) {
                 errorMessage.value = "서버 오류 (${e.code()})가 발생했습니다."

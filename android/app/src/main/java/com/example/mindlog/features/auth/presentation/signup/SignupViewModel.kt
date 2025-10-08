@@ -13,8 +13,8 @@ class SignupViewModel(private val signupUseCase: SignupUseCase): ViewModel() {
     fun signup(loginId: String, password: String, username: String) {
         viewModelScope.launch {
             try {
-                val token = signupUseCase(loginId, password, username)
-                signupResult.value = token != null
+                val result = signupUseCase(loginId, password, username)
+                signupResult.value = result.isSuccess
             } catch (e: Exception) {
                 errorMessage.value = e.message
             }
