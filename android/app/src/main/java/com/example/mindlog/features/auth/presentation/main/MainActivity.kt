@@ -3,6 +3,7 @@ package com.example.mindlog.features.auth.presentation.main
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.core.network.NetworkModule
@@ -31,8 +32,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        Log.d("MainActivity", "onCreate: MainActivity started, initializing AuthRepository")
 
         lifecycleScope.launch {
             checkAutoLogin()
@@ -76,7 +75,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToJournal() {
-        startActivity(Intent(this, SignupActivity::class.java))
-        finish()
+        // startActivity(Intent(this, JournalActivity::class.java))
+        // finish()
+        Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
     }
 }

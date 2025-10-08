@@ -3,13 +3,13 @@ package com.example.mindlog.features.auth.data.dto
 import com.google.gson.annotations.SerializedName
 
 data class SignupRequest(
-    @SerializedName("loginId") val loginId: String,
+    @SerializedName("login_id") val loginId: String,
     @SerializedName("password") val password: String,
     @SerializedName("username") val username: String
 )
 
 data class LoginRequest(
-    @SerializedName("loginId") val loginId: String,
+    @SerializedName("login_id") val loginId: String,
     @SerializedName("password") val password: String
 )
 

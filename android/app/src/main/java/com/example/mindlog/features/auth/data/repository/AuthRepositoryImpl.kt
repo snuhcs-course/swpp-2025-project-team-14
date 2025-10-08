@@ -1,6 +1,7 @@
 package com.example.mindlog.features.auth.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.example.mindlog.features.auth.data.api.*
 import com.example.mindlog.features.auth.data.dto.LoginRequest
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
@@ -29,6 +30,7 @@ class AuthRepositoryImpl @Inject constructor(
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val resp = authApi.signup(SignupRequest(loginId, password, username)).execute()
+            Log.d("AuthRepositoryImpl", "signup: $resp")
             if (!resp.isSuccessful) return@withContext false
 
             // 서버가 회원가입 시 토큰을 줄 수도/안 줄 수도 있음 → 있으면 저장
@@ -40,7 +42,8 @@ class AuthRepositoryImpl @Inject constructor(
                 }
             }
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.d("AuthRepositoryImpl", "signup: $e")
             false
         }
     }
