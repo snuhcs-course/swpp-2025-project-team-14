@@ -1,17 +1,19 @@
-package com.example.mindlog.features.auth.data.api
+package com.example.mindlog.core.network
 
 import android.content.Context
+import com.example.mindlog.features.auth.data.api.ApiService
 import com.example.mindlog.features.auth.util.TokenManager
-import okhttp3.OkHttpClient
-import okhttp3.Interceptor
-import okhttp3.Response
 import okhttp3.Authenticator
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import okhttp3.Route
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/"
 
     // Retrofit 인스턴스 생성
     fun getInstance(context: Context): ApiService {
@@ -46,7 +48,7 @@ class AuthInterceptor(private val tokenManager: TokenManager) : Interceptor {
 }
 
 class TokenAuthenticator(private val tokenManager: TokenManager) : Authenticator {
-    override fun authenticate(route: Route?, response: Response): okhttp3.Request? {
+    override fun authenticate(route: Route?, response: Response): Request? {
         val refreshToken = tokenManager.getRefreshToken() ?: return null
 
         // refreshToken 요청
