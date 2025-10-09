@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:clipChildren="false">
+
+    <!-- 바 배경(평면) : 첨부 이미지처럼 bg 톤, 상단에 얇은 라인 -->
+    <FrameLayout
+        android:id="@+id/bottom_bar_bg"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_bar_height"
+        android:layout_gravity="bottom"
+        android:background="@color/navigator">
+
+    </FrameLayout>
+
+    <!-- 가운데 원형 버튼: 바 위로 살짝 겹치게 올림 -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_write"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="@dimen/fab_bottom_margin_in_bar"
+        android:translationY="0dp"
+        app:fabCustomSize="@dimen/center_gap"
+        app:useCompatPadding="false"
+        app:backgroundTint="@color/text_primary"
+        app:tint="@color/bg"
+        app:srcCompat="@drawable/ic_write"
+        app:maxImageSize="28dp"
+        app:borderWidth="0dp"
+        android:contentDescription="일기 작성"/>
+
+
+    <!-- 오버레이: 4개 항목(아이콘+텍스트), 바와 동일한 높이로 중앙 정렬 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/nav_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_bar_height"
+        android:layout_gravity="bottom"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <!-- 중앙 고정폭 갭: FAB 자리 확보 -->
+        <View
+            android:id="@+id/center_gap"
+            android:layout_width="@dimen/center_gap"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- 좌측: 일기 -->
+        <LinearLayout
+            android:id="@+id/item_diary"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="@dimen/nav_padding_v"
+            android:paddingBottom="@dimen/nav_padding_v"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/item_me"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/nav_icon"
+                android:layout_height="@dimen/nav_icon"
+                android:src="@drawable/ic_book"
+                app:tint="@color/text_primary"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="일기"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"/>
+        </LinearLayout>
+
+        <!-- 좌측: 나 알아보기 -->
+        <LinearLayout
+            android:id="@+id/item_me"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="@dimen/nav_padding_v"
+            android:paddingBottom="@dimen/nav_padding_v"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toEndOf="@id/item_diary"
+            app:layout_constraintEnd_toStartOf="@id/center_gap"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/nav_icon"
+                android:layout_height="@dimen/nav_icon"
+                android:src="@drawable/ic_person"
+                app:tint="@color/text_primary"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="나 알아보기"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"/>
+        </LinearLayout>
+
+        <!-- 우측: 통계 -->
+        <LinearLayout
+            android:id="@+id/item_stats"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="@dimen/nav_padding_v"
+            android:paddingBottom="@dimen/nav_padding_v"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toEndOf="@id/center_gap"
+            app:layout_constraintEnd_toStartOf="@id/item_analysis"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/nav_icon"
+                android:layout_height="@dimen/nav_icon"
+                android:src="@drawable/ic_bar_chart"
+                app:tint="@color/text_primary"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="통계"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"/>
+        </LinearLayout>
+
+        <!-- 우측: 분석 -->
+        <LinearLayout
+            android:id="@+id/item_analysis"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="@dimen/nav_padding_v"
+            android:paddingBottom="@dimen/nav_padding_v"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toEndOf="@id/item_stats"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/nav_icon"
+                android:layout_height="@dimen/nav_icon"
+                android:src="@drawable/ic_pie_chart"
+                app:tint="@color/text_primary"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="분석"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
