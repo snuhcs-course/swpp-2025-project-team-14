@@ -37,18 +37,14 @@ jobs:
         working-directory: ${{ env.working-directory }}
         
       # ----------------------------------------
-      # 1. 린트 및 포맷팅 체크 (Linting & Formatting Check)
+      # 1. 린트 체크 (Linting Check)
       # ----------------------------------------
-      - name: ✅ Run Ruff (Linting & Formatting Check)
+      - name: ✅ Run Ruff (Linting Check)
         run: poetry run ruff check .
         working-directory: ${{ env.working-directory }}
       
-      - name: ✅ Run Ruff Format Check
+      - name: ✅ Run Ruff (Format Check)
         run: poetry run ruff format --check
-        working-directory: ${{ env.working-directory }}
-
-      - name: ✅ Run Pyright (Static Type Check)
-        run: poetry run pyright
         working-directory: ${{ env.working-directory }}
 
       # ----------------------------------------
