@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/week_item_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="@dimen/week_item_min_width"
+    android:paddingStart="@dimen/week_item_hpad"
+    android:paddingEnd="@dimen/week_item_hpad"
+    android:paddingTop="@dimen/week_item_vpad"
+    android:paddingBottom="@dimen/week_item_vpad"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/bg_week_chip"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- 요일 (작게) -->
+    <TextView
+        android:id="@+id/tv_dow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="월"
+        android:textSize="12sp"
+        android:textColor="@color/text_secondary"
+        android:maxLines="1" />
+
+    <!-- 날짜 숫자 -->
+    <TextView
+        android:id="@+id/tv_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="22"
+        android:textSize="12sp"
+        android:textColor="@color/text_primary"
+        android:layout_marginTop="2dp"
+        android:maxLines="1" />
+
+    <!-- 체크 아이콘 (완료 표시). 필요 없으면 GONE 처리 -->
+    <ImageView
+        android:id="@+id/iv_done"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/ic_check" />
+</LinearLayout>
