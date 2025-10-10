@@ -31,11 +31,24 @@ class SignupActivity : AppCompatActivity() {
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.etUsername.setOnFocusChangeListener { _, hasFocus ->
+            binding.etUsername.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
+        }
+        binding.etLoginId.setOnFocusChangeListener { _, hasFocus ->
+            binding.etLoginId.hint = if (hasFocus) "" else "아이디를 입력하세요"
+        }
+        binding.etPassword.setOnFocusChangeListener { _, hasFocus ->
+            binding.etPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
+        }
+        binding.etConfirmPassword.setOnFocusChangeListener { _, hasFocus ->
+            binding.etConfirmPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
+        }
+
         // 🔹 회원가입 버튼 클릭
         binding.btnSignup.setOnClickListener {
-            val username = binding.etSignupUsername.text.toString()
-            val id = binding.etSignupId.text.toString()
-            val pw = binding.etSignupPassword.text.toString()
+            val username = binding.etUsername.text.toString()
+            val id = binding.etLoginId.text.toString()
+            val pw = binding.etPassword.text.toString()
             val confirm = binding.etConfirmPassword.text.toString()
 
             if (id.isBlank() || pw.isBlank() || username.isBlank()) {

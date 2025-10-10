@@ -1,9 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MindLog" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- 기본 앱 테마 -->
+    <style name="Base.Theme.MindLog" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- 앱 기본 색상 -->
+        <item name="colorPrimary">#2C2C54</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#F2F0E9</item>
+        <item name="colorOnSecondary">#666666</item>
+
+        <!-- 배경 및 텍스트 -->
+        <item name="android:windowBackground">#F8F6F0</item>
+        <item name="android:textColor">#666666</item>
+
+        <!-- 상태바 / 네비게이션바 색 -->
+        <item name="android:statusBarColor">#2C2C54</item>
+        <item name="android:navigationBarColor">#F2F0E9</item>
     </style>
 
+    <!-- 실제 앱에서 사용할 테마 -->
     <style name="Theme.MindLog" parent="Base.Theme.MindLog" />
 </resources>

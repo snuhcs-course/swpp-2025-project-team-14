@@ -43,6 +43,13 @@ class LoginActivity : AppCompatActivity() {
             viewModel.login(id, password)
         }
 
+        binding.etLoginId.setOnFocusChangeListener { _, hasFocus ->
+            binding.etLoginId.hint = if (hasFocus) "" else "아이디를 입력하세요"
+        }
+        binding.etPassword.setOnFocusChangeListener { _, hasFocus ->
+            binding.etPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
+        }
+
         binding.tvGoSignup.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
         }
