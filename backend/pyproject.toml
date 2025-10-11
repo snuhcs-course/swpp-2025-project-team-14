@@ -3,6 +3,7 @@ name = "MindLog"
 version = "0.1.0"
 description = "FastAPI backend with MySQL,"
 authors = ["Your Name <you@example.com>"]
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
