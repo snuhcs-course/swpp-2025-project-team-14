@@ -34,7 +34,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry' # Poetry 의존성을 캐시하여 CI 속도 개선
 
       - name: 📦 Install Poetry
         run: pip install poetry
