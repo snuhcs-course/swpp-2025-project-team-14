@@ -1,6 +1,7 @@
 from typing import Annotated
+
 from fastapi import Depends
-from app.core.config import settings
+
 from app.features.user.models import User
 from app.features.user.repository import UserRepository
 

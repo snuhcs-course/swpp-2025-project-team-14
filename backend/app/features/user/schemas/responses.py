@@ -1,5 +1,5 @@
-from typing import Annotated
 from pydantic import BaseModel
+
 from app.common.schemas import ResponseEnvelope
 
 

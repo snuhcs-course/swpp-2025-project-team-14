@@ -84,3 +84,5 @@ android/build/
 .LSOverride
 Icon
 ehthumbs.db
+
+test.db
