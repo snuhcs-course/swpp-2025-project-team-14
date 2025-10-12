@@ -1,5 +1,6 @@
 package com.example.mindlog.features.auth.presentation.signup
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.MutableLiveData

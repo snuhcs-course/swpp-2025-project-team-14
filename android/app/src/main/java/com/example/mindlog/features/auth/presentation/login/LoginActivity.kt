@@ -2,6 +2,7 @@ package com.example.mindlog.features.auth.presentation.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +19,7 @@ import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
+import com.example.mindlog.R
 
 
 @AndroidEntryPoint
@@ -35,8 +37,35 @@ class LoginActivity : AppCompatActivity() {
             val id = binding.etLoginId.text.toString()
             val password = binding.etPassword.text.toString()
 
-            if (id.isBlank() || password.isBlank()) {
-                Toast.makeText(this, "아이디와 비밀번호를 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
+            var isIdEmpty = false
+            var isPasswordEmpty = false
+
+            if (id.isEmpty()) {
+                binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg_error)
+                isIdEmpty = true
+            } else {
+                binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg)
+            }
+
+            // 비밀번호 검증
+            if (password.isEmpty()) {
+                binding.etPassword.setBackgroundResource(R.drawable.edittext_bg_error)
+                isPasswordEmpty = true
+            } else {
+                binding.etPassword.setBackgroundResource(R.drawable.edittext_bg)
+            }
+
+            if (isIdEmpty && isPasswordEmpty) {
+                binding.tvError.text = "아이디와 비밀번호를 입력해주세요"
+                binding.tvError.visibility = View.VISIBLE
+                return@setOnClickListener
+            } else if (isIdEmpty) {
+                binding.tvError.text = "아이디를 입력해주세요"
+                binding.tvError.visibility = View.VISIBLE
+                return@setOnClickListener
+            } else if (isPasswordEmpty) {
+                binding.tvError.text = "비밀번호를 입력해주세요"
+                binding.tvError.visibility = View.VISIBLE
                 return@setOnClickListener
             }
 
@@ -60,7 +89,8 @@ class LoginActivity : AppCompatActivity() {
                 startActivity(Intent(this, MainActivity::class.java))
                 finishAffinity()
             } else {
-                Toast.makeText(this, "로그인 실패. 아이디와 비밀번호를 확인하세요.", Toast.LENGTH_SHORT).show()
+                binding.tvError.text = "아이디와 비밀번호를 확인해주세요"
+                binding.tvError.visibility = View.VISIBLE
             }
         })
 
