@@ -1,5 +1,3 @@
-import app.features.auth.models
-import app.features.user.models
 import app.database.models.answer_model
 import app.database.models.conversation_model
 import app.database.models.emotion_event_model
@@ -12,3 +10,5 @@ import app.database.models.question_model
 import app.database.models.recommendation_model
 import app.database.models.value_map_model
 import app.database.models.value_score_model
+import app.features.auth.models  # noqa: F401
+import app.features.user.models  # noqa: F401
