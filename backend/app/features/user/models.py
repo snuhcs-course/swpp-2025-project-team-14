@@ -1,8 +1,20 @@
 from __future__ import annotations
-from typing import List
-from datetime import datetime
-from sqlalchemy import String, Integer
+
+from backend.app.database.models.emotion_event_model import (
+    Answer,
+    Conversation,
+    Emotion,
+    EmotionEvent,
+    Journal,
+    Keyword,
+    Question,
+    Recommendation,
+    ValueMap,
+    ValueScore,
+)
+from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.database.base import Base
 
 
@@ -14,33 +26,33 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
     username: Mapped[str] = mapped_column(String(100), nullable=True)
 
-    journals: Mapped[List["Journal"]] = relationship(
+    journals: Mapped[list[Journal]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    emotions: Mapped[List["Emotion"]] = relationship(
+    emotions: Mapped[list[Emotion]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    emotion_events: Mapped[List["EmotionEvent"]] = relationship(
+    emotion_events: Mapped[list[EmotionEvent]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    keywords: Mapped[List["Keyword"]] = relationship(
+    keywords: Mapped[list[Keyword]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    questions: Mapped[List["Question"]] = relationship(
+    questions: Mapped[list[Question]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    answers: Mapped[List["Answer"]] = relationship(
+    answers: Mapped[list[Answer]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    value_scores: Mapped[List["ValueScore"]] = relationship(
+    value_scores: Mapped[list[ValueScore]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    value_maps: Mapped[List["ValueMap"]] = relationship(
+    value_maps: Mapped[list[ValueMap]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    recommendations: Mapped[List["Recommendation"]] = relationship(
+    recommendations: Mapped[list[Recommendation]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    conversations: Mapped[List["Conversation"]] = relationship(
+    conversations: Mapped[list[Conversation]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
