@@ -11,7 +11,7 @@ class AnswerCreate(AnswerBase):
     user_id: int
     question_id: int
 
-class AnswerRead(AnswerBase):
+class Answer(AnswerBase):
     id: int
     user_id: int
     question_id: int
