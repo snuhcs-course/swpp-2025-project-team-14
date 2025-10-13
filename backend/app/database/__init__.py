@@ -1,14 +1,4 @@
-import app.database.models.answer_model
-import app.database.models.conversation_model
-import app.database.models.emotion_event_model
-import app.database.models.emotion_model
-import app.database.models.journal_image_model
-import app.database.models.journal_model
-import app.database.models.keyword_model
-import app.database.models.message_model
-import app.database.models.question_model
-import app.database.models.recommendation_model
-import app.database.models.value_map_model
-import app.database.models.value_score_model
+# This is necessary to ensure that all models are registered with SQLAlchemy's metadata.
 import app.features.auth.models  # noqa: F401
+import app.features.journal.models  # noqa: F401
 import app.features.user.models  # noqa: F401
