@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -5,6 +6,7 @@ from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
 from app.common.errors import PermissionDeniedError
+from app.features.journal.errors import JournalBadRequestError
 from app.features.journal.schemas.requests import (
     JournalCreateRequest,
     JournalUpdateRequest,
@@ -12,6 +14,8 @@ from app.features.journal.schemas.requests import (
 from app.features.journal.schemas.responses import (
     JournalCursorEnvelope,
     JournalCursorResponse,
+    JournalListResponse,
+    JournalListResponseEnvelope,
     JournalResponse,
     JournalResponseEnvelope,
 )
@@ -78,6 +82,38 @@ def get_journal_entries_by_user(
         raise PermissionDeniedError()
     journals = journal_service.list_journals_by_user(user_id, limit, cursor)
     return JournalCursorEnvelope(data=JournalCursorResponse.from_journals(journals))
+
+
+@router.get(
+    "/search",
+    response_model=JournalListResponseEnvelope,
+    status_code=200,
+    summary="일기 검색 (제목, 기간)",
+    description="""
+    다양한 검색 조건(쿼리 파라미터)을 조합하여 일기를 검색합니다.
+
+    - 기간 조회: `start_date`와 `end_date`를 지정합니다. (예: `?start_date=...&end_date=...`)
+    - 특정 날짜 조회: `start_date`와 `end_date`에 동일한 날짜를 지정합니다.
+    - 제목과 조합: `title` 파라미터를 추가할 수 있습니다.
+    """,
+)
+def search_journals(
+    journal_service: Annotated[JournalService, Depends()],
+    start_date: date | None = Query(
+        None, description="조회 시작 날짜 (YYYY-MM-DD 형식)"
+    ),
+    end_date: date | None = Query(None, description="조회 종료 날짜 (YYYY-MM-DD 형식)"),
+    title: str | None = Query(None, description="일기 제목"),
+    user: User = Depends(get_current_user),
+) -> JournalResponseEnvelope:
+    if not any([title, start_date, end_date]):
+        raise JournalBadRequestError("At least one query parameter must be provided.")
+    if (start_date and not end_date) or (end_date and not start_date):
+        raise JournalBadRequestError("Both start_date and end_date must be provided.")
+    journals = journal_service.search_journals(
+        user_id=user.id, start_date=start_date, end_date=end_date, title=title
+    )
+    return JournalListResponseEnvelope(data=JournalListResponse.from_journals(journals))
 
 
 @router.patch(

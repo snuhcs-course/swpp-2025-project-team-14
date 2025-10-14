@@ -49,3 +49,16 @@ class JournalCursorResponse(BaseModel):
 
 class JournalCursorEnvelope(ResponseEnvelope):
     data: JournalCursorResponse
+
+
+class JournalListResponse(BaseModel):
+    data: list[JournalResponse]
+
+    @staticmethod
+    def from_journals(journals: list[Journal]) -> "JournalListResponse":
+        items = [JournalResponse.from_journal(journal) for journal in journals]
+        return JournalListResponse(data=items)
+
+
+class JournalListResponseEnvelope(ResponseEnvelope):
+    data: JournalListResponse

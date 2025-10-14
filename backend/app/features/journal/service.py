@@ -1,8 +1,13 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import Depends
 
-from app.features.journal.errors import JournalNotFoundError, JournalUpdateError
+from app.features.journal.errors import (
+    JournalBadRequestError,
+    JournalNotFoundError,
+    JournalUpdateError,
+)
 from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
 
@@ -64,3 +69,16 @@ class JournalService:
         if journal is None:
             return None
         return journal.user_id
+
+    def search_journals(
+        self,
+        user_id: int,
+        title: str | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> list[Journal]:
+        if start_date and end_date and start_date > end_date:
+            raise JournalBadRequestError("start_date는 end_date보다 이전이어야 합니다.")
+        return self.journal_repository.search_journals(
+            user_id=user_id, title=title, start_date=start_date, end_date=end_date
+        )

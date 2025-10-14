@@ -1,3 +1,4 @@
+from datetime import date, datetime, timedelta
 from typing import Annotated
 
 from fastapi import Depends
@@ -72,3 +73,26 @@ class JournalRepository:
         if gratitude is not None:
             journal.gratitude = gratitude
         self.session.flush()
+
+    def search_journals(
+        self,
+        user_id: int,
+        title: str | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> list[Journal]:
+        query = self.session.query(Journal).filter(Journal.user_id == user_id)
+
+        if title:
+            query = query.filter(Journal.title.ilike(f"%{title}%"))
+        if start_date:
+            query = query.filter(
+                Journal.created_at >= datetime.combine(start_date, datetime.min.time())
+            )
+        if end_date:
+            query = query.filter(
+                Journal.created_at
+                < datetime.combine(end_date + timedelta(days=1), datetime.min.time())
+            )
+
+        return query.order_by(Journal.created_at.desc()).all()

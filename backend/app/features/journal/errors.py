@@ -20,3 +20,11 @@ class JournalUpdateError(HTTPException):
         super().__init__(
             status_code=400, detail="At least one field must be provided for update"
         )
+
+
+class JournalBadRequestError(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(
+            status_code=400,
+            detail="invalid request: " + detail,
+        )
