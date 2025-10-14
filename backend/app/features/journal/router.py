@@ -3,11 +3,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.security import HTTPBearer
+from pytest import Session
 
 from app.common.authorization import get_current_user
 from app.common.errors import PermissionDeniedError
+from app.database.session import get_db_session
 from app.features.journal.errors import JournalBadRequestError
 from app.features.journal.schemas.requests import (
+    ImageUploadRequest,
     JournalCreateRequest,
     JournalUpdateRequest,
 )
@@ -18,6 +21,7 @@ from app.features.journal.schemas.responses import (
     JournalListResponseEnvelope,
     JournalResponse,
     JournalResponseEnvelope,
+    PresignedUrlResponse,
 )
 from app.features.journal.service import JournalService
 from app.features.user.models import User
@@ -154,3 +158,20 @@ def delete_journal_entry(
         raise PermissionDeniedError()
     journal_service.delete_journal(journal_id)
     return "Deletion Success"
+
+
+@router.post(
+    "/{journal_id}/image",
+    response_model=PresignedUrlResponse,
+    status_code=201,
+    summary="Generate a presigned URL for image upload",
+)
+async def generate_image_upload_url(
+    journal_id: int,
+    journal_service: Annotated[JournalService, Depends()],
+    payload: ImageUploadRequest,
+    db: Session = Depends(get_db_session),
+) -> PresignedUrlResponse:
+    return await journal_service.create_image_presigned_url(
+        db=db, journal_id=journal_id, payload=payload
+    )

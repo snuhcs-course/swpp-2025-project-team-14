@@ -1,9 +1,13 @@
 from datetime import date, datetime, timedelta
 from typing import Annotated
 
+import boto3
+from botocore.exceptions import ClientError
 from fastapi import Depends
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.database.session import get_db_session
 
 from .models import Journal, JournalImage
@@ -96,3 +100,32 @@ class JournalRepository:
             )
 
         return query.order_by(Journal.created_at.desc()).all()
+
+
+class S3Repository:
+    def __init__(self):
+        self.s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION,
+        )
+        self.bucket_name = settings.AWS_S3_BUCKET_NAME
+
+    async def generate_upload_url(self, s3_key: str, content_type: str) -> dict | None:
+        try:
+            presigned_url = await run_in_threadpool(
+                self.s3_client.generate_presigned_url,
+                ClientMethod="put_object",
+                Params={
+                    "Bucket": self.bucket_name,
+                    "Key": s3_key,
+                    "ContentType": content_type,
+                },
+                ExpiresIn=3600,
+            )
+
+            final_file_url = f"https://{self.bucket_name}.s3.{settings.AWS_REGION}.amazonaws.com/{s3_key}"
+            return {"presigned_url": presigned_url, "file_url": final_file_url}
+        except ClientError:
+            return None

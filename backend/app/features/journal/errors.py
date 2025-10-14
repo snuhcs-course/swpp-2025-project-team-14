@@ -28,3 +28,11 @@ class JournalBadRequestError(HTTPException):
             status_code=400,
             detail="invalid request: " + detail,
         )
+
+
+class ImageUploadError(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(
+            status_code=500,
+            detail="image upload error: " + detail,
+        )

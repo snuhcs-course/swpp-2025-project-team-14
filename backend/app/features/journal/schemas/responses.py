@@ -62,3 +62,9 @@ class JournalListResponse(BaseModel):
 
 class JournalListResponseEnvelope(ResponseEnvelope):
     data: JournalListResponse
+
+
+class PresignedUrlResponse(BaseModel):
+    presigned_url: str
+    file_url: str
+    s3_key: str
