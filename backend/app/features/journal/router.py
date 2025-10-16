@@ -10,6 +10,7 @@ from app.common.errors import PermissionDeniedError
 from app.database.session import get_db_session
 from app.features.journal.errors import JournalBadRequestError
 from app.features.journal.schemas.requests import (
+    ImageCompletionRequest,
     ImageUploadRequest,
     JournalCreateRequest,
     JournalUpdateRequest,
@@ -18,6 +19,7 @@ from app.features.journal.schemas.responses import (
     JournalCursorEnvelope,
     JournalCursorResponse,
     JournalImageResponse,
+    JournalImageResponseEnvelope,
     JournalListResponse,
     JournalListResponseEnvelope,
     JournalResponse,
@@ -189,9 +191,12 @@ async def generate_image_upload_url(
 async def complete_image_upload(
     journal_id: int,
     journal_service: Annotated[JournalService, Depends()],
-    s3_key: str = Query(..., description="The S3 key of the uploaded image"),
+    payload: ImageCompletionRequest,
     db: Session = Depends(get_db_session),
-) -> JournalImageResponse:
-    return await journal_service.complete_image_upload(
-        db=db, journal_id=journal_id, s3_key=s3_key
+) -> JournalImageResponseEnvelope:
+    journal_image = await journal_service.complete_image_upload(
+        db=db, journal_id=journal_id, payload=payload
+    )
+    return JournalImageResponseEnvelope(
+        data=JournalImageResponse.from_journal_image(journal_image)
     )

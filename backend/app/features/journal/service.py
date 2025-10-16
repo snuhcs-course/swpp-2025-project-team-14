@@ -14,9 +14,12 @@ from app.features.journal.errors import (
     JournalNotFoundError,
     JournalUpdateError,
 )
-from app.features.journal.models import Journal
+from app.features.journal.models import Journal, JournalImage
 from app.features.journal.repository import JournalRepository, S3Repository
-from app.features.journal.schemas.requests import ImageUploadRequest
+from app.features.journal.schemas.requests import (
+    ImageCompletionRequest,
+    ImageUploadRequest,
+)
 from app.features.journal.schemas.responses import PresignedUrlResponse
 
 
@@ -120,23 +123,18 @@ class JournalService:
         return PresignedUrlResponse(**url_data, s3_key=s3_key)
 
     async def complete_image_upload(
-        self, db: Session, journal_id: int, image_url: str, s3_key: str
-    ) -> None:
-        file_exists = await self.s3_repository.check_file_exists(s3_key)
+        self, db: Session, journal_id: int, payload: ImageCompletionRequest
+    ) -> JournalImage:
+        file_exists = await self.s3_repository.check_file_exists(payload.s3_key)
         if not file_exists:
             raise ImageUploadError("Uploaded image not found in S3.")
         # 동기 DB 작업을 스레드 풀에서 실행
-        find_journal_task = partial(
-            self.journal_repository.get_journal_by_id, db=db, journal_id=journal_id
-        )
-        journal = await run_in_threadpool(find_journal_task)
-
-        if not journal:
-            raise JournalNotFoundError(journal_id)
-
-        # 이미지 URL을 Journal에 연결
-        return await run_in_threadpool(
+        create_image_task = partial(
             self.journal_repository.create_journal_image,
+            db=db,
             journal_id=journal_id,
-            image_url=image_url,
+            image_url=payload.image_url,
         )
+
+        journal_image = await run_in_threadpool(create_image_task)
+        return journal_image
