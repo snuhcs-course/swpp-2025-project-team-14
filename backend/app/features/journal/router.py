@@ -48,6 +48,7 @@ def create_journal_entry(
         user_id=user.id,
         title=journal.title,
         content=journal.content,
+        emotions=journal.emotions,
         image_urls=journal.image_urls,
     )
     return JournalResponseEnvelope(data=JournalResponse.from_journal(created_journal))

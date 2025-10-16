@@ -16,6 +16,19 @@ ALLOWED_IMAGE_TYPES = {
     "image/webp",
 }
 
+ALLOWED_EMOTIONS = {
+    "happy",
+    "sad",
+    "anxious",
+    "calm",
+    "annoyed",
+    "satisfied",
+    "bored",
+    "interested",
+    "lethargic",
+    "energetic",
+}
+
 
 def validate_title(title: str) -> str:
     if not title.strip():
@@ -66,10 +79,28 @@ def validate_content_type(content_type: str) -> str:
     return normalized_type
 
 
+def validate_emotions(value: dict[str, int]) -> dict[str, int]:
+    # 1. 감정 키(key)가 허용된 10가지 종류인지 확인
+    if not set(value.keys()).issubset(ALLOWED_EMOTIONS):
+        raise ValueError("Invalid emotion keys provided.")
+
+    # 2. 10가지 감정이 모두 포함되었는지 확인
+    if len(value) != len(ALLOWED_EMOTIONS):
+        raise ValueError("All 10 emotion values must be provided.")
+
+    # 3. 감정 강도(intensity)가 유효한 범위(0-4)인지 확인
+    for intensity in value.values():
+        if not 0 <= intensity <= 4:  # 강도 범위를 0-4로 가정
+            raise ValueError("Emotion intensity must be between 0 and 4.")
+
+    return value
+
+
 class JournalCreateRequest(BaseModel):
     title: Annotated[str, AfterValidator(validate_title)]
     content: Annotated[str, AfterValidator(validate_content)]
     image_urls: Annotated[list[str] | None, AfterValidator(validate_url)] = None
+    emotions: Annotated[dict[str, int], AfterValidator(validate_emotions)]
 
 
 class JournalUpdateRequest(BaseModel):

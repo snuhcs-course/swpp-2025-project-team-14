@@ -44,12 +44,14 @@ class JournalService:
         user_id: int,
         title: str,
         content: str,
+        emotions: dict[str, int],
         image_urls: list[str] | None = None,
     ) -> Journal:
         return self.journal_repository.add_journal(
             user_id=user_id,
             title=title,
             content=content,
+            emotions=emotions,
             image_urls=image_urls,
         )
 

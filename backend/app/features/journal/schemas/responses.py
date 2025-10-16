@@ -6,10 +6,16 @@ from app.common.schemas import ResponseEnvelope
 from app.features.journal.models import Journal, JournalImage
 
 
+class JournalEmotionResponse(BaseModel):
+    emotion: str
+    intensity: int
+
+
 class JournalResponse(BaseModel):
     id: int
     title: str
     content: str
+    emotions: list[JournalEmotionResponse]
     image_urls: list[str] | None = None
     summary: str | None = None
     gratitude: str | None = None
@@ -21,6 +27,12 @@ class JournalResponse(BaseModel):
             id=journal.id,
             title=journal.title,
             content=journal.content,
+            emotions=[
+                JournalEmotionResponse(
+                    emotion=emotion.emotion, intensity=emotion.intensity
+                )
+                for emotion in journal.emotions
+            ],
             image_urls=[image.image_url for image in journal.images]
             if journal.images
             else None,

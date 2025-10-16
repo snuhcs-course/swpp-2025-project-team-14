@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.database.session import get_db_session
 
-from .models import Journal, JournalImage
+from .models import Journal, JournalEmotion, JournalImage
 
 
 class JournalRepository:
@@ -23,6 +23,7 @@ class JournalRepository:
         user_id: int,
         title: str,
         content: str,
+        emotions: dict[str, int],
         image_urls: list[str] | None = None,
     ) -> Journal:
         journal = Journal(
@@ -30,6 +31,12 @@ class JournalRepository:
             title=title,
             content=content,
         )
+
+        for emotion_name, intensity_value in emotions.items():
+            emotions_to_save = JournalEmotion(
+                emotion=emotion_name, intensity=intensity_value
+            )
+            journal.emotions.append(emotions_to_save)
 
         if image_urls:
             for image_url in image_urls:
