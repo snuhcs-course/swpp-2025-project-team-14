@@ -1,16 +1,16 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer
-from sqlalchemy.orm import Session
 
 from app.common.authorization import get_current_user
 from app.common.errors import PermissionDeniedError
-from app.database.session import get_db_session
 from app.features.journal.errors import JournalBadRequestError
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
+    ImageGenerateRequest,
+    ImageGenerateResponse,
     ImageUploadRequest,
     JournalCreateRequest,
     JournalUpdateRequest,
@@ -36,7 +36,7 @@ security = HTTPBearer()
 @router.post(
     "/",
     response_model=JournalResponseEnvelope,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
     summary="Create a new journal entry",
 )
 def create_journal_entry(
@@ -56,7 +56,7 @@ def create_journal_entry(
 @router.get(
     "/{journal_id}",
     response_model=JournalResponseEnvelope,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     summary="Get a journal entry by ID",
 )
 def get_journal_entry(
@@ -75,7 +75,7 @@ def get_journal_entry(
 @router.get(
     "/user/{user_id}",
     response_model=JournalCursorEnvelope,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     summary="Get all journal entries by user ID with pagination",
 )
 def get_journal_entries_by_user(
@@ -94,7 +94,7 @@ def get_journal_entries_by_user(
 @router.get(
     "/search",
     response_model=JournalListResponseEnvelope,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     summary="일기 검색 (제목, 기간)",
     description="""
     다양한 검색 조건(쿼리 파라미터)을 조합하여 일기를 검색합니다.
@@ -126,7 +126,7 @@ def search_journals(
 @router.patch(
     "/{journal_id}",
     response_model=JournalResponseEnvelope,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     summary="Update a journal entry by ID",
 )
 def update_journal_entry(
@@ -149,7 +149,7 @@ def update_journal_entry(
 @router.delete(
     "/{journal_id}",
     response_model=JournalResponseEnvelope,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     summary="Delete a journal entry by ID",
 )
 def delete_journal_entry(
@@ -166,7 +166,7 @@ def delete_journal_entry(
 @router.post(
     "/{journal_id}/image",
     response_model=PresignedUrlResponse,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
     summary="Generate a presigned URL for image upload",
     description="This is async endpoint because it interacts with external services (AWS S3).",
 )
@@ -174,17 +174,16 @@ async def generate_image_upload_url(
     journal_id: int,
     journal_service: Annotated[JournalService, Depends()],
     payload: ImageUploadRequest,
-    db: Session = Depends(get_db_session),
 ) -> PresignedUrlResponse:
     return await journal_service.create_image_presigned_url(
-        db=db, journal_id=journal_id, payload=payload
+        journal_id=journal_id, payload=payload
     )
 
 
 @router.post(
     "/{journal_id}/image/complete",
     response_model=JournalImageResponse,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
     summary="Complete image upload",
     description="This endpoint is called to complete the image upload process; After client uploads the image to the presigned URL, it calls this endpoint to save the JournalImage record in DB.",
 )
@@ -192,11 +191,30 @@ async def complete_image_upload(
     journal_id: int,
     journal_service: Annotated[JournalService, Depends()],
     payload: ImageCompletionRequest,
-    db: Session = Depends(get_db_session),
 ) -> JournalImageResponseEnvelope:
     journal_image = await journal_service.complete_image_upload(
-        db=db, journal_id=journal_id, payload=payload
+        journal_id=journal_id, payload=payload
     )
     return JournalImageResponseEnvelope(
         data=JournalImageResponse.from_journal_image(journal_image)
     )
+
+
+@router.post(
+    "/journals/{journal_id}/generate-image",
+    response_model=ImageGenerateResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Request AI image generation for a journal entry",
+    description="This endpoint requests AI image generation based on the provided prompt and associates the generated image with the specified journal entry.",
+)
+async def request_journal_image_generation(
+    journal_id: int,
+    journal_service: Annotated[JournalService, Depends()],
+    request: ImageGenerateRequest,
+) -> ImageGenerateResponse:
+    if request.journal_id != journal_id:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Path journal_id and body journal_id must match.",
+        )
+    return await journal_service.request_image_generation(request=request)

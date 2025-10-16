@@ -54,7 +54,10 @@ class JournalImage(Base):
         ForeignKey("journals.id", ondelete="CASCADE"), nullable=False
     )
 
-    image_url: Mapped[str] = mapped_column(String(1024), nullable=False)
+    image_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    job_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, unique=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
 
     # (Many to One)

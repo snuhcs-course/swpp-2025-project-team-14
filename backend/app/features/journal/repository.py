@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
-from typing import Annotated
+from typing import IO, Annotated
 
 import boto3
+import httpx
 from botocore.exceptions import ClientError
 from fastapi import Depends
 from fastapi.concurrency import run_in_threadpool
@@ -107,6 +108,30 @@ class JournalRepository:
         self.session.flush()
         return journal_image
 
+    def create_image_generation_job(self, journal_id: int, job_id: str) -> JournalImage:
+        """AI 이미지 생성 Job 레코드를 생성합니다. 최종 이미지 URL은 아직 없습니다."""
+        journal_image_job = JournalImage(
+            journal_id=journal_id, job_id=job_id, image_url=None
+        )
+        self.session.add(journal_image_job)
+        self.session.flush()
+        return journal_image_job
+
+    def update_image_generation_url_by_job_id(
+        self, job_id: str, image_url: str
+    ) -> JournalImage | None:
+        """Job ID로 레코드를 찾아 최종 이미지 URL을 업데이트합니다."""
+        journal_image = (
+            self.session.query(JournalImage)
+            .filter(JournalImage.job_id == job_id)
+            .first()
+        )
+        if journal_image:
+            journal_image.image_url = image_url
+            journal_image.job_id = None  # 더 이상 필요 없으므로 초기화
+        self.session.flush()
+        return journal_image
+
 
 class S3Repository:
     def __init__(self):
@@ -148,3 +173,32 @@ class S3Repository:
                 return False
             else:
                 raise e
+
+    async def upload_file_object(
+        self, file_obj: IO[bytes], s3_key: str, content_type: str
+    ) -> dict | None:
+        try:
+            await run_in_threadpool(
+                self.s3_client.upload_fileobj,
+                Fileobj=file_obj,
+                Bucket=self.bucket_name,
+                Key=s3_key,
+                ExtraArgs={"ContentType": content_type},
+            )
+            file_url = f"https://{self.bucket_name}.s3.{settings.AWS_REGION}.amazonaws.com/{s3_key}"
+            return {"file_url": file_url, "s3_key": s3_key}
+        except ClientError:
+            return None
+
+
+class ImageGenerationRepository:
+    def __init__(self):
+        self.base_url = settings.IMAGE_GENERATION_URL_BASE
+        self.client = httpx.AsyncClient()
+
+    async def enqueue_image_generation(self, prompt: str, journal_id: int) -> dict:
+        # 웹훅에 journal_id가 필요하므로 메타데이터로 함께 전달
+        payload = {"prompt": prompt, "metadata": {"journal_id": journal_id}}
+        response = await self.client.post(f"{self.base_url}/enqueue", json=payload)
+        response.raise_for_status()
+        return response.json()

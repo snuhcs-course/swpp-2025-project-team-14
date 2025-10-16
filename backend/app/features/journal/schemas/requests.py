@@ -79,10 +79,35 @@ class JournalUpdateRequest(BaseModel):
 
 
 class ImageUploadRequest(BaseModel):
+    """클라이언트가 이미지 업로드를 요청할 때 보내는 데이터"""
+
     filename: Annotated[str, AfterValidator(validate_filename)]
     content_type: Annotated[str, AfterValidator(validate_content_type)]
 
 
 class ImageCompletionRequest(BaseModel):
+    """ "클라이언트가 이미지 업로드 완료를 알릴 때 보내는 데이터"""
+
     image_url: Annotated[str, AfterValidator(validate_url)]
     s3_key: str
+
+
+class ImageGenerateRequest(BaseModel):
+    """클라이언트가 이미지 생성을 요청할 때 보내는 데이터"""
+
+    journal_id: int
+    prompt_text: str
+
+
+class ImageGenerateResponse(BaseModel):
+    """이미지 생성 요청 후 클라이언트에게 반환하는 데이터"""
+
+    job_id: str
+    status: str
+
+
+class ImageWebhookResponse(BaseModel):
+    """웹훅 처리 완료 후 GPU 서버에게 반환하는 데이터"""
+
+    status: str
+    image_url: str
