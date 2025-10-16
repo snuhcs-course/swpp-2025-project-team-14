@@ -101,6 +101,12 @@ class JournalRepository:
 
         return query.order_by(Journal.created_at.desc()).all()
 
+    def create_journal_image(self, journal_id: int, image_url: str) -> JournalImage:
+        journal_image = JournalImage(journal_id=journal_id, image_url=image_url)
+        self.session.add(journal_image)
+        self.session.flush()
+        return journal_image
+
 
 class S3Repository:
     def __init__(self):
@@ -129,3 +135,16 @@ class S3Repository:
             return {"presigned_url": presigned_url, "file_url": final_file_url}
         except ClientError:
             return None
+
+    async def check_file_exists(self, s3_key: str) -> bool:
+        try:
+            await run_in_threadpool(
+                self.s3_client.head_object, Bucket=self.bucket_name, Key=s3_key
+            )
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                # File does not exist in S3
+                return False
+            else:
+                raise e

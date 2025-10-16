@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.security import HTTPBearer
-from pytest import Session
+from sqlalchemy.orm import Session
 
 from app.common.authorization import get_current_user
 from app.common.errors import PermissionDeniedError
@@ -17,6 +17,7 @@ from app.features.journal.schemas.requests import (
 from app.features.journal.schemas.responses import (
     JournalCursorEnvelope,
     JournalCursorResponse,
+    JournalImageResponse,
     JournalListResponse,
     JournalListResponseEnvelope,
     JournalResponse,
@@ -165,6 +166,7 @@ def delete_journal_entry(
     response_model=PresignedUrlResponse,
     status_code=201,
     summary="Generate a presigned URL for image upload",
+    description="This is async endpoint because it interacts with external services (AWS S3).",
 )
 async def generate_image_upload_url(
     journal_id: int,
@@ -174,4 +176,22 @@ async def generate_image_upload_url(
 ) -> PresignedUrlResponse:
     return await journal_service.create_image_presigned_url(
         db=db, journal_id=journal_id, payload=payload
+    )
+
+
+@router.post(
+    "/{journal_id}/image/complete",
+    response_model=JournalImageResponse,
+    status_code=201,
+    summary="Complete image upload",
+    description="This endpoint is called to complete the image upload process; After client uploads the image to the presigned URL, it calls this endpoint to save the JournalImage record in DB.",
+)
+async def complete_image_upload(
+    journal_id: int,
+    journal_service: Annotated[JournalService, Depends()],
+    s3_key: str = Query(..., description="The S3 key of the uploaded image"),
+    db: Session = Depends(get_db_session),
+) -> JournalImageResponse:
+    return await journal_service.complete_image_upload(
+        db=db, journal_id=journal_id, s3_key=s3_key
     )

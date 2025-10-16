@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.concurrency import run_in_threadpool
-from pytest import Session
+from sqlalchemy.orm import Session
 
 from app.features.journal.errors import (
     ImageUploadError,
@@ -118,3 +118,25 @@ class JournalService:
             raise ImageUploadError("Could not generate S3 presigned URL.")
 
         return PresignedUrlResponse(**url_data, s3_key=s3_key)
+
+    async def complete_image_upload(
+        self, db: Session, journal_id: int, image_url: str, s3_key: str
+    ) -> None:
+        file_exists = await self.s3_repository.check_file_exists(s3_key)
+        if not file_exists:
+            raise ImageUploadError("Uploaded image not found in S3.")
+        # 동기 DB 작업을 스레드 풀에서 실행
+        find_journal_task = partial(
+            self.journal_repository.get_journal_by_id, db=db, journal_id=journal_id
+        )
+        journal = await run_in_threadpool(find_journal_task)
+
+        if not journal:
+            raise JournalNotFoundError(journal_id)
+
+        # 이미지 URL을 Journal에 연결
+        return await run_in_threadpool(
+            self.journal_repository.create_journal_image,
+            journal_id=journal_id,
+            image_url=image_url,
+        )

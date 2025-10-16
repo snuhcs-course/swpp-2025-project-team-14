@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.common.schemas import ResponseEnvelope
-from app.features.journal.models import Journal
+from app.features.journal.models import Journal, JournalImage
 
 
 class JournalResponse(BaseModel):
@@ -68,3 +68,23 @@ class PresignedUrlResponse(BaseModel):
     presigned_url: str
     file_url: str
     s3_key: str
+
+
+class JournalImageResponse(BaseModel):
+    id: int
+    journal_id: int
+    image_url: str
+    created_at: datetime
+
+    @staticmethod
+    def from_journal_image(journal_image: JournalImage) -> "JournalImageResponse":
+        return JournalImageResponse(
+            id=journal_image.id,
+            journal_id=journal_image.journal_id,
+            image_url=journal_image.image_url,
+            created_at=journal_image.created_at,
+        )
+
+
+class JournalImageResponseEnvelope(ResponseEnvelope):
+    data: JournalImageResponse

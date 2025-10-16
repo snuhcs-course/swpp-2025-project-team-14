@@ -81,3 +81,8 @@ class JournalUpdateRequest(BaseModel):
 class ImageUploadRequest(BaseModel):
     filename: Annotated[str, AfterValidator(validate_filename)]
     content_type: Annotated[str, AfterValidator(validate_content_type)]
+
+
+class ImageCompletionRequest(BaseModel):
+    image_url: Annotated[str, AfterValidator(validate_url)]
+    s3_key: str
