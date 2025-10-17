@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.database.schemas import journal_schema as schema
-from app.database.models import journal_model as model
+from backend.app.features.journal import journal_schema as schema
+from backend.app.features.journal import journal_model as model
 
 def create_journal(db: Session, journal: schema.JournalCreate):
     db_journal = model.Journal(**journal.dict())

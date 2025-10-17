@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from app.database.session import get_db_session as get_db
-from app.database.schemas.value_map_schema import ValueMapResponse
-from app.database.crud import value_map_crud
+from backend.app.features.value_map.value_map_schema import ValueMapResponse
+from backend.app.features.value_map import value_map_crud
 
 router = APIRouter(prefix="/value-maps", tags=["Value Maps"])
 

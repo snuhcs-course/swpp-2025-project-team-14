@@ -3,8 +3,8 @@ load_dotenv()
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from app.database.crud import question_crud
-from app.database.schemas import question_schema as schema
+from backend.app.features.question import question_crud
+from backend.app.features.question import question_schema as schema
 from sqlalchemy.orm import Session
 from langchain.schema.runnable import RunnableMap
 from .prompt import emotion_prompt, question_prompt

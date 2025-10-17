@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.database.models.value_map_model import ValueMap
-from app.database.schemas.value_map_schema import ValueMapCreate
+from backend.app.features.value_map.value_map_model import ValueMap
+from backend.app.features.value_map.value_map_schema import ValueMapCreate
 
 def create_value_map(db: Session, value_map_data: ValueMapCreate):
     db_value_map = ValueMap(**value_map_data.dict())

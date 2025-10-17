@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.database.session import get_db_session as get_db
-from app.features.selfaware.service import generate_selfaware_question
-from app.database.schemas import question_schema as schema
-from app.database.schemas.question_schema import QuestionGenerateRequest
+from backend.app.features.question.service import generate_selfaware_question
+from backend.app.features.question import question_schema as schema
+from backend.app.features.question.question_schema import QuestionGenerateRequest
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
@@ -31,7 +31,7 @@ def get_user_questions(user_id: int, db: Session = Depends(get_db)):
     """
     특정 사용자의 질문 목록을 조회합니다.
     """
-    from app.database.crud import question_crud
+    from backend.app.features.question import question_crud
     return question_crud.get_user_questions(db, user_id)
 
 @router.get("/{question_id}", response_model=schema.Question)
@@ -39,7 +39,7 @@ def get_question(question_id: int, db: Session = Depends(get_db)):
     """
     특정 질문을 조회합니다.
     """
-    from app.database.crud import question_crud
+    from backend.app.features.question import question_crud
     question = question_crud.get_question(db, question_id)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")

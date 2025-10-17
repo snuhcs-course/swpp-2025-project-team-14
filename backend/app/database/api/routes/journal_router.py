@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session as get_db
-from app.database.schemas import journal_schema as schema
-from app.database.crud import journal_crud as crud
+from backend.app.features.journal import journal_schema as schema
+from backend.app.features.journal import journal_crud as crud
 
 router = APIRouter(prefix="/journals", tags=["Journal"])
 

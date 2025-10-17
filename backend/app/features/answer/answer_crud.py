@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.database.schemas import answer_schema as schema
-from app.database.models import answer_model as model
+from backend.app.features.answer import answer_schema as schema
+from backend.app.features.answer import answer_model as model
 
 def create_answer(db: Session, answer: schema.AnswerCreate):
     db_answer = model.Answer(**answer.dict())

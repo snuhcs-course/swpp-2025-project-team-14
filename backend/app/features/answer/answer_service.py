@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from app.database.schemas import answer_schema as schema
-from app.database.crud import answer_crud, question_crud
+from backend.app.features.answer import answer_schema as schema
+from backend.app.features.answer import answer_crud
+from backend.app.features.question import question_crud
 
 def create_answer(db: Session, answer: schema.AnswerCreate):
     """

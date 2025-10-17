@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session as get_db
-from app.database.schemas import answer_schema as schema
-from app.features.selfaware import answer_service
+from backend.app.features.answer import answer_schema as schema
+from backend.app.features.answer import answer_service
 
 router = APIRouter(prefix="/answers", tags=["answers"])
 
