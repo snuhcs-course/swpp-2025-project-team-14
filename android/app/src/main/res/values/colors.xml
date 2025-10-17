@@ -11,4 +11,13 @@
     <color name="accent">#743600</color>
     <color name="accent_alt">#422B0D</color>
     <color name="navigator">#CFC9B9</color>
+    <!-- Emotion Colors -->
+    <color name="emotion_sad_blue">#A1BDE1</color>
+    <color name="emotion_anxious_purple">#B1A8E8</color>
+    <color name="emotion_angry_red">#E8A8A8</color>
+    <color name="emotion_lethargic_gray">#C4C4C4</color>
+    <color name="emotion_calm_green">#A8E8C5</color>
+    <color name="emotion_excited_pink">#E8A8C4</color>
+    <color name="emotion_happy_orange">#E8C5A8</color>
+
 </resources>

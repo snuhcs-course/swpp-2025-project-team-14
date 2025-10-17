@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp"
+    tools:background="@color/bg">
+
+    <!-- 화면 중앙 정렬을 위한 가이드라인 -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <!-- 감정 그룹 (전체) -->
+    <LinearLayout
+        android:id="@+id/emotion_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/guideline_center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 1행: 슬픔 - 행복 -->
+        <include layout="@layout/item_emotion_row"
+            android:id="@+id/row_sad_happy" />
+
+        <!-- 2행: 불안 - 자신감 -->
+        <include layout="@layout/item_emotion_row"
+            android:id="@+id/row_anxious_confident"/>
+
+        <!-- 3행: 짜증/분노 - 편안 -->
+        <include layout="@layout/item_emotion_row"
+            android:id="@+id/row_angry_calm" />
+
+        <!-- 4행: 지루함 - 흥미/설렘 -->
+        <include layout="@layout/item_emotion_row"
+            android:id="@+id/row_bored_excited" />
+
+        <!-- 5행: 무기력 - 활력 -->
+        <include layout="@layout/item_emotion_row"
+            android:id="@+id/row_lethargic_energetic" />
+
+    </LinearLayout>
+
+
+    <!-- 상단 타이틀 -->
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="오늘 하루 어떠셨나요?"
+        android:textColor="@color/text_primary"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/tv_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:text="지금의 감정을 기록해주세요."
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/emotion_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

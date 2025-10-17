@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?><!-- 이 파일이 하나의 감정 행을 정의합니다. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <!-- 왼쪽 감정 텍스트 -->
+    <TextView
+        android:id="@+id/tv_emotion_left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="슬픔"
+        android:textStyle="bold"
+        android:textColor="@color/emotion_sad_blue"/>
+
+    <!-- 5개의 라디오 버튼을 담는 그룹 -->
+    <RadioGroup
+        android:id="@+id/radio_group_emotion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- 왼쪽 끝 버튼 -->
+        <RadioButton
+            android:id="@+id/rb_left"
+            style="@style/EmotionRadioButtonStyle"
+            android:backgroundTint="@color/emotion_sad_blue"/>
+
+        <!-- 중간 버튼들 -->
+        <RadioButton
+            android:id="@+id/rb_mid_left"
+            style="@style/EmotionRadioButtonStyle"
+            android:backgroundTint="#B9CADB"/>
+
+        <RadioButton
+            android:id="@+id/rb_center"
+            style="@style/EmotionRadioButtonStyle"
+            android:backgroundTint="#CACACA"/>
+
+        <RadioButton
+            android:id="@+id/rb_mid_right"
+            style="@style/EmotionRadioButtonStyle"
+            android:backgroundTint="#DBCDC0"/>
+
+        <!-- 오른쪽 끝 버튼 -->
+        <RadioButton
+            android:id="@+id/rb_right"
+            style="@style/EmotionRadioButtonStyle"
+            android:backgroundTint="@color/emotion_happy_orange"/>
+
+    </RadioGroup>
+
+    <!-- 오른쪽 감정 텍스트 -->
+    <TextView
+        android:id="@+id/tv_emotion_right"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:text="행복"
+        android:textStyle="bold"
+        android:textColor="@color/emotion_happy_orange"/>
+
+</LinearLayout>
