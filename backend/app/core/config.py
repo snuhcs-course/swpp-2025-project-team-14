@@ -1,7 +1,7 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV = os.getenv("ENV", "prod")
+ENV = os.getenv("ENV", "local")
 assert ENV in ("local", "prod")
 
 class Settings(BaseSettings):
@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     DB_NAME: str
     
     DATABASE_URL: str
+
+    openai_api_key: str | None = None
+    langchain_tracing_v2: str | None = None
+    langchain_project: str | None = None
 
     model_config = SettingsConfigDict(env_file=f".env.{ENV}", env_file_encoding="utf-8")
 
