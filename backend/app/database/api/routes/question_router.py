@@ -17,7 +17,6 @@ def generate_question(request: QuestionGenerateRequest, db: Session = Depends(ge
     try:
         question = generate_selfaware_question(
             db=db,
-            journal_content=request.journal_content,
             user_id=request.user_id
         )
         return question
