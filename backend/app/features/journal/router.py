@@ -20,10 +20,12 @@ from app.features.journal.schemas.responses import (
     JournalCursorResponse,
     JournalImageResponse,
     JournalImageResponseEnvelope,
+    JournalKeywordListResponseEnvelope,
     JournalListResponse,
     JournalListResponseEnvelope,
     JournalResponse,
     JournalResponseEnvelope,
+    KeywordEmotionAssociationItem,
     PresignedUrlResponse,
 )
 from app.features.journal.service import JournalService
@@ -219,3 +221,29 @@ async def request_journal_image_generation(
             "Path journal_id and body journal_id must match.",
         )
     return await journal_service.request_image_generation(request=request)
+
+
+@router.post(
+    "/{journal_id}/analyze",
+    status_code=202,
+    summary="Analyze journal and store keywords with emotion associations",
+    description="Using OpenAI's LLM, extract keywords from the journal and associate them with emotions present in the journal.",
+)
+async def analyze_journal(
+    journal_id: int,
+    journal_service: Annotated[JournalService, Depends()],
+    user: User = Depends(get_current_user),
+) -> JournalKeywordListResponseEnvelope:
+    if journal_service.get_journal_owner(journal_id) != user.id:
+        raise PermissionDeniedError()
+    created_keywords_list = (
+        await journal_service.extract_keywords_with_emotion_associations(
+            journal_id=journal_id
+        )
+    )
+    return JournalKeywordListResponseEnvelope(
+        data=[
+            KeywordEmotionAssociationItem.from_journal_keyword(kw)
+            for kw in created_keywords_list
+        ]
+    )

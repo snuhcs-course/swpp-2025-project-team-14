@@ -41,9 +41,6 @@ class Journal(Base):
     images: Mapped[list[JournalImage]] = relationship(
         back_populates="journal", cascade="all, delete-orphan"
     )
-    causalities: Mapped[list[JournalCausality]] = relationship(
-        back_populates="journal", cascade="all, delete-orphan"
-    )
 
 
 class JournalImage(Base):
@@ -78,10 +75,6 @@ class JournalEmotion(Base):
 
     # (Many to One)
     journal: Mapped[Journal] = relationship(back_populates="emotions")
-    # (One to Many)
-    keyword_causality: Mapped[list[JournalCausality]] = relationship(
-        back_populates="emotion", cascade="all, delete-orphan"
-    )
 
 
 class JournalKeyword(Base):
@@ -93,35 +86,33 @@ class JournalKeyword(Base):
     )
 
     keyword: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    emotion: Mapped[str] = mapped_column(String(50), nullable=False)
+    weight: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
 
     # (Many to One)
     journal: Mapped[Journal] = relationship(back_populates="keywords")
-    # (One to Many)
-    emotion_causality: Mapped[list[JournalCausality]] = relationship(
-        back_populates="keyword", cascade="all, delete-orphan"
-    )
 
 
-class JournalCausality(Base):
-    __tablename__ = "journal_causalities"
+# class JournalCausality(Base):
+#     __tablename__ = "journal_causalities"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    emotion_id: Mapped[int] = mapped_column(
-        ForeignKey("journal_emotions.id", ondelete="CASCADE"), nullable=False
-    )
-    keyword_id: Mapped[int] = mapped_column(
-        ForeignKey("journal_keywords.id", ondelete="CASCADE"), nullable=False
-    )
-    journal_id: Mapped[int] = mapped_column(
-        ForeignKey("journals.id", ondelete="CASCADE")
-    )
+#     emotion_id: Mapped[int] = mapped_column(
+#         ForeignKey("journal_emotions.id", ondelete="CASCADE"), nullable=False
+#     )
+#     keyword_id: Mapped[int] = mapped_column(
+#         ForeignKey("journal_keywords.id", ondelete="CASCADE"), nullable=False
+#     )
+#     journal_id: Mapped[int] = mapped_column(
+#         ForeignKey("journals.id", ondelete="CASCADE")
+#     )
 
-    weight: Mapped[float] = mapped_column(Float, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
-    # (Many to One)
-    emotion: Mapped[JournalEmotion] = relationship(back_populates="keyword_causality")
-    keyword: Mapped[JournalKeyword] = relationship(back_populates="emotion_causality")
+#     weight: Mapped[float] = mapped_column(Float, nullable=False)
+#     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
+#     # (Many to One)
+#     emotion: Mapped[JournalEmotion] = relationship(back_populates="keyword_causality")
+#     keyword: Mapped[JournalKeyword] = relationship(back_populates="emotion_causality")
 
-    journal: Mapped[Journal] = relationship(back_populates="causalities")
+#     journal: Mapped[Journal] = relationship(back_populates="causalities")

@@ -10,8 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.database.session import get_db_session
+from app.features.journal.schemas.responses import JournalKeywordListResponseEnvelope
 
-from .models import Journal, JournalEmotion, JournalImage
+from .models import Journal, JournalEmotion, JournalImage, JournalKeyword
 
 
 class JournalRepository:
@@ -138,6 +139,24 @@ class JournalRepository:
             journal_image.job_id = None  # 더 이상 필요 없으므로 초기화
         self.session.flush()
         return journal_image
+
+    def add_keywords_emotion_associations(
+        self,
+        journal_id: int,
+        keyword_emotion_associations: JournalKeywordListResponseEnvelope,
+    ) -> list[JournalKeyword]:
+        journal_keyword_list = []
+        for entry in keyword_emotion_associations.data:
+            journal_keyword = JournalKeyword(
+                journal_id=journal_id,
+                keyword=entry.keyword,
+                emotion=entry.emotion,
+                weight=entry.value,
+            )
+            self.session.add(journal_keyword)
+            journal_keyword_list.append(journal_keyword)
+        self.session.flush()
+        return journal_keyword_list
 
 
 class S3Repository:

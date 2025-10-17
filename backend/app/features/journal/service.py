@@ -6,6 +6,8 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
 
 from app.features.journal.errors import (
     ImageUploadError,
@@ -13,7 +15,7 @@ from app.features.journal.errors import (
     JournalNotFoundError,
     JournalUpdateError,
 )
-from app.features.journal.models import Journal, JournalImage
+from app.features.journal.models import Journal, JournalImage, JournalKeyword
 from app.features.journal.repository import (
     ImageGenerationRepository,
     JournalRepository,
@@ -25,7 +27,10 @@ from app.features.journal.schemas.requests import (
     ImageGenerateResponse,
     ImageUploadRequest,
 )
-from app.features.journal.schemas.responses import PresignedUrlResponse
+from app.features.journal.schemas.responses import (
+    JournalKeywordListResponseEnvelope,
+    PresignedUrlResponse,
+)
 
 
 class JournalService:
@@ -208,3 +213,68 @@ class JournalService:
             )
 
         return updated_image
+
+    async def extract_keywords_with_emotion_associations(
+        self, journal_id: int
+    ) -> list[JournalKeyword]:
+        """
+        - journal 내용으로부터 키워드 추출
+        - 각 키워드에 대해 journal에 존재하는 감정 목록과의 연관도(0~1) 산출
+        - DB에 JournalKeyword 저장
+        """
+        # DB에서 journal 불러오기 (스레드풀)
+        find_journal = partial(
+            self.journal_repository.get_journal_by_id, journal_id=journal_id
+        )
+        journal = await run_in_threadpool(find_journal)
+        if not journal:
+            raise JournalNotFoundError(journal_id)
+
+        # 감정 목록 준비
+        emotion_names = [e.emotion for e in journal.emotions]
+        if not emotion_names:
+            raise JournalBadRequestError("저널에 감정 데이터가 없습니다.")
+
+        # journal 내용 가져오기
+        content = journal.content
+
+        prompt_text = """
+        You are given a journal content and a list of emotion labels.
+        Extract up to 10 meaningful keywords from the content.
+        For each keyword, provide a mapping of provided emotion to a float between 0 and 1 indicating association strength.
+        You should only include the emotion with the highest association strength for each keyword.
+        Also, Do not extract emotion, feeling, or subjective words as keywords. Do not extract duplicate keywords, either. There should be no overlap between keywords.
+        Return ONLY valid JSON matching the schema.
+
+        Journal content:
+        {content}
+
+        Emotions:
+        {emotion_names}
+        """
+        prompt = PromptTemplate.from_template(prompt_text)
+        llm = ChatOpenAI(model="gpt-5-nano", temperature=0).with_structured_output(
+            JournalKeywordListResponseEnvelope
+        )
+
+        # LangChain 체인 구성 및 실행
+        chain = prompt | llm
+
+        # blocking이므로 스레드풀에서 실행
+        res = await run_in_threadpool(chain.invoke, content, ", ".join(emotion_names))
+
+        if not res:
+            raise HTTPException(
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "Failed to get response from LLM.",
+            )
+
+        # DB에 저장 (스레드풀에서 repository 호출)
+        save_task = partial(
+            self.journal_repository.add_keywords_emotion_associations,
+            journal_id=journal_id,
+            keyword_emotion_associations=res,
+        )
+        created_keywords = await run_in_threadpool(save_task)
+
+        return created_keywords

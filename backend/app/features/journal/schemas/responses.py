@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.common.schemas import ResponseEnvelope
-from app.features.journal.models import Journal, JournalImage
+from app.features.journal.models import Journal, JournalImage, JournalKeyword
 
 
 class JournalEmotionResponse(BaseModel):
@@ -100,3 +100,23 @@ class JournalImageResponse(BaseModel):
 
 class JournalImageResponseEnvelope(ResponseEnvelope):
     data: JournalImageResponse
+
+
+class KeywordEmotionAssociationItem(BaseModel):
+    keyword: str
+    emotion: str
+    weight: float = Field(..., ge=0.0, le=1.0, description="association (0..1)")
+
+    @staticmethod
+    def from_journal_keyword(
+        journal_keyword: JournalKeyword,
+    ) -> "KeywordEmotionAssociationItem":
+        return KeywordEmotionAssociationItem(
+            keyword=journal_keyword.keyword,
+            emotion=journal_keyword.emotion,
+            weight=journal_keyword.weight,
+        )
+
+
+class JournalKeywordListResponseEnvelope(ResponseEnvelope):
+    data: list[KeywordEmotionAssociationItem]
