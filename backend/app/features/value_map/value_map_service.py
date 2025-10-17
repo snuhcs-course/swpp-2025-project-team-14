@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
-from app.database.crud import question_crud, answer_crud, value_map_crud
-from app.database.schemas.value_map_schema import ValueMapCreate
-from app.features.selfaware.value_map_analyzer import analyze_personality
+from backend.app.features.value_map import value_map_crud
+from backend.app.features.value_map.value_map_schema import ValueMapCreate
+from .value_map_analyzer import analyze_personality
+from backend.app.features.answer import answer_crud
+from backend.app.features.question import question_crud
 
 def analyze_user_personality(db: Session, user_id: int):
     # 1. 유저의 질문과 답변을 가져오기
