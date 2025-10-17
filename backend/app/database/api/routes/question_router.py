@@ -1,20 +1,28 @@
 # app/routers/question_router.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from app.database.session import get_db_session as get_db
 from app.features.selfaware.service import generate_selfaware_question
 from app.database.schemas import question_schema as schema
+from app.database.schemas.question_schema import QuestionGenerateRequest
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
 @router.post("/generate", response_model=schema.Question)
-def generate_question(journal_content: str, user_id: int, db: Session = Depends(get_db)):
+def generate_question(request: QuestionGenerateRequest, db: Session = Depends(get_db)):
     """
     사용자의 일기 내용을 기반으로 LangChain을 이용해 질문을 생성하고 DB에 저장합니다.
     """
     try:
-        question = generate_selfaware_question(db, journal_content, user_id)
+        question = generate_selfaware_question(
+            db=db,
+            journal_content=request.journal_content,
+            user_id=request.user_id
+        )
         return question
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=f"데이터베이스 오류 발생: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"질문 생성 중 오류 발생: {str(e)}")
 

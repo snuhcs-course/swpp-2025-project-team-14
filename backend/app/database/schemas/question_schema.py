@@ -16,3 +16,7 @@ class Question(QuestionBase):
 
     class Config:
         orm_mode = True
+
+class QuestionGenerateRequest(BaseModel):
+    journal_content: str
+    user_id: int
