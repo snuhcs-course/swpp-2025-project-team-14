@@ -63,8 +63,8 @@ class JournalService:
     def get_journal(self, journal_id: int) -> Journal | None:
         return self.journal_repository.get_journal_by_id(journal_id)
 
-    def delete_journal(self, journal: Journal) -> None:
-        journal_to_delete = self.journal_repository.get_journal_by_id(journal.id)
+    def delete_journal(self, journal_id: int) -> None:
+        journal_to_delete = self.journal_repository.get_journal_by_id(journal_id)
         self.journal_repository.delete_journal(journal_to_delete)
 
     def list_journals_by_user(
@@ -300,7 +300,8 @@ class JournalService:
         chain = prompt | llm
 
         # blocking이므로 스레드풀에서 실행
-        res = await run_in_threadpool(chain.invoke, content, ", ".join(emotion_names))
+        input_data = {"content": content, "emotion_names": ", ".join(emotion_names)}
+        res = await run_in_threadpool(chain.invoke, input_data)
 
         if not res:
             raise HTTPException(

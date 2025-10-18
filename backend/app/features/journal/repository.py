@@ -151,7 +151,7 @@ class JournalRepository:
                 journal_id=journal_id,
                 keyword=entry.keyword,
                 emotion=entry.emotion,
-                weight=entry.value,
+                weight=entry.weight,
             )
             self.session.add(journal_keyword)
             journal_keyword_list.append(journal_keyword)

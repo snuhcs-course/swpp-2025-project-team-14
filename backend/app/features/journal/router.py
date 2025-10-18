@@ -128,7 +128,6 @@ def get_journal_entry(
 
 @router.patch(
     "/{journal_id}",
-    response_model=JournalResponseEnvelope,
     status_code=status.HTTP_200_OK,
     summary="Update a journal entry by ID",
 )
@@ -152,7 +151,6 @@ def update_journal_entry(
 
 @router.delete(
     "/{journal_id}",
-    response_model=JournalResponseEnvelope,
     status_code=status.HTTP_200_OK,
     summary="Delete a journal entry by ID",
 )
@@ -186,7 +184,7 @@ async def generate_image_upload_url(
 
 @router.post(
     "/{journal_id}/image/complete",
-    response_model=JournalImageResponse,
+    response_model=JournalImageResponseEnvelope,
     status_code=status.HTTP_201_CREATED,
     summary="Complete image upload",
     description="This endpoint is called to complete the image upload process; After client uploads the image to the presigned URL, it calls this endpoint to save the JournalImage record in DB.",
@@ -227,6 +225,7 @@ async def request_journal_image_generation(
 @router.post(
     "/{journal_id}/analyze",
     status_code=202,
+    response_model=JournalKeywordListResponseEnvelope,
     summary="Analyze journal and store keywords with emotion associations",
     description="Using OpenAI's LLM, extract keywords from the journal and associate them with emotions present in the journal.",
 )
