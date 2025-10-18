@@ -15,7 +15,6 @@
     android:clickable="true"
     android:focusable="true">
 
-    <!-- 요일 (작게) -->
     <TextView
         android:id="@+id/tv_dow"
         android:layout_width="wrap_content"
@@ -25,7 +24,6 @@
         android:textColor="@color/text_secondary"
         android:maxLines="1" />
 
-    <!-- 날짜 숫자 -->
     <TextView
         android:id="@+id/tv_day"
         android:layout_width="wrap_content"
@@ -36,7 +34,6 @@
         android:layout_marginTop="2dp"
         android:maxLines="1" />
 
-    <!-- 체크 아이콘 (완료 표시). 필요 없으면 GONE 처리 -->
     <ImageView
         android:id="@+id/iv_done"
         android:layout_width="16dp"

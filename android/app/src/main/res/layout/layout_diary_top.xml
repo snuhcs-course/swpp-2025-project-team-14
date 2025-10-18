@@ -10,7 +10,6 @@
     android:paddingBottom="8dp"
     android:background="@color/bg">
 
-    <!-- 좌우 대칭을 위한 가이드라인 -->
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
         android:layout_width="wrap_content"
@@ -25,7 +24,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_end="16dp" />
 
-    <!-- 1) 헤더: Mindlog + 우측 액션(검색/설정) -->
     <TextView
         android:id="@+id/tv_brand"
         android:layout_width="wrap_content"
@@ -37,7 +35,6 @@
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <!-- 설정과 검색 버튼을 horizontal chain으로 묶어 컴팩트하게 관리 -->
     <ImageButton
         android:id="@+id/btn_settings"
         android:layout_width="48dp"
@@ -62,7 +59,6 @@
         app:layout_constraintTop_toTopOf="@id/btn_settings"
         app:layout_constraintBottom_toBottomOf="@id/btn_settings"/>
 
-    <!-- 2) 날짜 표시 -->
     <TextView
         android:id="@+id/tv_today"
         android:layout_width="wrap_content"
@@ -79,7 +75,6 @@
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@id/tv_brand"/>
 
-    <!-- 3) 주간 캘린더 (ConstraintLayout Flow 사용) -->
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/week_calendar_flow"
         android:layout_width="0dp"
@@ -92,7 +87,6 @@
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@id/tv_today"/>
 
-    <!-- 디자인 미리보기 전용 뷰들 -->
     <include layout="@layout/item_week_day" android:id="@+id/day1" tools:visibility="visible" />
     <include layout="@layout/item_week_day" android:id="@+id/day2" tools:visibility="visible" />
     <include layout="@layout/item_week_day" android:id="@+id/day3" tools:visibility="visible" />

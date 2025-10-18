@@ -14,7 +14,6 @@
     android:minHeight="96dp"
     android:padding="@dimen/space_m">
 
-    <!-- 날짜 (최상단 배치) -->
     <TextView
         android:id="@+id/tv_date"
         android:layout_width="0dp"
@@ -27,7 +26,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="2025년 10월 6일 월요일 16:58" />
 
-    <!-- 제목 -->
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="0dp"
@@ -41,7 +39,6 @@
         app:layout_constraintTop_toBottomOf="@id/tv_date"
         tools:text="오늘의 일기 제목은 조금 길어질 수 있습니다" />
 
-    <!-- 썸네일 이미지 (제목 아래, 가로로 길게) -->
     <ImageView
         android:id="@+id/iv_thumbnail"
         android:layout_width="0dp"
@@ -56,7 +53,6 @@
         tools:src="@drawable/bg_search_bar"
         tools:visibility="visible" />
 
-    <!-- 본문 미리보기 (최대 3줄) -->
     <TextView
         android:id="@+id/tv_body_preview"
         android:layout_width="0dp"
@@ -70,7 +66,6 @@
         app:layout_constraintTop_toBottomOf="@id/iv_thumbnail"
         tools:text="본문 내용이 여기에 표시됩니다. 세 줄까지 보이고 그 이상은 말줄임표로 처리되어야 합니다. 이미지가 없을 경우를 대비해 제목 바로 아래에 붙도록 제약이 설정되어 있습니다. 긴 텍스트를 테스트하기 위한 문장입니다." />
 
-    <!-- 감정/태그 칩 (있을 경우) -->
     <TextView
         android:id="@+id/chip_emotion"
         android:layout_width="wrap_content"
