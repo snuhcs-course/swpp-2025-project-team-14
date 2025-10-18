@@ -12,10 +12,10 @@ from .service import QuestionService, AnswerService, ValueMapService
 from .schemas.responses import AnswerCreateRequest, ValueMap, QuestionGenerateRequest, ValueMapCreate
 # Question
 
-router = APIRouter(prefix="/questions", tags=["questions"])
+question_router = APIRouter(prefix="/questions", tags=["questions"])
 security = HTTPBearer()
 
-@router.post("/generate",
+@question_router.post("/generate",
              status_code=201,
              summary="Generate selfaware question",
              description="Create a selfaware question based on user's journal.",
@@ -39,10 +39,9 @@ def generate_question(
 
 # Answer
 
-router = APIRouter(prefix="/answers", tags=["answers"])
-security = HTTPBearer()
+answer_router = APIRouter(prefix="/answers", tags=["answers"])
 
-@router.post("/create",
+@answer_router.post("/create",
              status_code=201,
              summary="create answer for the question",
              description="Store answer for the selfaware question",
@@ -66,15 +65,14 @@ def create_answer(
 
 # Value Map
 
-router = APIRouter(prefix="/value-maps", tags=["Value Maps"])
-security = HTTPBearer()
+value_map_router = APIRouter(prefix="/value-maps", tags=["Value Maps"])
 
-@router.post("/generate",
+@value_map_router.post("/generate",
              status_code=201,
              summary="Generate selfaware question",
              description="Create a selfaware question based on user's journal.",
              response_model=ValueMap)
-def generate_valuemap(
+def generate_value_map(
     request: ValueMapCreate,
     value_map_service: Annotated[ValueMapService, Depends()],
 ):
