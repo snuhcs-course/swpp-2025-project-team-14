@@ -2,14 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session as get_db
-from .schemas import responses as schema
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Annotated
 from datetime import datetime
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.common.schemas import ResponseEnvelope
 from .service import QuestionService, AnswerService, ValueMapService
-from .schemas.responses import AnswerCreateRequest, ValueMap, QuestionGenerateRequest, ValueMapCreate
+from .schemas.responses import AnswerCreateRequest, ValueMap, QuestionGenerateRequest, ValueMapCreate, Answer, Question
 # Question
 
 question_router = APIRouter(prefix="/questions", tags=["questions"])
@@ -19,7 +18,7 @@ security = HTTPBearer()
              status_code=201,
              summary="Generate selfaware question",
              description="Create a selfaware question based on user's journal.",
-             response_model=schema.Question)
+             response_model=Question)
 def generate_question(
     request: QuestionGenerateRequest,
     question_service: Annotated[QuestionService, Depends()],
@@ -45,7 +44,7 @@ answer_router = APIRouter(prefix="/answers", tags=["answers"])
              status_code=201,
              summary="create answer for the question",
              description="Store answer for the selfaware question",
-             response_model=schema.Answer)
+             response_model=Answer)
 def create_answer(
     request: AnswerCreateRequest,
     answer_service: Annotated[AnswerService, Depends()],
