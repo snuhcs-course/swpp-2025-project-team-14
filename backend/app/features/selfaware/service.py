@@ -67,6 +67,11 @@ class QuestionService:
 
         return question
     
+
+    def get_questions_by_id(self, question_id: int):
+        return self.question_repository.get(question_id)
+
+
     def get_questions_by_user(self, user_id: int):
         return self.question_repository.get_by_user(user_id)
 
