@@ -25,7 +25,7 @@ class JournalRepository:
         title: str,
         content: str,
         emotions: dict[str, int],
-        image_urls: list[str] | None = None,
+        gratitude: str | None = None,
     ) -> Journal:
         journal = Journal(
             user_id=user_id,
@@ -39,10 +39,8 @@ class JournalRepository:
             )
             journal.emotions.append(emotions_to_save)
 
-        if image_urls:
-            for image_url in image_urls:
-                journal_image = JournalImage(journal_id=journal.id, image_url=image_url)
-                journal.images.append(journal_image)
+        if gratitude:
+            journal.gratitude = gratitude
 
         self.session.add(journal)
         self.session.flush()
