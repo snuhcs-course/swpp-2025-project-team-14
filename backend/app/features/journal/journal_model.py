@@ -22,5 +22,3 @@ class Journal(Base):
 
     # 관계 설정 (User <-> Journal)
     user: Mapped["User"] = relationship(back_populates="journals")  # N:1 (User → Journal)
-    emotions: Mapped[Optional["Emotion"]] = relationship(back_populates="journal", cascade="all, delete-orphan")  # 1:1 (Journal → Emotion)
-    images: Mapped[Optional["JournalImage"]] = relationship(back_populates="journal", cascade="all, delete-orphan")  # 1:1 (Journal → JournalImage)
