@@ -6,6 +6,26 @@ from app.common.schemas import ResponseEnvelope
 from app.features.journal.models import Journal, JournalImage, JournalKeyword
 
 
+class KeywordEmotionAssociationItem(BaseModel):
+    keyword: str
+    emotion: str
+    weight: float = Field(..., ge=0.0, le=1.0, description="association (0..1)")
+
+    @staticmethod
+    def from_journal_keyword(
+        journal_keyword: JournalKeyword,
+    ) -> "KeywordEmotionAssociationItem":
+        return KeywordEmotionAssociationItem(
+            keyword=journal_keyword.keyword,
+            emotion=journal_keyword.emotion,
+            weight=journal_keyword.weight,
+        )
+
+
+class JournalKeywordListResponseEnvelope(ResponseEnvelope):
+    data: list[KeywordEmotionAssociationItem]
+
+
 class JournalEmotionResponse(BaseModel):
     emotion: str
     intensity: int
@@ -16,6 +36,7 @@ class JournalResponse(BaseModel):
     title: str
     content: str
     emotions: list[JournalEmotionResponse]
+    keywords: list[KeywordEmotionAssociationItem]
     image_urls: list[str] | None = None
     summary: str | None = None
     gratitude: str | None = None
@@ -32,6 +53,10 @@ class JournalResponse(BaseModel):
                     emotion=emotion.emotion, intensity=emotion.intensity
                 )
                 for emotion in journal.emotions
+            ],
+            keywords=[
+                KeywordEmotionAssociationItem.from_journal_keyword(keyword)
+                for keyword in journal.keywords
             ],
             image_urls=[image.image_url for image in journal.images]
             if journal.images
@@ -100,23 +125,3 @@ class JournalImageResponse(BaseModel):
 
 class JournalImageResponseEnvelope(ResponseEnvelope):
     data: JournalImageResponse
-
-
-class KeywordEmotionAssociationItem(BaseModel):
-    keyword: str
-    emotion: str
-    weight: float = Field(..., ge=0.0, le=1.0, description="association (0..1)")
-
-    @staticmethod
-    def from_journal_keyword(
-        journal_keyword: JournalKeyword,
-    ) -> "KeywordEmotionAssociationItem":
-        return KeywordEmotionAssociationItem(
-            keyword=journal_keyword.keyword,
-            emotion=journal_keyword.emotion,
-            weight=journal_keyword.weight,
-        )
-
-
-class JournalKeywordListResponseEnvelope(ResponseEnvelope):
-    data: list[KeywordEmotionAssociationItem]

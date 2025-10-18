@@ -32,5 +32,5 @@ def me(
         raise HTTPException(status_code=404, detail="User not found")
 
     return ProfileResponseEnvelope(
-        data=ProfileResponse(login_id=user.login_id, username=user.username)
+        data=ProfileResponse(id=user.id, login_id=user.login_id, username=user.username)
     )

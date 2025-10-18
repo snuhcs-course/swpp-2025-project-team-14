@@ -99,8 +99,8 @@ def validate_emotions(value: dict[str, int]) -> dict[str, int]:
 class JournalCreateRequest(BaseModel):
     title: Annotated[str, AfterValidator(validate_title)]
     content: Annotated[str, AfterValidator(validate_content)]
-    image_urls: Annotated[list[str] | None, AfterValidator(validate_url)] = None
     emotions: Annotated[dict[str, int], AfterValidator(validate_emotions)]
+    image_urls: Annotated[list[str] | None, AfterValidator(validate_url)] = None
 
 
 class JournalUpdateRequest(BaseModel):

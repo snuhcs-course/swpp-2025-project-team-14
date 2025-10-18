@@ -57,25 +57,6 @@ def create_journal_entry(
 
 
 @router.get(
-    "/{journal_id}",
-    response_model=JournalResponseEnvelope,
-    status_code=status.HTTP_200_OK,
-    summary="Get a journal entry by ID",
-)
-def get_journal_entry(
-    journal_id: int,
-    journal_service: Annotated[JournalService, Depends()],
-    user: User = Depends(get_current_user),
-) -> JournalResponseEnvelope:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
-    journal = journal_service.get_journal(journal_id)
-    if journal is None:
-        return JournalResponseEnvelope(data=None)
-    return JournalResponseEnvelope(data=JournalResponse.from_journal(journal))
-
-
-@router.get(
     "/user/{user_id}",
     response_model=JournalCursorEnvelope,
     status_code=status.HTTP_200_OK,
@@ -124,6 +105,25 @@ def search_journals(
         user_id=user.id, start_date=start_date, end_date=end_date, title=title
     )
     return JournalListResponseEnvelope(data=JournalListResponse.from_journals(journals))
+
+
+@router.get(
+    "/{journal_id}",
+    response_model=JournalResponseEnvelope,
+    status_code=status.HTTP_200_OK,
+    summary="Get a journal entry by ID",
+)
+def get_journal_entry(
+    journal_id: int,
+    journal_service: Annotated[JournalService, Depends()],
+    user: User = Depends(get_current_user),
+) -> JournalResponseEnvelope:
+    if journal_service.get_journal_owner(journal_id) != user.id:
+        raise PermissionDeniedError()
+    journal = journal_service.get_journal(journal_id)
+    if journal is None:
+        return JournalResponseEnvelope(data=None)
+    return JournalResponseEnvelope(data=JournalResponse.from_journal(journal))
 
 
 @router.patch(

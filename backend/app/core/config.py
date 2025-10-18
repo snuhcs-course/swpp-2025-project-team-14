@@ -36,6 +36,7 @@ class Settings(BaseSettings):
         "http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3001"
     )
     WEBHOOK_SECRET: str
+    OPENAI_API_KEY: str
 
     model_config = SettingsConfigDict(env_file=f".env.{ENV}", env_file_encoding="utf-8")
 
