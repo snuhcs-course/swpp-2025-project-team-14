@@ -8,7 +8,6 @@
     android:background="@color/bg"
     tools:context=".JournalWriteActivity">
 
-    <!-- 프래그먼트가 표시될 컨테이너 -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/write_fragment_container"
         android:layout_width="0dp"
@@ -17,9 +16,8 @@
         app:layout_constraintBottom_toTopOf="@id/button_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:layout="@layout/fragment_emotion_select"/> <!-- 미리보기용으로 첫 프래그먼트 지정 -->
+        tools:layout="@layout/fragment_emotion_select"/>
 
-    <!-- 하단 버튼 영역 -->
     <LinearLayout
         android:id="@+id/button_layout"
         android:layout_width="0dp"

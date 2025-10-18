@@ -7,23 +7,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlin.io.encoding.Base64
 
-class MainActivity : AppCompatActivity() {
-
-    // 프래그먼트 인스턴스를 한 번만 생성하여 저장해둘 변수
+class MainActivity : BaseActivity() {
     private val diaryFragment = DiaryFragment()
     private val selfAwareFragment = SelfAwareFragment()
     private val statsFragment = StatsFragment()
     private val analysisFragment = AnalysisFragment()
-
-    // 현재 활성화된 프래그먼트를 추적하기 위한 변수
     private lateinit var activeFragment: Fragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 초기 화면 설정 (매우 중요)
         if (savedInstanceState == null) {
             setupInitialFragments()
         }
@@ -32,7 +28,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupInitialFragments() {
-        // 모든 프래그먼트를 추가하되, diaryFragment만 보여주고 나머지는 숨깁니다.
         supportFragmentManager.beginTransaction().apply {
             add(R.id.fragment_container, analysisFragment, "4").hide(analysisFragment)
             add(R.id.fragment_container, statsFragment, "3").hide(statsFragment)
@@ -68,14 +63,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         fabWrite.setOnClickListener {
-            // JournalWriteActivity를 시작하는 Intent 생성
             val intent = Intent(this, JournalWriteActivity::class.java)
             startActivity(intent)
         }
     }
 
     private fun switchFragment(targetFragment: Fragment) {
-        if (targetFragment == activeFragment) return // 이미 보여주고 있는 프래그먼트면 아무것도 안 함
+        if (targetFragment == activeFragment) return
 
         supportFragmentManager.beginTransaction()
             .hide(activeFragment)

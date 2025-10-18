@@ -9,48 +9,52 @@
     android:paddingEnd="32dp"
     tools:background="@color/bg">
 
-    <!-- 화면 중앙 정렬을 위한 가이드라인 -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_center_vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5" />
-
-    <!-- 감정 그룹 (전체) -->
     <LinearLayout
         android:id="@+id/emotion_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/guideline_center_vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <!-- 1행: 슬픔 - 행복 -->
-        <include layout="@layout/item_emotion_row"
-            android:id="@+id/row_sad_happy" />
+        <include
+            android:id="@+id/row_sad_happy"
+            layout="@layout/item_emotion_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
 
-        <!-- 2행: 불안 - 자신감 -->
-        <include layout="@layout/item_emotion_row"
-            android:id="@+id/row_anxious_confident"/>
+        <include
+            android:id="@+id/row_anxious_confident"
+            layout="@layout/item_emotion_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
 
-        <!-- 3행: 짜증/분노 - 편안 -->
-        <include layout="@layout/item_emotion_row"
-            android:id="@+id/row_angry_calm" />
+        <include
+            android:id="@+id/row_angry_calm"
+            layout="@layout/item_emotion_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
 
-        <!-- 4행: 지루함 - 흥미/설렘 -->
-        <include layout="@layout/item_emotion_row"
-            android:id="@+id/row_bored_excited" />
+        <include
+            android:id="@+id/row_bored_excited"
+            layout="@layout/item_emotion_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
 
-        <!-- 5행: 무기력 - 활력 -->
-        <include layout="@layout/item_emotion_row"
-            android:id="@+id/row_lethargic_energetic" />
+        <include
+            android:id="@+id/row_lethargic_energetic"
+            layout="@layout/item_emotion_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
-
-    <!-- 상단 타이틀 -->
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
@@ -74,6 +78,5 @@
         app:layout_constraintBottom_toTopOf="@id/emotion_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

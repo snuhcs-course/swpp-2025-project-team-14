@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg">
 
-    <!-- 1. 상단 콘텐츠 영역 (화면에 고정) -->
     <include
         android:id="@+id/top_bar_layout"
         layout="@layout/layout_diary_top"
@@ -14,7 +13,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 2. 메인 스크롤 콘텐츠 (일기 피드) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_diary_feed"
         android:layout_width="0dp"
