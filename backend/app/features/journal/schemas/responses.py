@@ -110,7 +110,7 @@ class PresignedUrlResponse(BaseModel):
 class JournalImageResponse(BaseModel):
     id: int
     journal_id: int
-    image_url: str
+    s3_key: str
     created_at: datetime
 
     @staticmethod
@@ -118,7 +118,7 @@ class JournalImageResponse(BaseModel):
         return JournalImageResponse(
             id=journal_image.id,
             journal_id=journal_image.journal_id,
-            image_url=journal_image.image_url,
+            s3_key=journal_image.s3_key,
             created_at=journal_image.created_at,
         )
 

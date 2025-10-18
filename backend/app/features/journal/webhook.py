@@ -12,12 +12,20 @@ from fastapi import (
 )
 
 from app.core.config import settings
+from app.features.journal.schemas.responses import (
+    JournalImageResponse,
+    JournalImageResponseEnvelope,
+)
 from app.features.journal.service import JournalService
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
 
 
-@router.post("/image-generation-complete")
+@router.post(
+    "/image-generation-complete",
+    status_code=status.HTTP_200_OK,
+    summary="Handle image generation completion webhook",
+)
 async def handle_image_generation_webhook(
     # multipart/form-data 필드
     journal_service: Annotated[JournalService, Depends()],
@@ -35,4 +43,6 @@ async def handle_image_generation_webhook(
     updated_image = await journal_service.process_image_generation_webhook(
         job_id=job_id, journal_id=journal_id, image_file=image_file
     )
-    return {"status": "success", "image_url": updated_image.image_url}
+    return JournalImageResponseEnvelope(
+        data=JournalImageResponse.from_journal_image(updated_image)
+    )

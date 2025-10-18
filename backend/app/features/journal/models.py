@@ -51,10 +51,19 @@ class JournalImage(Base):
         ForeignKey("journals.id", ondelete="CASCADE"), nullable=False
     )
 
-    image_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    # image_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     job_id: Mapped[str | None] = mapped_column(
         String(255), nullable=True, unique=True, index=True
     )
+
+    # S3 object key: <journal_id>/<unique_filename>
+    s3_key: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+
+    # 'uploaded' | 'generated' 으로 이미지 타입 명시
+    image_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="uploaded"
+    )
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
 
     # (Many to One)

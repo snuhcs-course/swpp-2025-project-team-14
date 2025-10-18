@@ -106,7 +106,8 @@ class JournalCreateRequest(BaseModel):
 class JournalUpdateRequest(BaseModel):
     title: Annotated[str | None, AfterValidator(validate_title)] = None
     content: Annotated[str | None, AfterValidator(validate_content)] = None
-    image_url: Annotated[str | None, AfterValidator(validate_url)] = None
+    summary: str | None = None
+    gratitude: str | None = None
 
 
 class ImageUploadRequest(BaseModel):
@@ -119,7 +120,6 @@ class ImageUploadRequest(BaseModel):
 class ImageCompletionRequest(BaseModel):
     """ "클라이언트가 이미지 업로드 완료를 알릴 때 보내는 데이터"""
 
-    image_url: Annotated[str, AfterValidator(validate_url)]
     s3_key: str
 
 

@@ -144,7 +144,8 @@ def update_journal_entry(
         journal_id=journal_id,
         title=journal.title,
         content=journal.content,
-        image_url=journal.image_url,
+        summary=journal.summary,
+        gratitude=journal.gratitude,
     )
     return "Update Success"
 
@@ -204,7 +205,7 @@ async def complete_image_upload(
 
 
 @router.post(
-    "/journals/{journal_id}/generate-image",
+    "/{journal_id}/generate-image",
     response_model=ImageGenerateResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Request AI image generation for a journal entry",
