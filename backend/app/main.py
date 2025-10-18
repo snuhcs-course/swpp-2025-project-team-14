@@ -1,7 +1,10 @@
 from fastapi import FastAPI
+
+from backend.app.features.answer import answer_router
+from backend.app.features.journal import journal_router
 from .features.auth.router import router as auth_router
 from .features.user.router import router as user_router
-from app.database.api.routes import answer_router, question_router, journal_router 
+from backend.app.features.question import question_router 
 
 app = FastAPI(title='MindLog')
 
