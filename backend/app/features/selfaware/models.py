@@ -19,8 +19,19 @@ class Journal(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    # 관계 설정 (User <-> Journal)
     user: Mapped["User"] = relationship(back_populates="journals")  # N:1 (User → Journal)
+
+class Question(Base):
+    __tablename__ = "questions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="questions")
+    answers: Mapped["Answer"] = relationship(back_populates="question", uselist=False, cascade="all, delete")
 
 class Answer(Base):
     __tablename__ = "answers"
@@ -35,18 +46,6 @@ class Answer(Base):
 
     user: Mapped["User"] = relationship(back_populates="answers")
     question: Mapped["Question"] = relationship(back_populates="answers")
-
-class Question(Base):
-    __tablename__ = "questions"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
-    type: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    user: Mapped["User"] = relationship(back_populates="questions")
-    answers: Mapped[list["Answer"]] = relationship(back_populates="question", cascade="all, delete")
 
 class ValueMap(Base):
     __tablename__ = "value_maps"
