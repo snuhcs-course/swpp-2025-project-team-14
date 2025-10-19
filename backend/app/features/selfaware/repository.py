@@ -17,7 +17,7 @@ class JournalRepository:
     def create(self, journal: schema.JournalCreate) -> model.Journal:
         db_journal = model.Journal(**journal.dict())
         self.session.add(db_journal)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(db_journal)
         return db_journal
 
@@ -37,7 +37,7 @@ class JournalRepository:
             return None
         for key, value in updates.dict(exclude_unset=True).items():
             setattr(db_journal, key, value)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(db_journal)
         return db_journal
 
@@ -45,7 +45,7 @@ class JournalRepository:
         db_journal = self.get(journal_id)
         if db_journal:
             self.session.delete(db_journal)
-            self.session.commit()
+            self.session.flush()
         return db_journal
 
 
@@ -59,7 +59,7 @@ class QuestionRepository:
     def create(self, question: schema.QuestionCreate) -> model.Question:
         db_question = model.Question(**question.dict())
         self.session.add(db_question)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(db_question)
         return db_question
 
@@ -84,7 +84,7 @@ class AnswerRepository:
     def create(self, answer: schema.AnswerCreate) -> model.Answer:
         db_answer = model.Answer(**answer.dict())
         self.session.add(db_answer)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(db_answer)
         return db_answer
 
@@ -109,7 +109,7 @@ class ValueMapRepository:
     def create(self, value_map_data: schema.ValueMapCreate) -> model.ValueMap:
         db_value_map = model.ValueMap(**value_map_data.dict())
         self.session.add(db_value_map)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(db_value_map)
         return db_value_map
 
