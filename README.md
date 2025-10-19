@@ -1,7 +1,7 @@
-# SWPP Team 14 - Iteraion 2 Working Dmo
+# SWPP Team 14 - Iteraion 2 Working Demo
 
 This repository contains the working demo of iteraion 2.  
-The demo demonstrates the backend API implementation of user authorization and journal features, tested in a local Docker-based environment. AWS EC2 connection and deployment successfully completed. The backend API is now accessible through the EC2 public endpoint(only user authroization feature). In android client, user can try sign up new acount and log in feature.
+The demo demonstrates the backend API implementation of user authorization and journal features, tested in a local Docker-based environment. AWS EC2 connection and deployment successfully completed. The backend API is now accessible through the EC2 public endpoint(only user authorization feature). In android client, user can try sign up new account and log in feature.
 
 ---
 
