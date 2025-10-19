@@ -100,7 +100,7 @@ class JournalCreateRequest(BaseModel):
     title: Annotated[str, AfterValidator(validate_title)]
     content: Annotated[str, AfterValidator(validate_content)]
     emotions: Annotated[dict[str, int], AfterValidator(validate_emotions)]
-    image_urls: Annotated[list[str] | None, AfterValidator(validate_url)] = None
+    gratitude: str | None = None
 
 
 class JournalUpdateRequest(BaseModel):
