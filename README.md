@@ -94,6 +94,8 @@ These features form the foundation of a secure and scalable authentication syste
 - **Journal Search:** Search journals by title or date.
 - **Journal Update:** Edit an existing journal entry.
 - **Journal Deletion:** Delete a journal entry by ID.
+- **Journal Image Upload:** Securely upload images to AWS S3 using presigned URLs.
+- **Journal Keyword Extraction:** Extract emotion-related keywords from journals using an OpenAI LLM (via LangChain). 
 
 These features provide create, get, update, delete user's journal entry.
 
@@ -111,6 +113,9 @@ These features provide create, get, update, delete user's journal entry.
 - **Get Journal by ID:** `GET /api/v1/journal/{journal_id}`
 - **Update Journal:** `PATCH /api/v1/journal/{journal_id}`
 - **Delete Journal:** `DELETE /api/v1/journal/{journal_id}`
+- **Upload Journal Image (Generate presigned url):** `POST /api/v1/journal/{journal_id}/image`
+- **Upload Journal Image (Complete Image upload):** `POST /api/v1/journal/{journal_id}/image/complete`
+- **Extract Journal Keywords:** `POST /api/v1/journal/{journal_id}/analyze`
 
 ---
 
