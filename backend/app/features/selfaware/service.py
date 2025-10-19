@@ -31,7 +31,7 @@ class QuestionService:
         output_parser = StrOutputParser()
 
         # ✅ 1. 유저의 일기 가져오기
-        journals = self.journal_repository.get_by_user(user_id)
+        journals = self.journal_repository.list_journals_by_user(user_id)
         if not journals or len(journals) == 0:
             raise ValueError(f"User {user_id} has no journal entries.")
 
