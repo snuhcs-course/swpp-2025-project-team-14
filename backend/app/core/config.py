@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION: str = "ap-northeast-2"
-    AWS_S3_BUCKET_NAME: str = "swpp-2025-team14"
+    AWS_S3_BUCKET_NAME: str = "mindlog-s3"
 
     IMAGE_GENERATION_URL_BASE: str = (
         "http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3001"
