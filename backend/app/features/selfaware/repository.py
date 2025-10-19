@@ -8,7 +8,7 @@ import schemas.responses as schema
 
 
 # -------------------------------
-# Journal Repository
+# Journal Repository 테스트 용, merge 후 삭제 예정
 # -------------------------------
 class JournalRepository:
     def __init__(self, session: Annotated[Session, Depends(get_db_session)]) -> None:

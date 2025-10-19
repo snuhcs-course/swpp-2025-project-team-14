@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from app.features.user.models import User
 
+# Journal class는 테스트 용 merge 후 삭제 예정
 class Journal(Base):
     __tablename__ = "journals"
 
