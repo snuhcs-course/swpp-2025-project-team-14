@@ -8,8 +8,6 @@ sealed class Result<out T> {
         val code: Int? = null,          // HTTP 코드 또는 커스텀 에러 코드
         val message: String? = null,    // 에러 메시지
     ) : Result<Nothing>()
-
-    object Loading : Result<Nothing>()
 }
 
 fun <T> kotlin.Result<T>.toResult(): Result<T> =
