@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- 기본 앱 테마 -->
-    <style name="Base.Theme.MindLog" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Base.Theme.MindLog" parent="Theme.Material3.Light.NoActionBar">
         <!-- 앱 기본 색상 -->
         <item name="colorPrimary">#2C2C54</item>
         <item name="colorOnPrimary">#FFFFFF</item>
