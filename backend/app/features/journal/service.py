@@ -210,18 +210,20 @@ Emotions:
 {emotion_names}
 """)
 
-    async def request_image_generation(self, request: ImageGenerateRequest) -> str:
+    async def request_image_generation(
+        self, journal_id: int, request: ImageGenerateRequest
+    ) -> str:
         """
         일기 ID와 프롬프트를 받아 이미지를 생성하고 Base64로 반환합니다.
         """
 
         find_journal_task = partial(
             self.journal_repository.get_journal_by_id,
-            journal_id=request.journal_id,
+            journal_id=journal_id,
         )
         journal = await run_in_threadpool(find_journal_task)
         if not journal:
-            raise JournalNotFoundError(request.journal_id)
+            raise JournalNotFoundError(journal_id)
 
         try:
             prompt = await self._generate_scene_prompt_from_diary(

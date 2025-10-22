@@ -126,5 +126,4 @@ class ImageCompletionRequest(BaseModel):
 class ImageGenerateRequest(BaseModel):
     """클라이언트가 이미지 생성을 요청할 때 보내는 데이터"""
 
-    journal_id: int
     prompt_text: str

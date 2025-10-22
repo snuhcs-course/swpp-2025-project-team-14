@@ -64,7 +64,7 @@ class JournalImage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
 
     # (One to One)
-    journal: Mapped[Journal] = relationship(back_populates="images")
+    journal: Mapped[Journal] = relationship(back_populates="image")
 
 
 class JournalEmotion(Base):

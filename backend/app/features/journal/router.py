@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
@@ -224,12 +224,10 @@ async def request_journal_image_generation(
 ) -> ImageGenerateResponse:
     if journal_service.get_journal_owner(journal_id) != user.id:
         raise PermissionDeniedError()
-    if request.journal_id != journal_id:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "Path journal_id and body journal_id must match.",
-        )
-    return await journal_openai_service.request_image_generation(request=request)
+    image_base64 = await journal_openai_service.request_image_generation(
+        request=request, journal_id=journal_id
+    )
+    return ImageGenerateResponse(image_base64=image_base64)
 
 
 @router.post(
