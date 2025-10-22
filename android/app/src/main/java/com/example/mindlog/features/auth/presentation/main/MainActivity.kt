@@ -17,6 +17,7 @@ import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.features.home.presentation.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -75,8 +76,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToJournal() {
-        // startActivity(Intent(this, JournalActivity::class.java))
-        // finish()
-        Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, HomeActivity::class.java))
+        finish()
     }
 }
