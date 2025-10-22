@@ -22,7 +22,7 @@ data class Answer(
     val text: String,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val valueScores: List<ValueScore>
+    val valueScores: List<ValueScore>?
 )
 
 data class ValueScore(

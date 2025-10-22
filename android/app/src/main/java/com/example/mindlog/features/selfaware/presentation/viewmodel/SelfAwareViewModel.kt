@@ -20,8 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SelfAwareViewModel @Inject constructor(
     private val getTodayQAUseCase: GetTodayQAUseCase,
-    private val submitAnswer: SubmitAnswerUseCase,
-    private val getHistoryUseCase: GetHistoryUseCase,
+    private val submitAnswerUsecase: SubmitAnswerUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
@@ -69,7 +68,7 @@ class SelfAwareViewModel @Inject constructor(
             _state.update { it.copy(error = "답변을 입력해주세요.") }; return@launch
         }
         _state.update { it.copy(isSubmitting = true, error = null) }
-        when (val res = submitAnswer(qid, st.answerText)) {
+        when (val res = submitAnswerUsecase(qid, st.answerText)) {
             is Result.Success -> {
                 // 오늘 완료 + 최신 점수 반영
                 _state.update { it.copy(isSubmitting = false, isAnsweredToday = true) }

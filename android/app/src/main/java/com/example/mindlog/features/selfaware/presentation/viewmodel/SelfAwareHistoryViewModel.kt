@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AnswerHistoryViewModel @Inject constructor(
-    private val getHistory: GetHistoryUseCase,
+class SelfAwareHistoryViewModel @Inject constructor(
+    private val getHistoryUseCase: GetHistoryUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
@@ -33,7 +33,7 @@ class AnswerHistoryViewModel @Inject constructor(
     fun refresh() = viewModelScope.launch(dispatcher.io) {
         val s = _state.value
         _state.update { it.copy(isLoading = true, error = null) }
-        when (val res = getHistory(cursor = 1, size = s.size)) {
+        when (val res = getHistoryUseCase(cursor = 1, size = s.size)) {
             is Result.Success -> _state.update {
                 it.copy(
                     isLoading = false,
@@ -50,7 +50,7 @@ class AnswerHistoryViewModel @Inject constructor(
         val s = _state.value
         if (s.isLoading || s.isEnd) return@launch
         _state.update { it.copy(isLoading = true) }
-        when (val res = getHistory(cursor = s.cursor + 1, size = s.size)) {
+        when (val res = getHistoryUseCase(cursor = s.cursor + 1, size = s.size)) {
             is Result.Success -> _state.update {
                 val more = res.data.items
                 it.copy(

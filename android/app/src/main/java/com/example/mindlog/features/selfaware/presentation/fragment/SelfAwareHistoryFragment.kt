@@ -13,19 +13,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentSelfAwareHistoryBinding
 import com.example.mindlog.features.selfaware.presentation.adapter.SelfAwareHistoryAdapter
-import com.example.mindlog.features.selfaware.presentation.viewmodel.AnswerHistoryViewModel
+import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareHistoryViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 
 @AndroidEntryPoint
-class AnswerHistoryFragment : Fragment(R.layout.fragment_self_aware_history) {
+class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) {
 
     private var _binding: FragmentSelfAwareHistoryBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AnswerHistoryViewModel by viewModels()
+    private val viewModel: SelfAwareHistoryViewModel by viewModels()
     private val adapter by lazy { SelfAwareHistoryAdapter() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
