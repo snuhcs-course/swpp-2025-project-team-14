@@ -16,5 +16,4 @@ class User(Base):
     journals: Mapped[List["Journal"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     questions: Mapped[List["Question"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     answers: Mapped[List["Answer"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    value_scores: Mapped[List["ValueScore"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     value_maps: Mapped[List["ValueMap"]] = relationship(back_populates="user", cascade="all, delete-orphan")
