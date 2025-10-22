@@ -108,20 +108,20 @@ class JournalRepository:
 
         return query.order_by(Journal.created_at.desc()).all()
 
-    def create_journal_image(self, journal_id: int, image_url: str) -> JournalImage:
-        journal_image = JournalImage(journal_id=journal_id, image_url=image_url)
-        self.session.add(journal_image)
-        self.session.flush()
-        return journal_image
+    # def create_journal_image(self, journal_id: int, image_url: str) -> JournalImage:
+    #     journal_image = JournalImage(journal_id=journal_id, image_url=image_url)
+    #     self.session.add(journal_image)
+    #     self.session.flush()
+    #     return journal_image
 
-    def create_image_generation_job(self, journal_id: int, job_id: str) -> JournalImage:
-        """AI 이미지 생성 Job 레코드를 생성합니다. 최종 s3_key는 아직 없습니다."""
-        journal_image_job = JournalImage(
-            journal_id=journal_id, job_id=job_id, s3_key=None
-        )
-        self.session.add(journal_image_job)
-        self.session.flush()
-        return journal_image_job
+    # def create_image_generation_job(self, journal_id: int, job_id: str) -> JournalImage:
+    #     """AI 이미지 생성 Job 레코드를 생성합니다. 최종 s3_key는 아직 없습니다."""
+    #     journal_image_job = JournalImage(
+    #         journal_id=journal_id, job_id=job_id, s3_key=None
+    #     )
+    #     self.session.add(journal_image_job)
+    #     self.session.flush()
+    #     return journal_image_job
 
     def update_image_generation_url_by_job_id(
         self, job_id: str, image_url: str
@@ -156,16 +156,12 @@ class JournalRepository:
         self.session.flush()
         return journal_keyword_list
 
-    def get_image_by_journal_and_type(
-        self, journal_id: int, image_type: str
-    ) -> JournalImage | None:
+    def get_image_by_journal_id(self, journal_id: int) -> JournalImage | None:
         return (
             self.session.query(JournalImage)
             .filter(
                 JournalImage.journal_id == journal_id,
-                JournalImage.image_type == image_type,
             )
-            .order_by(JournalImage.created_at.desc())
             .first()
         )
 
@@ -179,11 +175,9 @@ class JournalRepository:
         journal_id: int,
         existing_image: JournalImage | None = None,
         s3_key: str | None = None,
-        job_id: str | None = None,
-        image_type: str = "uploaded",
     ) -> JournalImage:
         """
-        같은 journal_id + image_type 의 기존 이미지를 삭제하고 새 레코드 생성.
+        같은 journal_id의 기존 이미지를 삭제하고 새 레코드 생성.
         기존 이미지가 없다면 신규 이미지 레코드 생성.
         반환값은 새로 생성된 JournalImage 객체.
         """
@@ -195,8 +189,6 @@ class JournalRepository:
         new_image = JournalImage(
             journal_id=journal_id,
             s3_key=s3_key,
-            job_id=job_id,
-            image_type=image_type,
         )
         self.session.add(new_image)
         self.session.flush()

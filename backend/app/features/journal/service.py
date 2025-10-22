@@ -157,9 +157,8 @@ class JournalService:
 
         # 기존 업로드 이미지가 있으면 S3에서 삭제
         existing = await run_in_threadpool(
-            self.journal_repository.get_image_by_journal_and_type,
+            self.journal_repository.get_image_by_journal_id,
             journal_id,
-            "uploaded",
         )
         if existing and existing.s3_key:
             # S3에서 삭제
@@ -171,8 +170,6 @@ class JournalService:
             journal_id=journal_id,
             existing_image=existing,
             s3_key=payload.s3_key,
-            job_id=None,
-            image_type="uploaded",
         )
         journal_image = await run_in_threadpool(replace_task)
         return journal_image
@@ -226,9 +223,8 @@ class JournalService:
 
         # 기존 생성 이미지가 있으면 S3에서 삭제 (기존 image_type='generated' 레코드 찾기)
         existing_generated = await run_in_threadpool(
-            self.journal_repository.get_image_by_journal_and_type,
+            self.journal_repository.get_image_by_journal_id,
             journal_id,
-            "generated",
         )
         if existing_generated and existing_generated.s3_key:
             # S3에서 삭제

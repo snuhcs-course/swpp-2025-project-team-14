@@ -37,7 +37,7 @@ class JournalResponse(BaseModel):
     content: str
     emotions: list[JournalEmotionResponse]
     keywords: list[KeywordEmotionAssociationItem]
-    image_s3_keys: list[tuple[str, str]]
+    image_s3_keys: str | None = None
     summary: str | None = None
     gratitude: str | None = None
     created_at: datetime
@@ -58,9 +58,7 @@ class JournalResponse(BaseModel):
                 KeywordEmotionAssociationItem.from_journal_keyword(keyword)
                 for keyword in journal.keywords
             ],
-            image_s3_keys=[
-                (image.s3_key, image.image_type) for image in journal.images
-            ],
+            image_s3_keys=journal.image.s3_key if journal.image else None,
             summary=journal.summary,
             gratitude=journal.gratitude,
             created_at=journal.created_at,
