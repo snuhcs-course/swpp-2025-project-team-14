@@ -66,6 +66,7 @@ dependencies {
 
     // Hilt DI
     implementation("com.google.dagger:hilt-android:2.51")
+    implementation(libs.androidx.fragment.testing)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
     // Hilt ViewModel & Navigation support
     implementation("androidx.hilt:hilt-navigation-fragment:1.2.0")
@@ -84,6 +85,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.52")
 
     // Network Integration Test
@@ -95,4 +97,12 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    }
 }
