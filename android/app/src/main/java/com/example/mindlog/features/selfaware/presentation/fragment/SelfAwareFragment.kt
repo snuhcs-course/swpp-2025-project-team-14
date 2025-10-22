@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentSelfAwareBinding
 import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareViewModel
@@ -27,7 +28,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         // initial load
         viewModel.load()
 
-        //
         binding.etAnswer.doAfterTextChanged {
             viewModel.updateAnswerText(it?.toString().orEmpty())
         }
@@ -35,7 +35,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         binding.btnSubmit.setOnClickListener { viewModel.submit() }
 
         binding.btnOpenHistory.setOnClickListener {
-            // findNavController().navigate(R.id.selfAnswerHistoryFragment)
+            findNavController().navigate(R.id.selfAwareHistoryFragment)
         }
 
         // observe state

@@ -7,6 +7,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,8 +34,7 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
 
         // Toolbar: 뒤로가기
         binding.toolbar.setNavigationOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-            // 또는 findNavController().navigateUp()
+            findNavController().navigateUp()
         }
 
         // RecyclerView
