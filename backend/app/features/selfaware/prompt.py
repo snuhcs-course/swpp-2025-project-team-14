@@ -1,4 +1,25 @@
+from __future__ import annotations
+from typing import List, Optional, Literal, Dict, Any, Tuple
 from langchain_core.prompts import ChatPromptTemplate
+
+CATEGORIES = [
+    ("Growth & Self-Actualization", "성장과 자기실현"),
+    ("Relationships & Connection",  "관계와 연결"),
+    ("Security & Stability",        "안정과 안전"),
+    ("Freedom & Independence",      "자유와 자율"),
+    ("Achievement & Influence",     "성취와 영향력"),
+    ("Enjoyment & Fulfillment",     "즐거움과 만족"),
+    ("Ethics & Transcendence",      "윤리와 초월"),
+]
+CAT_EN = [en for en, _ in CATEGORIES]
+CAT_KO = {en: ko for en, ko in CATEGORIES}
+
+Language = Literal["ko", "en"]
+QuestionType = Literal[
+    "single_category",      # 하나의 가치 카테고리에 대한 질문
+    "multi_category",       # 여러 가치 카테고리에 대한 복합 질문
+    "personalized_category" # 사용자의 일기 데이터를 바탕으로 한 질문
+]
 
 # 감정 분석 프롬프트
 emotion_prompt = ChatPromptTemplate.from_template(
@@ -21,4 +42,42 @@ question_prompt = ChatPromptTemplate.from_template(
     감정 분석 결과:
     {analysis}
     """
+)
+
+single_category_prompt = ChatPromptTemplate.from_template("""You are a coaching-style question designer for a self-reflection diary app.
+
+Goal: Create exactly ONE open-ended question about a single value category, natural and everyday-language (no category names).
+
+Target category: {category_en}
+
+Guidelines:
+- Invite a concrete episode, feelings, and why it mattered.
+- Avoid yes/no; ask one sentence only.
+- Tone/Style: "사려 깊고 비판단적"
+- 질문은 한국어 한 문장으로 작성하세요.
+
+Return JSON:
+- text
+- rationale
+"""
+)
+
+multi_category_prompt = ChatPromptTemplate.from_template("""You are a coaching-style question designer for a self-reflection diary app.
+
+Goal: Create exactly ONE open-ended question that explores tensions/trade-offs or priorities ACROSS multiple value categories, without naming categories.
+
+Target categories:
+{cats}
+
+Guidelines:
+- Encourage reflection on how the user balances these values in real-life decisions.
+- Ask for a specific situation or episode.
+- Avoid yes/no; ask one sentence only.
+- Tone/Style: "사려 깊고 비판단적"
+- 질문은 한국어 한 문장으로 작성하세요.
+
+Return JSON:
+- text
+- rationale
+"""
 )

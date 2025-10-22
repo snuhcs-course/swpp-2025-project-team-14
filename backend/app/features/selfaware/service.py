@@ -1,14 +1,22 @@
-from typing import Annotated
+from __future__ import annotations
+from typing import Annotated, List, Optional, Literal, Dict, Any, Tuple
 from fastapi import Depends
-from fastapi import HTTPException
+from datetime import datetime, timezone
+import random
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field
+
 from app.core.config import settings
 from dotenv import load_dotenv
 load_dotenv()
+
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 from langchain.schema.runnable import RunnableMap
-from .prompt import emotion_prompt, question_prompt
+
+from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository
 from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate
 from value_map import analyze_personality
@@ -67,6 +75,39 @@ class QuestionService:
 
         return question
     
+    def generate_single_category_question(self, user_id: int):
+        llm = ChatOpenAI(model="gpt-5-nano")
+        output_parser = StrOutputParser()
+
+        # ✅ 1. 유저의 일기 가져오기
+        journals = self.journal_repository.list_journals_by_user(user_id)
+        if not journals or len(journals) == 0:
+            raise ValueError(f"User {user_id} has no journal entries.")
+
+        # ✅ 2. 최근 일기 선택 
+        recent_journal = journals[-1]
+
+        # ✅ 3. 유사 카테고리 선택
+        category_prompt = ChatPromptTemplate.from_template(
+            "다음은 한 사용자의 최근 일기 내용입니다. '성장과 자기실현','관계와 연결','안정과 안전','자유와 자율','성취와 영향력','즐거움과 만족', '윤리와 초월' 중 일기의 내용과 가장 가까운 것을 선택하여 출력해주세요.\n\n{journal_text}"
+        )
+        category_chain = category_prompt | llm | StrOutputParser()
+        category = category_chain.invoke({"journal_text": recent_journal})
+
+        single_category_chain = single_category_prompt | llm | output_parser
+        response = single_category_chain.invoke({"cat": category})
+
+        # DB에 저장
+        question_data = QuestionCreate(
+            user_id=user_id,
+            text=response,
+            type="selfaware",
+        )
+
+        question = self.question_repository.create(question_data)
+
+        return question
+
 
     def get_questions_by_id(self, question_id: int):
         return self.question_repository.get(question_id)
