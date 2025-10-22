@@ -176,7 +176,10 @@ async def generate_image_upload_url(
     journal_id: int,
     journal_service: Annotated[JournalService, Depends()],
     payload: ImageUploadRequest,
+    user: User = Depends(get_current_user),
 ) -> PresignedUrlResponse:
+    if journal_service.get_journal_owner(journal_id) != user.id:
+        raise PermissionDeniedError()
     return await journal_service.create_image_presigned_url(
         journal_id=journal_id, payload=payload
     )
@@ -193,7 +196,10 @@ async def complete_image_upload(
     journal_id: int,
     journal_service: Annotated[JournalService, Depends()],
     payload: ImageCompletionRequest,
+    user: User = Depends(get_current_user),
 ) -> JournalImageResponseEnvelope:
+    if journal_service.get_journal_owner(journal_id) != user.id:
+        raise PermissionDeniedError()
     journal_image = await journal_service.complete_image_upload(
         journal_id=journal_id, payload=payload
     )
@@ -211,15 +217,19 @@ async def complete_image_upload(
 )
 async def request_journal_image_generation(
     journal_id: int,
-    journal_service: Annotated[JournalOpenAIService, Depends()],
+    journal_openai_service: Annotated[JournalOpenAIService, Depends()],
+    journal_service: Annotated[JournalService, Depends()],
     request: ImageGenerateRequest,
+    user: User = Depends(get_current_user),
 ) -> ImageGenerateResponse:
+    if journal_service.get_journal_owner(journal_id) != user.id:
+        raise PermissionDeniedError()
     if request.journal_id != journal_id:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
             "Path journal_id and body journal_id must match.",
         )
-    return await journal_service.request_image_generation(request=request)
+    return await journal_openai_service.request_image_generation(request=request)
 
 
 @router.post(
@@ -231,13 +241,14 @@ async def request_journal_image_generation(
 )
 async def analyze_journal(
     journal_id: int,
-    journal_service: Annotated[JournalOpenAIService, Depends()],
+    journal_openai_service: Annotated[JournalOpenAIService, Depends()],
+    journal_service: Annotated[JournalService, Depends()],
     user: User = Depends(get_current_user),
 ) -> JournalKeywordListResponseEnvelope:
     if journal_service.get_journal_owner(journal_id) != user.id:
         raise PermissionDeniedError()
     created_keywords_list = (
-        await journal_service.extract_keywords_with_emotion_associations(
+        await journal_openai_service.extract_keywords_with_emotion_associations(
             journal_id=journal_id
         )
     )
