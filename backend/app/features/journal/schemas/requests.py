@@ -128,17 +128,3 @@ class ImageGenerateRequest(BaseModel):
 
     journal_id: int
     prompt_text: str
-
-
-class ImageGenerateResponse(BaseModel):
-    """이미지 생성 요청 후 클라이언트에게 반환하는 데이터"""
-
-    job_id: str
-    status: str
-
-
-class ImageWebhookResponse(BaseModel):
-    """웹훅 처리 완료 후 GPU 서버에게 반환하는 데이터"""
-
-    status: str
-    image_url: str

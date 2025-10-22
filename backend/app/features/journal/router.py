@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
@@ -9,11 +9,13 @@ from app.common.errors import PermissionDeniedError
 from app.features.journal.errors import JournalBadRequestError
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
+    ImageGenerateRequest,
     ImageUploadRequest,
     JournalCreateRequest,
     JournalUpdateRequest,
 )
 from app.features.journal.schemas.responses import (
+    ImageGenerateResponse,
     JournalCursorEnvelope,
     JournalCursorResponse,
     JournalImageResponse,
@@ -26,7 +28,7 @@ from app.features.journal.schemas.responses import (
     KeywordEmotionAssociationItem,
     PresignedUrlResponse,
 )
-from app.features.journal.service import JournalService
+from app.features.journal.service import JournalOpenAIService, JournalService
 from app.features.user.models import User
 
 router = APIRouter(prefix="/journal", tags=["journal"])
@@ -200,24 +202,24 @@ async def complete_image_upload(
     )
 
 
-# @router.post(
-#     "/{journal_id}/generate-image",
-#     response_model=ImageGenerateResponse,
-#     status_code=status.HTTP_202_ACCEPTED,
-#     summary="Request AI image generation for a journal entry",
-#     description="This endpoint requests AI image generation based on the provided prompt and associates the generated image with the specified journal entry.",
-# )
-# async def request_journal_image_generation(
-#     journal_id: int,
-#     journal_service: Annotated[JournalService, Depends()],
-#     request: ImageGenerateRequest,
-# ) -> ImageGenerateResponse:
-#     if request.journal_id != journal_id:
-#         raise HTTPException(
-#             status.HTTP_400_BAD_REQUEST,
-#             "Path journal_id and body journal_id must match.",
-#         )
-#     return await journal_service.request_image_generation(request=request)
+@router.post(
+    "/{journal_id}/generate-image",
+    response_model=ImageGenerateResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Request AI image generation for a journal entry",
+    description="This endpoint requests AI image generation based on the provided prompt and associates the generated image with the specified journal entry.",
+)
+async def request_journal_image_generation(
+    journal_id: int,
+    journal_service: Annotated[JournalOpenAIService, Depends()],
+    request: ImageGenerateRequest,
+) -> ImageGenerateResponse:
+    if request.journal_id != journal_id:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Path journal_id and body journal_id must match.",
+        )
+    return await journal_service.request_image_generation(request=request)
 
 
 @router.post(
@@ -229,7 +231,7 @@ async def complete_image_upload(
 )
 async def analyze_journal(
     journal_id: int,
-    journal_service: Annotated[JournalService, Depends()],
+    journal_service: Annotated[JournalOpenAIService, Depends()],
     user: User = Depends(get_current_user),
 ) -> JournalKeywordListResponseEnvelope:
     if journal_service.get_journal_owner(journal_id) != user.id:

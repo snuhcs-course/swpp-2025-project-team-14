@@ -1,13 +1,15 @@
+import json
 import os
 import uuid
 from datetime import date
 from functools import partial
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, UploadFile, status
+from fastapi import Depends, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
+from openai import AsyncOpenAI
 
 from app.features.journal.errors import (
     ImageUploadError,
@@ -24,7 +26,6 @@ from app.features.journal.repository import (
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
     ImageGenerateRequest,
-    ImageGenerateResponse,
     ImageUploadRequest,
 )
 from app.features.journal.schemas.responses import (
@@ -174,11 +175,46 @@ class JournalService:
         journal_image = await run_in_threadpool(replace_task)
         return journal_image
 
-    # AI image generation
-    async def request_image_generation(
-        self, request: ImageGenerateRequest
-    ) -> ImageGenerateResponse:
-        """AI 이미지 생성을 요청하고, Job ID를 반환합니다."""
+
+class JournalOpenAIService:
+    """
+    OpenAI(GPT 및 DALL-E) 및 LangChain 관련 로직을 전담하는 서비스
+    """
+
+    def __init__(self, journal_repository: JournalRepository = Depends()):
+        """
+        서비스 초기화 시, 레포지토리 주입 및 OpenAI 비동기 클라이언트 생성
+        """
+        self.journal_repository = journal_repository
+
+        self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        if not self.client.api_key:
+            raise ValueError("OPENAI_API_KEY not found.")
+
+        self.structured_llm = ChatOpenAI(
+            model="gpt-5-nano", temperature=0
+        ).with_structured_output(JournalKeywordListResponseEnvelope)
+
+        self.keyword_prompt_template = PromptTemplate.from_template("""
+You are given a journal content and a list of emotion labels.
+Extract up to 10 meaningful keywords from the content.
+For each keyword, provide a mapping of provided emotion to a float between 0 and 1 indicating association strength.
+You should only include the emotion with the highest association strength for each keyword.
+Also, Do not extract emotion, feeling, or subjective words as keywords. Do not extract duplicate keywords, either. There should be no overlap between keywords.
+Return ONLY valid JSON matching the schema.
+
+Journal content:
+{content}
+
+Emotions:
+{emotion_names}
+""")
+
+    async def request_image_generation(self, request: ImageGenerateRequest) -> str:
+        """
+        일기 ID와 프롬프트를 받아 이미지를 생성하고 Base64로 반환합니다.
+        """
+
         find_journal_task = partial(
             self.journal_repository.get_journal_by_id,
             journal_id=request.journal_id,
@@ -187,77 +223,54 @@ class JournalService:
         if not journal:
             raise JournalNotFoundError(request.journal_id)
 
-        response = await self.image_generation_repository.enqueue_image_generation(
-            prompt=request.prompt_text, journal_id=request.journal_id
-        )
-        job_id = response.get("job_id")
-        if not job_id:
-            raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to get job_id from SD API.",
+        try:
+            prompt = await self._generate_scene_prompt_from_diary(
+                journal.content, request.prompt_text
             )
+        except Exception as e:
+            print(f"GPT 호출 실패: {e}")
 
-        create_job_task = partial(
-            self.journal_repository.create_image_generation_job,
-            journal_id=request.journal_id,
-            job_id=job_id,
+        try:
+            image_b64 = await self._generate_image_from_prompt(prompt)
+        except Exception as e:
+            print(f"DALL-E 3 호출 실패: {e}")
+
+        return image_b64
+
+    async def _generate_scene_prompt_from_diary(
+        self, journal_content: str, input_prompt: str
+    ) -> str:
+        """
+        (Helper) GPT-4o를 비동기 호출하여 DALL-E용 프롬프트를 생성합니다.
+        """
+        chat_response = await self.client.chat.completions.create(
+            model="gpt-5-nano",
+            messages=[
+                {"role": "system", "content": input_prompt},
+                {"role": "user", "content": journal_content},
+            ],
+            response_format={"type": "json_object"},
         )
-        await run_in_threadpool(create_job_task)
+        scene_data = json.loads(chat_response.choices[0].message.content)
+        return scene_data["scene_prompt"]
 
-        return ImageGenerateResponse(job_id=job_id, status="queued")
-
-    async def process_image_generation_webhook(
-        self, job_id: str, journal_id: int, image_file: UploadFile
-    ):
-        """AI 이미지 생성 완료 webhook 처리: S3 업로드 후 DB에 교체"""
-        s3_key = f"generated-images/{journal_id}/{uuid.uuid4()}.png"
-        s3_url_data = await self.s3_repository.upload_file_object(
-            file_obj=image_file.file,
-            s3_key=s3_key,
-            content_type=image_file.content_type,
+    async def _generate_image_from_prompt(self, prompt: str) -> str:
+        """
+        (Helper) DALL-E 3를 비동기 호출하여 Base64 이미지 데이터를 반환합니다.
+        """
+        image_response = await self.client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+            response_format="b64_json",
         )
-        if not s3_url_data:
-            raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to upload image to S3."
-            )
-
-        # 기존 생성 이미지가 있으면 S3에서 삭제 (기존 image_type='generated' 레코드 찾기)
-        existing_generated = await run_in_threadpool(
-            self.journal_repository.get_image_by_journal_id,
-            journal_id,
-        )
-        if existing_generated and existing_generated.s3_key:
-            # S3에서 삭제
-            await self.s3_repository.delete_object(existing_generated.s3_key)
-
-        # DB에 새 생성 이미지로 교체 (image_type='generated')
-        replace_task = partial(
-            self.journal_repository.replace_journal_image,
-            journal_id=journal_id,
-            existing_image=existing_generated,
-            s3_key=s3_key,
-            job_id=None,
-            image_type="generated",
-        )
-        updated_image = await run_in_threadpool(replace_task)
-
-        if not updated_image:
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
-                f"Failed to update image record for job {job_id}.",
-            )
-
-        return updated_image
+        return image_response.data[0].b64_json
 
     async def extract_keywords_with_emotion_associations(
         self, journal_id: int
     ) -> list[JournalKeyword]:
-        """
-        - journal 내용으로부터 키워드 추출
-        - 각 키워드에 대해 journal에 존재하는 감정 목록과의 연관도(0~1) 산출
-        - DB에 JournalKeyword 저장
-        """
-        # DB에서 journal 불러오기 (스레드풀)
         find_journal = partial(
             self.journal_repository.get_journal_by_id, journal_id=journal_id
         )
@@ -265,47 +278,28 @@ class JournalService:
         if not journal:
             raise JournalNotFoundError(journal_id)
 
-        # 감정 목록 준비
         emotion_names = [e.emotion for e in journal.emotions]
         if not emotion_names:
-            raise JournalBadRequestError("저널에 감정 데이터가 없습니다.")
+            raise JournalBadRequestError("No emotion in journal")
 
-        # journal 내용 가져오기
-        content = journal.content
+        chain = self.keyword_prompt_template | self.structured_llm
 
-        prompt_text = """
-        You are given a journal content and a list of emotion labels.
-        Extract up to 10 meaningful keywords from the content.
-        For each keyword, provide a mapping of provided emotion to a float between 0 and 1 indicating association strength.
-        You should only include the emotion with the highest association strength for each keyword.
-        Also, Do not extract emotion, feeling, or subjective words as keywords. Do not extract duplicate keywords, either. There should be no overlap between keywords.
-        Return ONLY valid JSON matching the schema.
-
-        Journal content:
-        {content}
-
-        Emotions:
-        {emotion_names}
-        """
-        prompt = PromptTemplate.from_template(prompt_text)
-        llm = ChatOpenAI(model="gpt-5-nano", temperature=0).with_structured_output(
-            JournalKeywordListResponseEnvelope
-        )
-
-        # LangChain 체인 구성 및 실행
-        chain = prompt | llm
-
-        # blocking이므로 스레드풀에서 실행
-        input_data = {"content": content, "emotion_names": ", ".join(emotion_names)}
-        res = await run_in_threadpool(chain.invoke, input_data)
+        input_data = {
+            "content": journal.content,
+            "emotion_names": ", ".join(emotion_names),
+        }
+        try:
+            res_envelope = await chain.ainvoke(input_data)
+            res = res_envelope.keywords
+        except Exception as e:
+            print(f"LangChain(ainvoke) 호출 실패: {e}")
 
         if not res:
             raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to get response from LLM.",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="LLM이 유효한 키워드를 반환하지 않았습니다.",
             )
 
-        # DB에 저장 (스레드풀에서 repository 호출)
         save_task = partial(
             self.journal_repository.add_keywords_emotion_associations,
             journal_id=journal_id,

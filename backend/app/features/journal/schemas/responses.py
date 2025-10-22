@@ -123,3 +123,9 @@ class JournalImageResponse(BaseModel):
 
 class JournalImageResponseEnvelope(ResponseEnvelope):
     data: JournalImageResponse
+
+
+class ImageGenerateResponse(BaseModel):
+    """이미지 생성 요청 후 클라이언트에게 반환하는 데이터:"""
+
+    image_base64: str
