@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_home"
+    app:startDestination="@id/journalFragment">
+
+
+    <fragment
+        android:id="@+id/journalFragment"
+        android:name="com.example.mindlog.features.journal.presentation.JournalFragment"
+        android:label="일기"
+        app:popUpToInclusive="false"/>
+
+
+    <fragment
+        android:id="@+id/selfAwareFragment"
+        android:name="com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareFragment"
+        android:label="나 알아보기"/>
+
+    <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="com.example.mindlog.features.statistics.presentation.StatisticsFragment"
+        android:label="통계"/>
+
+    <fragment
+        android:id="@+id/analysisFragment"
+        android:name="com.example.mindlog.features.analysis.presentation.AnalysisFragment"
+        android:label="분석"/>
+</navigation>
