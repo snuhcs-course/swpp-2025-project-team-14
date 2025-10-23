@@ -68,7 +68,7 @@ class QuestionService:
         question_data = QuestionCreate(
             user_id=user_id,
             text=response,
-            type="selfaware",
+            type="personalized_category",
         )
 
         question = self.question_repository.create(question_data)
@@ -101,13 +101,45 @@ class QuestionService:
         question_data = QuestionCreate(
             user_id=user_id,
             text=response,
-            type="selfaware",
+            type="single_category",
         )
 
         question = self.question_repository.create(question_data)
 
         return question
 
+    def generate_multi_category_question(self, user_id: int):
+        llm = ChatOpenAI(model="gpt-5-nano")
+        output_parser = StrOutputParser()
+
+        # ✅ 1. 유저의 일기 가져오기
+        journals = self.journal_repository.list_journals_by_user(user_id)
+        if not journals or len(journals) == 0:
+            raise ValueError(f"User {user_id} has no journal entries.")
+
+        # ✅ 2. 최근 일기 선택 
+        recent_journal = journals[-1]
+
+        # ✅ 3. 유사 카테고리 선택
+        categories_prompt = ChatPromptTemplate.from_template(
+            "다음은 한 사용자의 최근 일기 내용입니다. '성장과 자기실현','관계와 연결','안정과 안전','자유와 자율','성취와 영향력','즐거움과 만족', '윤리와 초월' 중 일기의 내용과 가까운 것을 2가지 내지 3가지 선택하여 출력해주세요.\n\n{journal_text}"
+        )
+        categories_chain = categories_prompt | llm | StrOutputParser()
+        categories = categories_chain.invoke({"journal_text": recent_journal})
+
+        multi_category_chain = multi_category_prompt | llm | output_parser
+        response = multi_category_chain.invoke({"cats": categories})
+
+        # DB에 저장
+        question_data = QuestionCreate(
+            user_id=user_id,
+            text=response,
+            type="multi_category",
+        )
+
+        question = self.question_repository.create(question_data)
+
+        return question
 
     def get_questions_by_id(self, question_id: int):
         return self.question_repository.get(question_id)

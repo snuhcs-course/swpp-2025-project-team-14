@@ -48,7 +48,7 @@ single_category_prompt = ChatPromptTemplate.from_template("""You are a coaching-
 
 Goal: Create exactly ONE open-ended question about a single value category, natural and everyday-language (no category names).
 
-Target category: {category_en}
+Target category: {cat}
 
 Guidelines:
 - Invite a concrete episode, feelings, and why it mattered.
