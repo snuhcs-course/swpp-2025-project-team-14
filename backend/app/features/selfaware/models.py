@@ -100,8 +100,27 @@ class ValueMap(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    value_map: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+    score_0: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+    score_1: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+    score_2: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+    score_3: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+    score_4: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+    score_5: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+    score_6: Mapped[float] = mapped_column(Float, nullable=False, default = 0)
+
+    count_0: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+    count_1: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+    count_2: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+    count_3: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+    count_4: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+    count_5: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+    count_6: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    comment: Mapped[str] = mapped_column(String, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="value_maps")
 

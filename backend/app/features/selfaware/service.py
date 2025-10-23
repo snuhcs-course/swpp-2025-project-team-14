@@ -256,7 +256,7 @@ class ValueMapService:
         self.value_score_repository = value_score_repository
         self.value_map_repository = value_map_repository
 
-    def mapping_to_text(self, id):
+    def create_value_map_from_value_score(self, user_id: int):
         pass
 
     
