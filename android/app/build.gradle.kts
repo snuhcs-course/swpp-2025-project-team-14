@@ -62,6 +62,12 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
+    // Dependency for visualization
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.patrykandpatrick.vico:views:1.14.0")
+    implementation("com.patrykandpatrick.vico:compose:1.14.0")
+    implementation("androidx.webkit:webkit:1.10.0")
+
     // Retrofit (Gson 컨버터 포함)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
