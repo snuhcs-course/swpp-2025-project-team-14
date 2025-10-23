@@ -8,10 +8,11 @@
     android:fillViewport="true"
     android:clipToPadding="false"
     android:paddingBottom="96dp">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:background="#F8F6F0"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="24dp">
 
             <!-- 제목 -->
@@ -160,14 +161,11 @@
                         android:textColor="#636779"
                         android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/ivRadar"
+                    <com.github.mikephil.charting.charts.RadarChart
+                        android:id="@+id/radar"
                         android:layout_width="match_parent"
-                        android:layout_height="180dp"
-                        android:layout_marginTop="12dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/ic_analysis_placeholder"
-                        android:contentDescription="@null" />
+                        android:layout_height="240dp"
+                        android:background="#F3F1EB"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvValueSummary"

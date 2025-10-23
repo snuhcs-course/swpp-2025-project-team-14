@@ -31,6 +31,8 @@ class SelfAwareViewModel @Inject constructor(
         val categoriesKo: List<String>? = null,
         val isAnsweredToday: Boolean = false,
         val answerText: String = "",
+        val valueLabels: List<String> = listOf("성장", "관계", "안정", "자유", "성취", "재미", "윤리"),
+        val valueScores: List<Float> = listOf(80f, 30f, 50f, 80f, 90f, 60f, 90f),
         val isLoading: Boolean = false,
         val isSubmitting: Boolean = false,
         val error: String? = null
