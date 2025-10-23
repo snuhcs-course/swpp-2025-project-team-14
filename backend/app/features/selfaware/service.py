@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Annotated, List, Optional, Literal, Dict, Any, Tuple
 from fastapi import Depends
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 import random
 import json
 
@@ -69,13 +69,14 @@ class QuestionService:
         question_data = QuestionCreate(
             user_id=user_id,
             text=response,
-            type="personalized_category",
+            question_type="personalized_category",
         )
 
         question = self.question_repository.create(question_data)
 
         return question
     
+
     def generate_single_category_question(self, user_id: int):
         llm = ChatOpenAI(model="gpt-5-nano")
         output_parser = StrOutputParser()
@@ -102,12 +103,13 @@ class QuestionService:
         question_data = QuestionCreate(
             user_id=user_id,
             text=response,
-            type="single_category",
+            question_type="single_category",
         )
 
         question = self.question_repository.create(question_data)
 
         return question
+
 
     def generate_multi_category_question(self, user_id: int):
         llm = ChatOpenAI(model="gpt-5-nano")
@@ -135,12 +137,23 @@ class QuestionService:
         question_data = QuestionCreate(
             user_id=user_id,
             text=response,
-            type="multi_category",
+            question_type="multi_category",
         )
 
         question = self.question_repository.create(question_data)
 
         return question
+
+
+    def generate_question(self, user_id: int):
+        flag = random.randint(0, 2)
+        if flag == 0:
+            return self.generate_selfaware_question(user_id)
+        if flag == 1:
+            return self.generate_single_category_question(user_id)
+        if flag == 2:
+            return self.generate_multi_category_question(user_id)
+
 
     def get_questions_by_id(self, question_id: int):
         return self.question_repository.get(question_id)
@@ -148,6 +161,10 @@ class QuestionService:
 
     def get_questions_by_user(self, user_id: int):
         return self.question_repository.get_by_user(user_id)
+
+
+    def get_questions_by_date(self, date: date):
+        return self.question_repository.get_by_date(date)
 
 
 class AnswerService:
@@ -182,6 +199,11 @@ class AnswerService:
 
     def get_answers_by_user(self, user_id: int):
         return self.answer_repository.get_by_user(user_id)
+    
+
+    def extract_keyword(self, id: int):
+        pass
+
 
 class ValueScoreService:
     def __init__(
@@ -193,6 +215,7 @@ class ValueScoreService:
         self.question_repository = question_repository
         self.answer_repository = answer_repository
         self.value_score_repository = value_score_repository
+
 
     def get_value_score_from_answer(self, user_id:int, question_id:int, answer_id: int):
         llm = ChatOpenAI(model="gpt-5-nano")
@@ -207,7 +230,6 @@ class ValueScoreService:
             data = json.loads(content) # type: ignore
             detected_values = data.get("detected_values", [])
 
-            # 예시: 개별 값 변수로 접근
             for v in detected_values:
                 value_score_data = ValueScoreCreate(
                     answer_id = answer_id,
@@ -228,34 +250,13 @@ class ValueScoreService:
 class ValueMapService:
     def __init__(
         self,
-        question_repository: Annotated[QuestionRepository, Depends()],
-        answer_repository: Annotated[AnswerRepository, Depends()],
         value_map_repository: Annotated[ValueMapRepository, Depends()],
+        value_score_repository: Annotated[ValueScoreRepository, Depends()],
     ) -> None:
-        self.question_repository = question_repository
-        self.answer_repository = answer_repository
+        self.value_score_repository = value_score_repository
         self.value_map_repository = value_map_repository
 
+    def mapping_to_text(self, id):
+        pass
 
-    def analyze_user_personality(self, user_id: int):
-        # 1. 유저의 질문과 답변을 가져오기
-        questions = self.question_repository.get_by_user(user_id)
-        qa_pairs = []
-
-        if not questions:
-            raise ValueError(f"User {user_id} has no question entries.")
-        
-        for q in questions:
-            answers = self.answer_repository.get_by_question(q.id)
-            for a in answers:
-                qa_pairs.append({"question": q.text, "answer": a.text})
-
-        if not qa_pairs:
-            raise ValueError(f"User {user_id} has no answer entries.")
-
-        result = analyze_personality(qa_pairs)
-
-        value_map_data = ValueMapCreate(user_id=user_id, value_map=result)
-        saved_map = self.value_map_repository.create(value_map_data)
-
-        return {"user_id": user_id, "values": saved_map.value_map, "created_at": saved_map.created_at}
+    

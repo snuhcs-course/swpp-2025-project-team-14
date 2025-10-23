@@ -1,11 +1,12 @@
 from typing import Annotated, Optional, List, Sequence
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session
 import models as model
 import schemas.responses as schema
 from .models import Journal, Question, Answer, ValueMap, ValueScore
+from datetime import date
 
 # -------------------------------
 # Journal Repository 테스트 용, merge 후 삭제 예정
@@ -53,6 +54,12 @@ class QuestionRepository:
         return self.session.scalars(
             select(Question).where(Question.user_id == user_id)
         ).all()
+    
+    def get_by_date(self, target_date: date):
+        return self.session.query(Question).filter(
+            func.date(Question.created_at) == target_date
+        )
+
 
 
 # -------------------------------
@@ -69,15 +76,15 @@ class AnswerRepository:
         self.session.refresh(db_answer)
         return db_answer
 
-    def get(self, id: int) -> Sequence[Answer]:
-        return self.session.scalars(
+    def get(self, id: int) -> Optional[Answer]:
+        return self.session.scalar(
             select(Answer).where(Answer.id == id)
-        ).all()
+        )
 
-    def get_by_question(self, question_id: int) -> Sequence[Answer]:
-        return self.session.scalars(
+    def get_by_question(self, question_id: int) -> Optional[Answer]:
+        return self.session.scalar(
             select(Answer).where(Answer.question_id == question_id)
-        ).all()
+        )
 
     def get_by_user(self, user_id: int) -> Sequence[Answer]:
         return self.session.scalars(

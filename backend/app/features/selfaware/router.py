@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Annotated
+from datetime import date
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi.security import HTTPBearer
 from app.common.schemas import ResponseEnvelope
@@ -11,6 +12,9 @@ from .schemas.responses import (
     ValueMapCreate,
     Answer,
     Question,
+    QuestionDateResponse,
+    AnswerDateResponse,
+    QuestionWithAnswerResponse,
 )
 
 security = HTTPBearer()
@@ -73,6 +77,31 @@ def get_question(
         raise HTTPException(status_code=404, detail="Question not found")
     return question
 
+@self_aware_router.get("/question",
+    response_model=QuestionWithAnswerResponse,
+)
+def get_selfaware_question(
+    question_service: Annotated[QuestionService, Depends()],
+    answer_service: Annotated[AnswerService, Depends()],
+    date: date = Query(..., description="조회할 날짜 (YYYY-MM-DD)"),
+):
+    """
+    특정 날짜의 self-aware question을 반환합니다.
+    """
+    question = question_service.get_questions_by_date(date)
+
+    if not question:
+        raise HTTPException(status_code=404, detail="해당 날짜의 질문이 없습니다.")
+    
+    question_response = QuestionDateResponse.model_validate(question)
+
+    answer = answer_service.get_answers_by_question(question[id])
+    if not answer:
+        return QuestionWithAnswerResponse(question=question_response)
+    
+    answer_response = AnswerDateResponse.model_validate(answer)
+
+    return QuestionWithAnswerResponse(question=question_response, answer=answer_response)
 
 # -----------------------------
 # 💬 Answer 관련 엔드포인트
@@ -136,20 +165,3 @@ def get_answers_by_user(
 # -----------------------------
 # 🗺️ Value Map 관련 엔드포인트
 # -----------------------------
-@self_aware_router.post(
-    "/value-map/generate",
-    status_code=201,
-    summary="Generate value map based on user's journals",
-    response_model=ValueMap,
-)
-def generate_value_map(
-    request: ValueMapCreate,
-    value_map_service: Annotated[ValueMapService, Depends()],
-):
-    """사용자의 일기 기반으로 가치관(Value Map)을 생성합니다."""
-    try:
-        return value_map_service.analyze_user_personality(request.user_id)
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"데이터베이스 오류 발생: {str(e)}")
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))

@@ -29,7 +29,7 @@ class JournalRead(JournalBase):
 class QuestionBase(BaseModel):
     user_id: int
     text: str
-    type: Optional[str] = "selfaware"
+    question_type: Optional[str] = "selfaware"
 
 class QuestionCreate(QuestionBase):
     pass
@@ -41,6 +41,16 @@ class Question(QuestionBase):
     class Config:
         orm_mode = True
 
+class QuestionDateResponse(QuestionBase):
+    id: int
+    categories_ko: Optional[List[str]] = None
+    categories_en: Optional[List[str]] = None
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
+    }
+
 class QuestionGenerateRequest(BaseModel):
     journal_content: str
     user_id: int
@@ -49,10 +59,10 @@ class QuestionGenerateRequest(BaseModel):
 
 class AnswerBase(BaseModel):
     text: str
-    type: Optional[str] = None
-    keywords: Optional[str] = None
 
 class AnswerCreate(AnswerBase):
+    keywords: Optional[str] = None
+    type: Optional[str] = None
     user_id: int
     question_id: int
 
@@ -61,9 +71,23 @@ class Answer(AnswerBase):
     user_id: int
     question_id: int
     created_at: datetime
+    keywords: Optional[str] = None
+    type: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
+    }
+
+class AnswerDateResponse(AnswerBase):
+    id: int
+    user_id: int
+    question_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
+    }
 
 class AnswerCreateRequest(AnswerCreate):
     pass
@@ -96,6 +120,14 @@ class ValueMap(ValueMapBase):
     id: int
     user_id: int
     created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+# --- Combined ---
+class QuestionWithAnswerResponse(BaseModel):
+    question: QuestionDateResponse
+    answer: Optional[AnswerDateResponse] = None
 
     class Config:
         orm_mode = True
