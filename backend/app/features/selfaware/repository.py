@@ -6,7 +6,7 @@ from app.database.session import get_db_session
 import models as model
 import schemas.responses as schema
 from .models import Journal, Question, Answer, ValueMap, ValueScore
-from datetime import date
+from datetime import date, datetime
 
 # -------------------------------
 # Journal Repository 테스트 용, merge 후 삭제 예정
@@ -118,17 +118,60 @@ class ValueMapRepository:
         self.session.flush()
         self.session.refresh(db_value_map)
         return db_value_map
-
-    def get_latest(self, user_id: int) -> Optional[ValueMap]:
-        return self.session.scalar(
-            select(model.ValueMap)
-            .where(model.ValueMap.user_id == user_id)
-            .order_by(model.ValueMap.created_at.desc())
-        )
-
-    def get_by_user(self, user_id: int) -> Sequence[ValueMap]:
-        return self.session.scalars(
+    
+    def update_by_value_score(self, value_score_data: schema.ValueScoreData):
+        user_value_map = self.session.scalar(
             select(ValueMap)
-            .where(ValueMap.user_id == user_id)
-            .order_by(ValueMap.created_at.desc())
-        ).all()
+            .where(ValueMap.user_id == value_score_data.user_id)
+        )
+        if not user_value_map:
+            raise
+
+        if value_score_data.category == "Growth & Self-Actualization":
+            value = (value_score_data.intensity + user_value_map.count_0 * user_value_map.score_0) // (user_value_map.count_0+1)
+            count =  user_value_map.count_0 + 1
+            category = 0
+        elif value_score_data.category == "Relationships & Connection":
+            value = (value_score_data.intensity + user_value_map.count_1 * user_value_map.score_1) // (user_value_map.count_1+1)
+            count =  user_value_map.count_1 + 1
+            category = 1
+        elif value_score_data.category == "Security & Stability":
+            value = (value_score_data.intensity + user_value_map.count_2 * user_value_map.score_2) // (user_value_map.count_2+1)
+            count =  user_value_map.count_2 + 1
+            category = 2
+        elif value_score_data.category == "Freedom & Independence":
+            value = (value_score_data.intensity + user_value_map.count_3 * user_value_map.score_3) // (user_value_map.count_3+1)
+            count =  user_value_map.count_3 + 1
+            category = 3
+        elif value_score_data.category == "Achievement & Influence":
+            value = (value_score_data.intensity + user_value_map.count_4 * user_value_map.score_4) // (user_value_map.count_4+1)
+            count =  user_value_map.count_4 + 1
+            category = 4
+        elif value_score_data.category == "Enjoyment & Fulfillment":
+            value = (value_score_data.intensity + user_value_map.count_5 * user_value_map.score_5) // (user_value_map.count_0+1)
+            count =  user_value_map.count_5 + 1
+            category = 5
+        elif value_score_data.category == "Ethics & Transcendence":
+            value = (value_score_data.intensity + user_value_map.count_6 * user_value_map.score_6) // (user_value_map.count_0+1)
+            count =  user_value_map.count_6 + 1
+            category = 6
+        else:
+            raise
+
+        # 실제 객체에 반영
+        setattr(user_value_map, f"score_{category}", value)
+        setattr(user_value_map, f"count_{category}", count)
+
+        # 갱신 시간 업데이트 (선택적)
+        user_value_map.updated_at = datetime.utcnow()
+
+        # 커밋 및 새 값 반영
+        self.session.add(user_value_map)
+        self.session.flush()
+        self.session.refresh(user_value_map)
+        return user_value_map
+
+    def get_by_user(self, user_id: int) -> Optional[ValueMap]:
+        return self.session.scalar(
+            select(ValueMap).where(ValueMap.user_id == user_id)
+        )

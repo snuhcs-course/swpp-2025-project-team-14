@@ -19,7 +19,7 @@ from langchain.schema.runnable import RunnableMap
 
 from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate
+from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData
 from value_map import analyze_personality
 
 class QuestionService:
@@ -211,10 +211,12 @@ class ValueScoreService:
         question_repository: Annotated[QuestionRepository, Depends()],
         answer_repository: Annotated[AnswerRepository, Depends()],
         value_score_repository: Annotated[ValueScoreRepository, Depends()],
+        value_map_repository: Annotated[ValueMapRepository, Depends()],
     ) -> None:
         self.question_repository = question_repository
         self.answer_repository = answer_repository
         self.value_score_repository = value_score_repository
+        self.value_map_repository = value_map_repository
 
 
     def get_value_score_from_answer(self, user_id:int, question_id:int, answer_id: int):
@@ -230,8 +232,13 @@ class ValueScoreService:
             data = json.loads(content) # type: ignore
             detected_values = data.get("detected_values", [])
 
+            # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
+            value_map = self.value_map_repository.get_by_user(user_id)
+            if not value_map:
+                self.value_map_repository.create(ValueMapCreate(user_id=user_id))
+
             for v in detected_values:
-                value_score_data = ValueScoreCreate(
+                value_score_create = ValueScoreCreate(
                     answer_id = answer_id,
                     user_id = user_id,
                     category = v['category_key'],
@@ -240,7 +247,10 @@ class ValueScoreService:
                     intensity= v['intensity'],
                     polarity= v['polarity'],
                 )
-                self.value_score_repository.create(value_score_data)
+                self.value_score_repository.create(value_score_create)
+                value_score_data = ValueScoreData.model_validate(value_score_create)
+                self.value_map_repository.update_by_value_score(value_score_data)
+
         except json.JSONDecodeError:
             print("❌ JSON 파싱 실패. 모델의 출력 형식을 확인하세요.")
             detected_values = []
@@ -256,7 +266,10 @@ class ValueMapService:
         self.value_score_repository = value_score_repository
         self.value_map_repository = value_map_repository
 
-    def create_value_map_from_value_score(self, user_id: int):
-        pass
+    def create(self, user_id: int):
+        value_map_create = ValueMapCreate(
+            user_id = user_id
+        )
+        return self.value_map_repository.create(value_map_create)
 
     

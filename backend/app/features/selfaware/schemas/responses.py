@@ -108,10 +108,19 @@ class ValueScore(ValueScoreBase):
 
 class ValueScoreCreate(ValueScoreBase):
     pass
+
+class ValueScoreData(BaseModel):
+    user_id: int
+    category: str
+    intensity: float
+
+    model_config = {
+        "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
+    }
 # ValueMap
 
 class ValueMapBase(BaseModel):
-    value_map: Dict[str, float]
+    pass
 
 class ValueMapCreate(ValueMapBase):
     user_id: int
