@@ -175,3 +175,20 @@ class ValueMapRepository:
         return self.session.scalar(
             select(ValueMap).where(ValueMap.user_id == user_id)
         )
+    
+    def generate_text(self, user_id: int, text: str):
+        user_value_map = self.session.scalar(
+            select(ValueMap)
+            .where(ValueMap.user_id == user_id)
+        )
+        if not user_value_map:
+            raise
+
+        # 실제 객체에 반영
+        setattr(user_value_map, "text", text)
+
+        # 커밋 및 새 값 반영
+        self.session.add(user_value_map)
+        self.session.flush()
+        self.session.refresh(user_value_map)
+        return user_value_map

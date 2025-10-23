@@ -17,7 +17,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 from langchain.schema.runnable import RunnableMap
 
-from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt
+from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData
 from value_map import analyze_personality
@@ -272,4 +272,20 @@ class ValueMapService:
         )
         return self.value_map_repository.create(value_map_create)
 
-    
+    def generate_comment(self, user_id: int):
+        value_map = self.value_map_repository.get_by_user(user_id)
+
+        llm = ChatOpenAI(model="gpt-5-nano")
+        output_parser = StrOutputParser()
+        value_map_chain = value_map_prompt | llm | StrOutputParser()
+
+        value_map_text = value_map_chain.invoke(
+            {"score_0": value_map.score_0, # type: ignore
+             "score_1": value_map.score_1, # type: ignore
+             "score_2": value_map.score_2, # type: ignore
+             "score_3": value_map.score_3, # type: ignore
+             "score_4": value_map.score_4, # type: ignore
+             "score_5": value_map.score_5, # type: ignore
+             "score_6": value_map.score_6,}) # type: ignore
+
+        return self.value_map_repository.generate_text(user_id, value_map_text)
