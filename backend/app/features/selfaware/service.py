@@ -3,6 +3,7 @@ from typing import Annotated, List, Optional, Literal, Dict, Any, Tuple
 from fastapi import Depends
 from datetime import datetime, timezone
 import random
+import json
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
@@ -16,9 +17,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 from langchain.schema.runnable import RunnableMap
 
-from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt
-from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository
-from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate
+from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt
+from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
+from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate
 from value_map import analyze_personality
 
 class QuestionService:
@@ -181,6 +182,48 @@ class AnswerService:
 
     def get_answers_by_user(self, user_id: int):
         return self.answer_repository.get_by_user(user_id)
+
+class ValueScoreService:
+    def __init__(
+        self,
+        question_repository: Annotated[QuestionRepository, Depends()],
+        answer_repository: Annotated[AnswerRepository, Depends()],
+        value_score_repository: Annotated[ValueScoreRepository, Depends()],
+    ) -> None:
+        self.question_repository = question_repository
+        self.answer_repository = answer_repository
+        self.value_score_repository = value_score_repository
+
+    def get_value_score_from_answer(self, user_id:int, question_id:int, answer_id: int):
+        llm = ChatOpenAI(model="gpt-5-nano")
+
+        question = self.question_repository.get(question_id)
+        answer = self.answer_repository.get(answer_id)
+        value_score_chain = value_score_prompt | llm
+        response = value_score_chain.invoke({"question": question, "answer":answer})
+        content = response.content if hasattr(response, "content") else str(response)
+
+        try:
+            data = json.loads(content) # type: ignore
+            detected_values = data.get("detected_values", [])
+
+            # 예시: 개별 값 변수로 접근
+            for v in detected_values:
+                value_score_data = ValueScoreCreate(
+                    answer_id = answer_id,
+                    user_id = user_id,
+                    category = v['category_key'],
+                    value = v['value_name'],
+                    confidence= v['confidence'],
+                    intensity= v['intensity'],
+                    polarity= v['polarity'],
+                )
+                self.value_score_repository.create(value_score_data)
+        except json.JSONDecodeError:
+            print("❌ JSON 파싱 실패. 모델의 출력 형식을 확인하세요.")
+            detected_values = []
+        
+        return detected_values
 
 class ValueMapService:
     def __init__(

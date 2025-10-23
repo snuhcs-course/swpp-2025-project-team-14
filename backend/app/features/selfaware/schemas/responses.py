@@ -70,6 +70,22 @@ class AnswerCreateRequest(AnswerCreate):
 
 # ValueMap
 
+class ValueScoreBase(BaseModel):
+    answer_id: int
+    user_id: int
+    category: str
+    value: str
+    confidence: float
+    intensity: float
+    polarity: float
+
+class ValueScore(ValueScoreBase):
+    created_at: datetime
+
+class ValueScoreCreate(ValueScoreBase):
+    pass
+# ValueMap
+
 class ValueMapBase(BaseModel):
     value_map: Dict[str, float]
 

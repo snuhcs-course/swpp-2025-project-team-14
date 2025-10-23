@@ -44,40 +44,68 @@ question_prompt = ChatPromptTemplate.from_template(
     """
 )
 
-single_category_prompt = ChatPromptTemplate.from_template("""You are a coaching-style question designer for a self-reflection diary app.
+single_category_prompt = ChatPromptTemplate.from_template(
+    """You are a coaching-style question designer for a self-reflection diary app.
 
-Goal: Create exactly ONE open-ended question about a single value category, natural and everyday-language (no category names).
+    Goal: Create exactly ONE open-ended question about a single value category, natural and everyday-language (no category names).
 
-Target category: {cat}
+    Target category: {cat}
 
-Guidelines:
-- Invite a concrete episode, feelings, and why it mattered.
-- Avoid yes/no; ask one sentence only.
-- Tone/Style: "사려 깊고 비판단적"
-- 질문은 한국어 한 문장으로 작성하세요.
+    Guidelines:
+    - Invite a concrete episode, feelings, and why it mattered.
+    - Avoid yes/no; ask one sentence only.
+    - Tone/Style: "사려 깊고 비판단적"
+    - 질문은 한국어 한 문장으로 작성하세요.
 
-Return JSON:
-- text
-- rationale
-"""
+    Return JSON:
+    - text
+    - rationale
+    """
 )
 
-multi_category_prompt = ChatPromptTemplate.from_template("""You are a coaching-style question designer for a self-reflection diary app.
+multi_category_prompt = ChatPromptTemplate.from_template(
+    """You are a coaching-style question designer for a self-reflection diary app.
 
-Goal: Create exactly ONE open-ended question that explores tensions/trade-offs or priorities ACROSS multiple value categories, without naming categories.
+    Goal: Create exactly ONE open-ended question that explores tensions/trade-offs or priorities ACROSS multiple value categories, without naming categories.
 
-Target categories:
-{cats}
+    Target categories:
+    {cats}
 
-Guidelines:
-- Encourage reflection on how the user balances these values in real-life decisions.
-- Ask for a specific situation or episode.
-- Avoid yes/no; ask one sentence only.
-- Tone/Style: "사려 깊고 비판단적"
-- 질문은 한국어 한 문장으로 작성하세요.
+    Guidelines:
+    - Encourage reflection on how the user balances these values in real-life decisions.
+    - Ask for a specific situation or episode.
+    - Avoid yes/no; ask one sentence only.
+    - Tone/Style: "사려 깊고 비판단적"
+    - 질문은 한국어 한 문장으로 작성하세요.
 
-Return JSON:
-- text
-- rationale
-"""
+    Return JSON:
+    - text
+    - rationale
+    """
+)
+
+# get value score from prompt
+value_score_prompt = ChatPromptTemplate.from_template(
+    """You are extracting personal values from a diary answer for a self-reflection app.
+
+    "한국어로 추출하되, 값 이름은 영어 표준명(예: Family, Freedom)으로 반환하세요.
+
+    Rules:
+    - Detect up to 6 concrete 'values' (e.g., Family, Freedom, Achievement, Health, Authenticity).
+    - For each value, return:
+    - value_name (english canonical if possible)
+    - category_key (one of: 'Growth & Self-Actualization','Relationships & Connection','Security & Stability','Freedom & Independence','Achievement & Influence','Enjoyment & Fulfillment','Ethics & Transcendence')
+    - confidence [0..1]
+    - intensity [0..1] (how strongly the value was expressed)
+    - polarity in [-1, 0, +1]
+    - evidence: short quotes from the answer (1~2)
+    - If unsure of category_key, leave it null.
+
+    {question}
+    Answer:
+    \"\"\"{answer}\"\"\"
+
+    Return JSON with:
+    - detected_values: list of objects
+    """
 )

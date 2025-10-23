@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database.session import get_db_session
 import models as model
 import schemas.responses as schema
-from .models import Journal, Question, Answer, ValueMap
+from .models import Journal, Question, Answer, ValueMap, ValueScore
 
 # -------------------------------
 # Journal Repository 테스트 용, merge 후 삭제 예정
@@ -69,6 +69,11 @@ class AnswerRepository:
         self.session.refresh(db_answer)
         return db_answer
 
+    def get(self, id: int) -> Sequence[Answer]:
+        return self.session.scalars(
+            select(Answer).where(Answer.id == id)
+        ).all()
+
     def get_by_question(self, question_id: int) -> Sequence[Answer]:
         return self.session.scalars(
             select(Answer).where(Answer.question_id == question_id)
@@ -79,6 +84,19 @@ class AnswerRepository:
             select(Answer).where(Answer.user_id == user_id)
         ).all()
 
+# -------------------------------
+# ValueScore Repository
+# -------------------------------
+class ValueScoreRepository:
+    def __init__(self, session: Annotated[Session, Depends(get_db_session)]) -> None:
+        self.session = session
+
+    def create(self, value_score_data: schema.ValueScoreCreate) -> ValueScore:
+        db_value_score = ValueScore(**value_score_data.dict())
+        self.session.add(db_value_score)
+        self.session.flush()
+        self.session.refresh(db_value_score)
+        return db_value_score
 
 # -------------------------------
 # ValueMap Repository
