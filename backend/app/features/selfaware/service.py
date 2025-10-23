@@ -252,7 +252,7 @@ class ValueScoreService:
                 self.value_map_repository.update_by_value_score(value_score_data)
 
         except json.JSONDecodeError:
-            print("❌ JSON 파싱 실패. 모델의 출력 형식을 확인하세요.")
+            print("JSON 파싱 실패. 모델의 출력 형식을 확인하세요.")
             detected_values = []
         
         return detected_values
