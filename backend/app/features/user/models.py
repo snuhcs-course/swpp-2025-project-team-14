@@ -1,9 +1,12 @@
 from __future__ import annotations
-from typing import List
+from typing import TYPE_CHECKING, List
 from datetime import datetime
 from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
+
+if TYPE_CHECKING:
+    from app.features.selfaware.models import Journal, Question, Answer, ValueMap
 
 class User(Base):
     __tablename__ = 'users'

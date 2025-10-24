@@ -1,14 +1,16 @@
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from app.features.user.models import User
 
+if TYPE_CHECKING:
+    from app.features.user.models import User
+
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
-
 
 # Journal class는 테스트 용 merge 후 삭제 예정
 class Journal(Base):
