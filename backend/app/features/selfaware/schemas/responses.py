@@ -61,10 +61,26 @@ class AnswerBase(BaseModel):
     text: str
 
 class AnswerCreate(AnswerBase):
-    keywords: Optional[str] = None
-    type: Optional[str] = None
+    text: str
     user_id: int
     question_id: int
+    created_at: datetime
+    updated_at: datetime
+
+class AnswerCreateBody(BaseModel):
+    id: int
+    user_id: int
+    question_id: int
+    text: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
+    }
+
+class AnswerCreateResponse(BaseModel):
+    answer: AnswerCreateBody
 
 class Answer(AnswerBase):
     id: int
@@ -89,8 +105,9 @@ class AnswerDateResponse(AnswerBase):
         "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
     }
 
-class AnswerCreateRequest(AnswerCreate):
-    pass
+class AnswerCreateRequest(BaseModel):
+    question_id: int
+    text: str
 
 # ValueScore
 
@@ -142,7 +159,7 @@ class PersonalityInsightResponse(BaseModel):
     user_id: int
     personality_insight: str
     updated_at: datetime
-    
+
 # --- Combined ---
 class QuestionWithAnswerResponse(BaseModel):
     question: QuestionDateResponse

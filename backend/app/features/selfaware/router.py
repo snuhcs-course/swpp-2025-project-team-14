@@ -15,6 +15,8 @@ from .schemas.responses import (
     QuestionWithAnswerResponse,
     TopValueScoreResponse,
     PersonalityInsightResponse,
+    AnswerCreateBody,
+    AnswerCreateResponse,
 )
 
 security = HTTPBearer()
@@ -107,10 +109,10 @@ def get_selfaware_question(
 # 💬 Answer 관련 엔드포인트
 # -----------------------------
 @self_aware_router.post(
-    "/answer/create",
+    "/value-map",
     status_code=201,
     summary="Create answer for a question",
-    response_model=Answer,
+    response_model=AnswerCreateResponse,
 )
 def create_answer(
     request: AnswerCreateRequest,
@@ -118,10 +120,11 @@ def create_answer(
 ):
     try:
         return answer_service.create_answer(
-            request.text, request.type, request.keywords, request.user_id, request.question_id
+            request.text, request.question_id
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
 
 
 @self_aware_router.get(

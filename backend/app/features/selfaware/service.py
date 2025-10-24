@@ -19,7 +19,7 @@ from langchain.schema.runnable import RunnableMap
 
 from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData, TopValueScoreResponse
+from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData, TopValueScoreResponse, AnswerCreateResponse, AnswerCreateBody
 from value_map import analyze_personality
 
 class QuestionService:
@@ -177,7 +177,7 @@ class AnswerService:
         self.answer_repository = answer_repository
 
 
-    def create_answer(self, text: str, type: str | None, keywords: str | None, user_id: int, question_id: int,):
+    def create_answer(self, text: str, question_id: int,):
         """
         해당 question이 실제 존재하는지 확인한 뒤,
         answer를 DB에 생성한다.
@@ -186,11 +186,14 @@ class AnswerService:
         if not question:
             raise ValueError(f"Question(id={question_id})이 존재하지 않습니다.")
         answer_data = AnswerCreate(text = text,
-                                    type = type,
-                                    keywords = keywords, 
-                                    user_id = user_id, 
-                                    question_id=question_id)
-        return self.answer_repository.create(answer_data)
+                                   user_id = question.user_id,
+                                   question_id = question_id,
+                                   created_at = datetime.utcnow(),
+                                   updated_at = datetime.utcnow())
+        self.answer_repository.create(answer_data)
+        created_answer = self.answer_repository.get_by_question(question_id)
+        body = AnswerCreateBody.model_validate(created_answer)
+        return AnswerCreateResponse(answer = body)
 
 
     def get_answers_by_question(self, question_id: int):
