@@ -1,14 +1,3 @@
 import app.features.auth.models
 import app.features.user.models
-import backend.app.features.answer.answer_model
-import app.database.models.conversation_model
-import app.database.models.emotion_event_model
-import app.database.models.emotion_model
-import app.database.models.journal_image_model
-import backend.app.features.journal.journal_model
-import app.database.models.keyword_model
-import app.database.models.message_model
-import backend.app.features.question.question_model
-import app.database.models.recommendation_model
-import backend.app.features.value_map.value_map_model
-import backend.app.features.value_score.value_score_model
+import app.features.selfaware.models
