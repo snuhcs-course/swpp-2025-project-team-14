@@ -206,7 +206,7 @@ async def complete_image_upload(
 
 
 @router.post(
-    "/generate/image",
+    "/image/generate",
     response_model=ImageGenerateResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Request AI image generation for a journal entry",

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.database.session import get_db_session
-from app.features.journal.schemas.responses import JournalKeywordsListResponse
+from app.features.journal.schemas.responses import KeywordEmotionAssociationItem
 
 from .models import Journal, JournalEmotion, JournalImage, JournalKeyword
 
@@ -115,10 +115,10 @@ class JournalRepository:
     def add_keywords_emotion_associations(
         self,
         journal_id: int,
-        keyword_emotion_associations: JournalKeywordsListResponse,
+        keyword_emotion_associations: list[KeywordEmotionAssociationItem],
     ) -> list[JournalKeyword]:
         journal_keyword_list = []
-        for entry in keyword_emotion_associations.data:
+        for entry in keyword_emotion_associations:
             journal_keyword = JournalKeyword(
                 journal_id=journal_id,
                 keyword=entry.keyword,

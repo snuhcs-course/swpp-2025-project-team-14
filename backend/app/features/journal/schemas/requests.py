@@ -144,4 +144,4 @@ class ImageGenerateRequest(BaseModel):
     """클라이언트가 이미지 생성을 요청할 때 보내는 데이터"""
 
     style: Annotated[str, AfterValidator(validate_style)]
-    content: str
+    content: Annotated[str, AfterValidator(validate_content)]

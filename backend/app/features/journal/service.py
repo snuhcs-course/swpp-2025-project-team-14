@@ -115,7 +115,7 @@ class JournalService:
             start_date=start_date,
             end_date=end_date,
             limit=limit,
-            curosr=cursor,
+            cursor=cursor,
         )
 
     # image upload via S3 presigned URL
@@ -286,9 +286,10 @@ class JournalOpenAIService:
             "content": journal.content,
             "emotion_names": ", ".join(emotion_names),
         }
+        res = None
         try:
             res_envelope = await chain.ainvoke(input_data)
-            res = res_envelope.keywords
+            res = res_envelope.data
         except Exception as e:
             print(f"LangChain(ainvoke) 호출 실패: {e}")
 
