@@ -283,6 +283,9 @@ class ValueMapService:
         )
         return self.value_map_repository.create(value_map_create)
 
+    def get_value_map_by_user(self, user_id):
+        return self.value_map_repository.get_by_user(user_id)
+
     def generate_comment(self, user_id: int):
         value_map = self.value_map_repository.get_by_user(user_id)
 

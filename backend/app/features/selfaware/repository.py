@@ -3,7 +3,6 @@ from fastapi import Depends
 from sqlalchemy import select, func, desc
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session
-import models as model
 import schemas.responses as schema
 from .models import Journal, Question, Answer, ValueMap, ValueScore
 from datetime import date, datetime

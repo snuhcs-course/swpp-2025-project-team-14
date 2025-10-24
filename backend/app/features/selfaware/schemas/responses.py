@@ -138,6 +138,11 @@ class ValueMap(ValueMapBase):
     class Config:
         orm_mode = True
 
+class PersonalityInsightResponse(BaseModel):
+    user_id: int
+    personality_insight: str
+    updated_at: datetime
+    
 # --- Combined ---
 class QuestionWithAnswerResponse(BaseModel):
     question: QuestionDateResponse

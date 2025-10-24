@@ -1,21 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Annotated
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi.security import HTTPBearer
 from app.common.schemas import ResponseEnvelope
 from .service import QuestionService, AnswerService, ValueMapService, ValueScoreService
 from .schemas.responses import (
     AnswerCreateRequest,
-    ValueMap,
     QuestionGenerateRequest,
-    ValueMapCreate,
     Answer,
     Question,
     QuestionDateResponse,
     AnswerDateResponse,
     QuestionWithAnswerResponse,
-    TopValueScoreResponse
+    TopValueScoreResponse,
+    PersonalityInsightResponse,
 )
 
 security = HTTPBearer()
@@ -172,3 +171,18 @@ def get_top_value_scores(
     value_score_service: Annotated[ValueScoreService, Depends()],
 ):
     return value_score_service.get_top_value_scores(user_id)
+
+@self_aware_router.get("/{user_id}", response_model=PersonalityInsightResponse)
+def get_personality_insight(
+    user_id: int,
+    value_map_service: Annotated[ValueMapService, Depends()],
+):
+    value_map = value_map_service.get_value_map_by_user(user_id)
+    if not value_map:
+        raise
+    response = PersonalityInsightResponse(
+        user_id = user_id,
+        personality_insight = value_map.personality_insight,
+        updated_at = datetime.utcnow(),
+    )
+    return response
