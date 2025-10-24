@@ -68,10 +68,10 @@ def create_or_get_today_question(
     """
     question = question_service.get_questions_by_date(date)
     if not question: 
-        question = question_service.generate_selfaware_question(user.id)
+        question = question_service.generate_question(user.id)
         return QAResponse(question=QuestionResponse.from_question(question))
     else:
-        answer = answer_service.get_answers_by_question(question.id)
+        answer = answer_service.get_answer_by_question(question.id)
         if not answer:
             return QAResponse(question=QuestionResponse.from_question(question))
         else:
@@ -86,7 +86,7 @@ def create_or_get_today_question(
     status_code=status.HTTP_200_OK,
     summary="Get all question & answer pairs by user ID with pagination",
 )
-def get_user_questions(
+def get_user_QAs(
     user_id: int,
     question_service: Annotated[QuestionService, Depends()],
     answer_service: Annotated[AnswerService, Depends()],
@@ -126,7 +126,7 @@ def submit_answer(
     if question.user_id != user.id:
         raise HTTPException(status_code=403, detail="No Authorization.")
 
-    return answer_service.create_answer(text=request.text, question_id=question_id)
+    return answer_service.create_answer(user_id=user.id, question_id=question_id,  text=request.text)
     
 
 # -----------------------------
@@ -165,7 +165,8 @@ def get_top_value_scores(
 ):
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="No Authorization.")    
-    return value_score_service.get_top_value_scores(user_id)
+    value_scores = value_score_service.get_top_value_scores(user_id)
+    return value_scores
 
 
 @router.get(

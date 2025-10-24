@@ -17,9 +17,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 from langchain.schema.runnable import RunnableMap
 
+from .models import Journal, Question, Answer, ValueMap, ValueScore
 from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData, TopValueScoreResponse, AnswerCreateResponse, AnswerCreateBody
 from value_map import analyze_personality
 
 class QuestionService:
@@ -32,7 +32,7 @@ class QuestionService:
         self.question_repository = question_repository
 
 
-    def generate_selfaware_question(self, user_id: int):
+    def generate_selfaware_question(self, user_id: int) -> Question:
         """
         특정 사용자의 일기를 DB에서 불러와 요약 → 자기성찰 질문을 생성 → DB 저장
         """
@@ -66,18 +66,16 @@ class QuestionService:
         response = reflection_agent.invoke({"journal": journal_summary})
 
         # DB에 저장
-        question_data = QuestionCreate(
+        question = self.question_repository.create_question(
             user_id=user_id,
-            text=response,
             question_type="personalized_category",
+            text=response,
         )
-
-        question = self.question_repository.create(question_data)
 
         return question
     
 
-    def generate_single_category_question(self, user_id: int):
+    def generate_single_category_question(self, user_id: int) -> Question:
         llm = ChatOpenAI(model="gpt-5-nano")
         output_parser = StrOutputParser()
 
@@ -100,18 +98,16 @@ class QuestionService:
         response = single_category_chain.invoke({"cat": category})
 
         # DB에 저장
-        question_data = QuestionCreate(
+        question = self.question_repository.create_question(
             user_id=user_id,
-            text=response,
             question_type="single_category",
+            text=response,
         )
-
-        question = self.question_repository.create(question_data)
 
         return question
 
 
-    def generate_multi_category_question(self, user_id: int):
+    def generate_multi_category_question(self, user_id: int) -> Question:
         llm = ChatOpenAI(model="gpt-5-nano")
         output_parser = StrOutputParser()
 
@@ -134,75 +130,62 @@ class QuestionService:
         response = multi_category_chain.invoke({"cats": categories})
 
         # DB에 저장
-        question_data = QuestionCreate(
+        question = self.question_repository.create_question(
             user_id=user_id,
-            text=response,
             question_type="multi_category",
+            text=response,
         )
-
-        question = self.question_repository.create(question_data)
 
         return question
 
-
-    def generate_question(self, user_id: int):
-        flag = random.randint(0, 2)
-        if flag == 0:
+    def generate_question(self, user_id: int) -> Question:
+        type = random.randint(0, 2)
+        if type == 0:
             return self.generate_selfaware_question(user_id)
-        if flag == 1:
+        if type == 1:
             return self.generate_single_category_question(user_id)
-        if flag == 2:
+        if type == 2:
             return self.generate_multi_category_question(user_id)
 
 
-    def get_questions_by_id(self, question_id: int):
+    def get_questions_by_id(self, question_id: int) -> Question | None:
         return self.question_repository.get(question_id)
 
+    def list_journals_by_user(
+        self, user_id: int, limit: int = 10, cursor: int | None = None
+    ) -> list[Question]:
+        return self.question_repository.list_journals_by_user(user_id, limit, cursor)   
 
-    def get_questions_by_user(self, user_id: int):
-        return self.question_repository.get_by_user(user_id)
-
-
-    def get_questions_by_date(self, date: date):
-        return self.question_repository.get_by_date(date)
+    def get_questions_by_date(self, date: date) -> Question | None:
+        return self.question_repository.get_question_by_date(date)
 
 
 class AnswerService:
     def __init__(
         self,
-        question_repository: Annotated[QuestionRepository, Depends()],
         answer_repository: Annotated[AnswerRepository, Depends()],
     ) -> None:
-        self.question_repository = question_repository
         self.answer_repository = answer_repository
 
 
-    def create_answer(self, text: str, question_id: int,):
+    def create_answer(self, user_id: int, question_id: int, text: str) -> Answer:
         """
         해당 question이 실제 존재하는지 확인한 뒤,
         answer를 DB에 생성한다.
         """
-        question = self.question_repository.get(question_id)
-        if not question:
-            raise ValueError(f"Question(id={question_id})이 존재하지 않습니다.")
-        answer_data = AnswerCreate(text = text,
-                                   user_id = question.user_id,
-                                   question_id = question_id,
-                                   created_at = datetime.utcnow(),
-                                   updated_at = datetime.utcnow())
-        self.answer_repository.create(answer_data)
-        created_answer = self.answer_repository.get_by_question(question_id)
-        body = AnswerCreateBody.model_validate(created_answer)
-        return AnswerCreateResponse(answer = body)
+        answer = self.answer_repository.create_answer(
+            user_id=user_id,
+            question_id=question_id,
+            text=text
+        )
+        return answer
 
 
-    def get_answers_by_question(self, question_id: int):
+    def get_answer_by_question(self, question_id: int) -> Answer | None:
         return self.answer_repository.get_by_question(question_id)
-
-
-    def get_answers_by_user(self, user_id: int):
-        return self.answer_repository.get_by_user(user_id)
     
+    def list_answers_by_user(self, user_id: int, question_ids: List[int]) -> list[Answer]:
+        return self.answer_repository.list_answers_by_user(user_id, question_ids)
 
     def extract_keyword(self, id: int):
         pass
@@ -222,13 +205,16 @@ class ValueScoreService:
         self.value_map_repository = value_map_repository
 
 
-    def get_value_score_from_answer(self, user_id:int, question_id:int, answer_id: int):
+    def extract_value_score_from_answer(self, user_id:int, question_id:int, answer_id: int):
         llm = ChatOpenAI(model="gpt-5-nano")
 
-        question = self.question_repository.get(question_id)
-        answer = self.answer_repository.get(answer_id)
+        question = self.question_repository.get_question_by_id(question_id)
+        answer = self.answer_repository.get_answer_by_id(answer_id)
         value_score_chain = value_score_prompt | llm
-        response = value_score_chain.invoke({"question": question, "answer":answer})
+        response = value_score_chain.invoke({
+            "question": question.text, 
+            "answer": answer.text
+        })
         content = response.content if hasattr(response, "content") else str(response)
 
         try:
@@ -238,37 +224,35 @@ class ValueScoreService:
             # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
             value_map = self.value_map_repository.get_by_user(user_id)
             if not value_map:
-                self.value_map_repository.create(ValueMapCreate(user_id=user_id))
+                self.value_map_repository.create_value_map(user_id=user_id)
 
             for v in detected_values:
-                value_score_create = ValueScoreCreate(
-                    answer_id = answer_id,
+                value_score = self.value_score_repository.create_value_score(
                     user_id = user_id,
+                    question_id = question_id,
+                    answer_id = answer_id,
                     category = v['category_key'],
                     value = v['value_name'],
                     confidence= v['confidence'],
                     intensity= v['intensity'],
                     polarity= v['polarity'],
+                    evidence_quotes= v.get('evidence', []),
                 )
-                self.value_score_repository.create(value_score_create)
-                value_score_data = ValueScoreData.model_validate(value_score_create)
-                self.value_map_repository.update_by_value_score(value_score_data)
-
+                self.value_map_repository.update_by_value_score(value_score)
         except json.JSONDecodeError:
             print("JSON 파싱 실패. 모델의 출력 형식을 확인하세요.")
             detected_values = []
         
         return detected_values
 
-
-    def get_top_value_scores(self, user_id: int) -> TopValueScoreResponse:
+    
+    def get_top_value_scores(self, user_id: int):
         top_value_scores = self.value_score_repository.get_top_5_value_scores(user_id)
         value_scores = []
         if top_value_scores:
             for top_value_score in top_value_scores:
                 value_scores.append({"value": top_value_score.value, "intensity": top_value_score.intensity})
-        response = TopValueScoreResponse(user_id = user_id, value_scores=value_scores, updated_at=datetime.utcnow())
-        return response
+        return value_scores
     
     
 class ValueMapService:
@@ -280,16 +264,13 @@ class ValueMapService:
         self.value_score_repository = value_score_repository
         self.value_map_repository = value_map_repository
 
-    def create(self, user_id: int):
-        value_map_create = ValueMapCreate(
-            user_id = user_id
-        )
-        return self.value_map_repository.create(value_map_create)
+    def create_value_map(self, user_id: int) -> None:
+        return self.value_map_repository.create_value_map(user_id=user_id)
 
-    def get_value_map_by_user(self, user_id):
+    def get_value_map_by_user(self, user_id) -> ValueMap | None:
         return self.value_map_repository.get_by_user(user_id)
 
-    def generate_comment(self, user_id: int):
+    def generate_comment(self, user_id: int) -> None:
         value_map = self.value_map_repository.get_by_user(user_id)
 
         llm = ChatOpenAI(model="gpt-5-nano")
@@ -314,4 +295,4 @@ class ValueMapService:
              "score_5": value_map.score_5, # type: ignore
              "score_6": value_map.score_6,}) # type: ignore
 
-        return self.value_map_repository.generate_text(user_id, value_map_text, value_map_short_text)
+        return self.value_map_repository.generate_comment(user_id, value_map_text, value_map_short_text)
