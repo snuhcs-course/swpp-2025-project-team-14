@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
-from app.features.user.models import User
 
 if TYPE_CHECKING:
     from app.features.user.models import User
