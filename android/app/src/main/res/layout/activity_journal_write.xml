@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
-    tools:context=".JournalWriteActivity">
+    tools:context=".features.journal.presentation.write.JournalWriteActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/write_fragment_container"
