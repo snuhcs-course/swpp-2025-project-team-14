@@ -6,7 +6,18 @@ from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
 from app.features.user.models import User
-from app.features.selfaware.service import QuestionService, AnswerService, ValueMapService, ValueScoreService
+from app.features.selfaware.service import (
+    QuestionService,
+    AnswerService,
+    ValueMapService,
+    ValueScoreService,
+)
+from app.features.selfaware.di import (
+    get_question_service,
+    get_answer_service,
+    get_value_map_service,
+    get_value_score_service,
+)
 from app.features.selfaware.schemas.responses import (
     QAResponse,
     QuestionResponse,
@@ -37,9 +48,9 @@ router = APIRouter(prefix="/self-aware", tags=["selfaware"])
 )
 def get_question(
     question_id: int,
-    question_service: Annotated[QuestionService, Depends()],
+    question_service: Annotated[QuestionService, Depends(get_question_service)],
     user: User = Depends(get_current_user)
-):
+) -> QuestionResponse:
     """특정 질문을 조회합니다."""
     question = question_service.get_questions_by_id(question_id)
     if not question:
@@ -57,11 +68,11 @@ def get_question(
     summary="Create a new question if not exists for today. If exists, return the existing one.",
 )
 def create_or_get_today_question(
-    question_service: Annotated[QuestionService, Depends()],
-    answer_service: Annotated[AnswerService, Depends()],
+    question_service: Annotated[QuestionService, Depends(get_question_service)],
+    answer_service: Annotated[AnswerService, Depends(get_answer_service)],
     user: User = Depends(get_current_user),
     date: date = Query(default=date.today(), description="조회할 날짜 (YYYY-MM-DD)"),
-):
+) -> QAResponse:
     """
     오늘 날짜의 질문이 이미 존재하면 해당 질문을 반환하고 (답변이 있으면 함께 반환),
     존재하지 않으면 새로운 질문을 생성하여 저장한 후 반환합니다.
@@ -82,25 +93,25 @@ def create_or_get_today_question(
             
 @router.get(
     "/user/{user_id}",
-    response_model=QAResponse,
+    response_model=QACursorResponse,
     status_code=status.HTTP_200_OK,
     summary="Get all question & answer pairs by user ID with pagination",
 )
 def get_user_QAs(
     user_id: int,
-    question_service: Annotated[QuestionService, Depends()],
-    answer_service: Annotated[AnswerService, Depends()],
+    question_service: Annotated[QuestionService, Depends(get_question_service)],
+    answer_service: Annotated[AnswerService, Depends(get_answer_service)],
     limit: int = Query(default=10, le=50, description="Number of items to retrieve"),
     cursor: int | None = Query(None, description="ID of the last item from the previous page for pagination"),
     user: User = Depends(get_current_user)
-):  
+) -> QACursorResponse:
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="No Authorization.")
 
     questions = question_service.list_questions_by_user(user_id, limit, cursor)
     questions_ids = [q.id for q in questions]
     answers = answer_service.list_answers_by_user(user_id, questions_ids)
-    return QACursorResponse(questions=questions, answers=answers)
+    return QACursorResponse.from_QAs(questions, answers)
 
 # -----------------------------
 # 💬 Answer 관련 엔드포인트
@@ -114,10 +125,10 @@ def get_user_QAs(
 )
 def submit_answer(
     request: AnswerRequest,
-    question_service: Annotated[QuestionService, Depends()],
-    answer_service: Annotated[AnswerService, Depends()],
+    question_service: Annotated[QuestionService, Depends(get_question_service)],
+    answer_service: Annotated[AnswerService, Depends(get_answer_service)],
     user: User = Depends(get_current_user)
-):
+) -> AnswerResponse:
     """특정 질문(question_id)에 대한 모든 답변 조회"""
     question_id = request.question_id
     question = question_service.get_questions_by_id(question_id)
@@ -141,9 +152,9 @@ def submit_answer(
 )
 def get_value_map_by_user(
     user_id: int,
-    value_map_service: Annotated[ValueMapService, Depends()],
+    value_map_service: Annotated[ValueMapService, Depends(get_value_map_service)],
     user: User = Depends(get_current_user)
-):
+) -> ValueMapResponse:
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="No Authorization.")
     value_map = value_map_service.get_value_map_by_user(user_id)
@@ -160,9 +171,9 @@ def get_value_map_by_user(
 )
 def get_top_value_scores(
     user_id: int,
-    value_score_service: Annotated[ValueScoreService, Depends()],
+    value_score_service: Annotated[ValueScoreService, Depends(get_value_score_service)],
     user: User = Depends(get_current_user)
-):
+) -> TopValueScoresResponse:
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="No Authorization.")    
     value_scores = value_score_service.get_top_value_scores(user_id)
@@ -177,9 +188,9 @@ def get_top_value_scores(
 )
 def get_personality_insight(
     user_id: int,
-    value_map_service: Annotated[ValueMapService, Depends()],
+    value_map_service: Annotated[ValueMapService, Depends(get_value_map_service)],
     user: User = Depends(get_current_user)
-):
+) -> PersonalityInsightResponse:
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="No Authorization.")
     value_map = value_map_service.get_value_map_by_user(user_id)

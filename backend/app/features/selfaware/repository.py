@@ -1,10 +1,13 @@
 from typing import Annotated, Optional, List, Sequence
+from datetime import date, datetime, time, timedelta, timezone
+
 from fastapi import Depends
 from sqlalchemy import select, func, desc
 from sqlalchemy.orm import Session
+
 from app.database.session import get_db_session
-from .models import Journal, Question, Answer, ValueMap, ValueScore
-from datetime import date, datetime, time, timedelta, timezone
+from app.features.selfaware.models import Journal, Question, Answer, ValueMap, ValueScore
+
 
 # -------------------------------
 # Journal Repository 테스트 용, merge 후 삭제 예정

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 from app.features.selfaware.models import Question, Answer, ValueScore, ValueMap
 from app.features.selfaware.prompt import CAT_EN, CAT_KO
@@ -10,7 +10,7 @@ class QuestionResponse(BaseModel):
     question_type: str
     text: str
     categories_ko: Optional[List[str]] = None
-    categories_ko: Optional[List[str]] = None
+    categories_en: Optional[List[str]] = None
     created_at: datetime
     
     @staticmethod
@@ -55,7 +55,7 @@ class QACursorResponse(BaseModel):
     )
     
     @staticmethod
-    def from_QAs(questions: List[Question], answers: List[Question]) -> "QACursorResponse":
+    def from_QAs(questions: List[Question], answers: List[Answer]) -> "QACursorResponse":
         items = [
             QAResponse(
                 question=QuestionResponse.from_question(q),

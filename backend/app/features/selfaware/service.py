@@ -17,16 +17,16 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 from langchain.schema.runnable import RunnableMap
 
-from .models import Journal, Question, Answer, ValueMap, ValueScore
-from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
-from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from .value_map import analyze_personality
+from app.features.selfaware.models import Journal, Question, Answer, ValueMap, ValueScore
+from app.features.selfaware.prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
+from app.features.selfaware.repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
+from app.features.selfaware.value_map import analyze_personality
 
 class QuestionService:
     def __init__(
         self,
-        journal_repository: Annotated[JournalRepository, Depends()],
-        question_repository: Annotated[QuestionRepository, Depends()],
+        journal_repository: JournalRepository,
+        question_repository: QuestionRepository,
     ) -> None:
         self.journal_repository = journal_repository
         self.question_repository = question_repository
@@ -149,12 +149,12 @@ class QuestionService:
 
 
     def get_questions_by_id(self, question_id: int) -> Question | None:
-        return self.question_repository.get(question_id)
+        return self.question_repository.get_question_by_id(question_id)
 
-    def list_journals_by_user(
+    def list_questions_by_user(
         self, user_id: int, limit: int = 10, cursor: int | None = None
     ) -> list[Question]:
-        return self.question_repository.list_journals_by_user(user_id, limit, cursor)   
+        return self.question_repository.list_questions_by_user(user_id, limit, cursor)   
 
     def get_questions_by_date(self, date: date) -> Question | None:
         return self.question_repository.get_question_by_date(date)
@@ -163,7 +163,7 @@ class QuestionService:
 class AnswerService:
     def __init__(
         self,
-        answer_repository: Annotated[AnswerRepository, Depends()],
+        answer_repository: AnswerRepository,
     ) -> None:
         self.answer_repository = answer_repository
 
@@ -194,10 +194,10 @@ class AnswerService:
 class ValueScoreService:
     def __init__(
         self,
-        question_repository: Annotated[QuestionRepository, Depends()],
-        answer_repository: Annotated[AnswerRepository, Depends()],
-        value_score_repository: Annotated[ValueScoreRepository, Depends()],
-        value_map_repository: Annotated[ValueMapRepository, Depends()],
+        question_repository: QuestionRepository,
+        answer_repository: AnswerRepository,
+        value_score_repository: ValueScoreRepository,
+        value_map_repository: ValueMapRepository,
     ) -> None:
         self.question_repository = question_repository
         self.answer_repository = answer_repository
@@ -258,8 +258,8 @@ class ValueScoreService:
 class ValueMapService:
     def __init__(
         self,
-        value_map_repository: Annotated[ValueMapRepository, Depends()],
-        value_score_repository: Annotated[ValueScoreRepository, Depends()],
+        value_map_repository: ValueMapRepository,
+        value_score_repository: ValueScoreRepository,
     ) -> None:
         self.value_score_repository = value_score_repository
         self.value_map_repository = value_map_repository
