@@ -256,10 +256,14 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
-                    <com.github.mikephil.charting.charts.HorizontalBarChart
-                        android:id="@+id/chartEmotionRatio"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvEmotionRatio"
                         android:layout_width="match_parent"
-                        android:layout_height="220dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:overScrollMode="never"
+                        android:nestedScrollingEnabled="false" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
