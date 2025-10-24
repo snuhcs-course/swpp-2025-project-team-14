@@ -209,23 +209,19 @@ async def complete_image_upload(
 
 
 @router.post(
-    "/{journal_id}/generate-image",
+    "/generate/image",
     response_model=ImageGenerateResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Request AI image generation for a journal entry",
-    description="This endpoint requests AI image generation based on the provided prompt and associates the generated image with the specified journal entry.",
+    description="Requests AI image generation to DALL E based on provided journal content and return to client.",
 )
 async def request_journal_image_generation(
-    journal_id: int,
     journal_openai_service: Annotated[JournalOpenAIService, Depends()],
-    journal_service: Annotated[JournalService, Depends()],
     request: ImageGenerateRequest,
     user: User = Depends(get_current_user),
 ) -> ImageGenerateResponse:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
     image_base64 = await journal_openai_service.request_image_generation(
-        request=request, journal_id=journal_id
+        request=request
     )
     return ImageGenerateResponse(image_base64=image_base64)
 

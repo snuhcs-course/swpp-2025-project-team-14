@@ -29,6 +29,14 @@ ALLOWED_EMOTIONS = {
     "energetic",
 }
 
+ALLOWD_STYLE = {
+    "natural",
+    "american-comics",
+    "watercolor",
+    "3d-animation",
+    "pixel-art",
+}
+
 
 def validate_title(title: str) -> str:
     if not title.strip():
@@ -96,6 +104,15 @@ def validate_emotions(value: dict[str, int]) -> dict[str, int]:
     return value
 
 
+def validate_style(value: str) -> str:
+    if value in ALLOWD_STYLE:
+        return value
+    else:
+        raise ValueError(
+            "Invalid style request: choose one in [natural, american-comics, abstract, impressionism-gogh]"
+        )
+
+
 class JournalCreateRequest(BaseModel):
     title: Annotated[str, AfterValidator(validate_title)]
     content: Annotated[str, AfterValidator(validate_content)]
@@ -126,4 +143,5 @@ class ImageCompletionRequest(BaseModel):
 class ImageGenerateRequest(BaseModel):
     """클라이언트가 이미지 생성을 요청할 때 보내는 데이터"""
 
-    prompt_text: str
+    style: Annotated[str, AfterValidator(validate_style)]
+    content: str

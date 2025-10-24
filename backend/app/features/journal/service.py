@@ -11,6 +11,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from openai import AsyncOpenAI
 
+from app.features.journal import prompt_text
 from app.features.journal.errors import (
     ImageUploadError,
     JournalBadRequestError,
@@ -178,7 +179,7 @@ class JournalService:
 
 class JournalOpenAIService:
     """
-    OpenAI(GPT 및 DALL-E) 및 LangChain 관련 로직을 전담하는 서비스
+    OpenAI 관련 로직을 전담하는 서비스
     """
 
     def __init__(self, journal_repository: JournalRepository = Depends()):
@@ -187,7 +188,7 @@ class JournalOpenAIService:
         """
         self.journal_repository = journal_repository
 
-        self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = AsyncOpenAI()
         if not self.client.api_key:
             raise ValueError("OPENAI_API_KEY not found.")
 
@@ -195,39 +196,30 @@ class JournalOpenAIService:
             model="gpt-5-nano", temperature=0
         ).with_structured_output(JournalKeywordListResponseEnvelope)
 
-        self.keyword_prompt_template = PromptTemplate.from_template("""
-You are given a journal content and a list of emotion labels.
-Extract up to 10 meaningful keywords from the content.
-For each keyword, provide a mapping of provided emotion to a float between 0 and 1 indicating association strength.
-You should only include the emotion with the highest association strength for each keyword.
-Also, Do not extract emotion, feeling, or subjective words as keywords. Do not extract duplicate keywords, either. There should be no overlap between keywords.
-Return ONLY valid JSON matching the schema.
-
-Journal content:
-{content}
-
-Emotions:
-{emotion_names}
-""")
-
-    async def request_image_generation(
-        self, journal_id: int, request: ImageGenerateRequest
-    ) -> str:
-        """
-        일기 ID와 프롬프트를 받아 이미지를 생성하고 Base64로 반환합니다.
-        """
-
-        find_journal_task = partial(
-            self.journal_repository.get_journal_by_id,
-            journal_id=journal_id,
+        self.keyword_prompt_template = PromptTemplate.from_template(
+            prompt_text.keyword_prompt_template
         )
-        journal = await run_in_threadpool(find_journal_task)
-        if not journal:
-            raise JournalNotFoundError(journal_id)
+
+    async def request_image_generation(self, request: ImageGenerateRequest) -> str:
+        """
+        일기를 받아 이미지를 생성하고 Base64로 반환합니다.
+        """
+
+        prompt_template = ""
+        if request.style == "american-comics":
+            prompt_template = prompt_text.image_prompt_template_american_comics
+        elif request.style == "natural":
+            prompt_template = prompt_text.image_prompt_template_natural
+        elif request.style == "watercolor":
+            prompt_template = prompt_text.image_prompt_template_watercolor
+        elif request.style == "3d-animation":
+            prompt_template = prompt_text.image_prompt_template_3d_animation
+        elif request.style == "pixel-art":
+            prompt_template = prompt_text.image_prompt_template_pixel_art
 
         try:
             prompt = await self._generate_scene_prompt_from_diary(
-                journal.content, request.prompt_text
+                request.content, prompt_template
             )
         except Exception as e:
             print(f"GPT 호출 실패: {e}")
@@ -243,10 +235,10 @@ Emotions:
         self, journal_content: str, input_prompt: str
     ) -> str:
         """
-        (Helper) GPT-4o를 비동기 호출하여 DALL-E용 프롬프트를 생성합니다.
+        (Helper) GPT-5-mini를 비동기 호출하여 DALL-E용 프롬프트를 생성합니다.
         """
         chat_response = await self.client.chat.completions.create(
-            model="gpt-5-nano",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": input_prompt},
                 {"role": "user", "content": journal_content},
