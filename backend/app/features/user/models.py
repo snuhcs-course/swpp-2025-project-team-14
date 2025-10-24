@@ -16,7 +16,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
     username: Mapped[str] = mapped_column(String(100), nullable=True)
 
-    journals: Mapped[List["Journal"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    questions: Mapped[List["Question"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    answers: Mapped[List["Answer"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    value_maps: Mapped[List["ValueMap"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    journals: Mapped[List[Journal]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    questions: Mapped[List[Question]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    answers: Mapped[List[Answer]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    value_maps: Mapped[List[ValueMap]] = relationship(back_populates="user", cascade="all, delete-orphan")

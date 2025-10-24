@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, List, Optional
+
 from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.database.base import Base
 
+from app.database.base import Base
 if TYPE_CHECKING:
     from app.features.user.models import User
 
@@ -43,8 +45,8 @@ class Question(Base):
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="questions")
-    answers: Mapped["Answer"] = relationship(back_populates="question", uselist=False, cascade="all, delete-orphan")
+    user: Mapped[User] = relationship(back_populates="questions")
+    answers: Mapped[Answer] = relationship(back_populates="question", uselist=False, cascade="all, delete-orphan")
 
 class Answer(Base):
     __tablename__ = "answers"
@@ -62,10 +64,10 @@ class Answer(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="answers")
-    question: Mapped["Question"] = relationship(back_populates="answers")
+    user: Mapped[User] = relationship(back_populates="answers")
+    question: Mapped[Question] = relationship(back_populates="answers")
     
-    value_scores: Mapped[List["ValueScore"]] = relationship(
+    value_scores: Mapped[List[ValueScore]] = relationship(
         back_populates="answer",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -93,7 +95,7 @@ class ValueScore(Base):
     evidence_quotes: Mapped[Optional[List[str]]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     
-    answer: Mapped["Answer"] = relationship(back_populates="value_scores")
+    answer: Mapped[Answer] = relationship(back_populates="value_scores")
 
 # 추가 수정 필요
 class ValueMap(Base):
@@ -124,7 +126,7 @@ class ValueMap(Base):
     comment: Mapped[str] = mapped_column(String, nullable=True)
     personality_insight: Mapped[str] = mapped_column(String, nullable=True)
 
-    user: Mapped["User"] = relationship(back_populates="value_maps")
+    user: Mapped[User] = relationship(back_populates="value_maps")
 
 
 

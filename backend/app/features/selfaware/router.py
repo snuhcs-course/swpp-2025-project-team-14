@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from typing import Annotated
 from datetime import date, datetime
-from sqlalchemy.exc import SQLAlchemyError
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from fastapi.security import HTTPBearer
-from app.common.schemas import ResponseEnvelope
+
 from app.common.authorization import get_current_user
 from app.features.user.models import User
 from app.features.selfaware.service import QuestionService, AnswerService, ValueMapService, ValueScoreService
@@ -60,7 +60,7 @@ def create_or_get_today_question(
     question_service: Annotated[QuestionService, Depends()],
     answer_service: Annotated[AnswerService, Depends()],
     user: User = Depends(get_current_user),
-    date: date = Query(..., description="조회할 날짜 (YYYY-MM-DD)"),
+    date: date = Query(default=date.today(), description="조회할 날짜 (YYYY-MM-DD)"),
 ):
     """
     오늘 날짜의 질문이 이미 존재하면 해당 질문을 반환하고 (답변이 있으면 함께 반환),

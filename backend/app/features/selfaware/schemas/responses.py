@@ -5,27 +5,6 @@ from typing import Optional, List, Dict
 from app.features.selfaware.models import Question, Answer, ValueScore, ValueMap
 from app.features.selfaware.prompt import CAT_EN, CAT_KO
 
-class JournalBase(BaseModel):
-    title: str
-    content: str
-    keywords: Optional[str] = None
-    gratitude: Optional[str] = None
-
-class JournalCreate(JournalBase):
-    user_id: int
-
-class JournalUpdate(JournalBase):
-    pass
-
-class JournalRead(JournalBase):
-    id: int
-    user_id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
 class QuestionResponse(BaseModel):
     id: int
     question_type: str

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Literal, Dict, Any, Tuple
+from typing import Literal
 from langchain_core.prompts import ChatPromptTemplate
 
 CATEGORIES = [
