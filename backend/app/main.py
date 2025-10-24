@@ -7,8 +7,7 @@ app = FastAPI(title='MindLog')
 
 app.include_router(auth_router, prefix='/api/v1')
 app.include_router(user_router, prefix='/api/v1')
-
-app.include_router(self_aware_router, prefix="/api/v2")
+app.include_router(self_aware_router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
