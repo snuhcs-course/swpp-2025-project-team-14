@@ -43,7 +43,7 @@ class Question(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     user: Mapped["User"] = relationship(back_populates="questions")
-    answers: Mapped["Answer"] = relationship(back_populates="question", uselist=False, cascade="all, delete_orphan")
+    answers: Mapped["Answer"] = relationship(back_populates="question", uselist=False, cascade="all, delete-orphan")
 
 class Answer(Base):
     __tablename__ = "answers"
