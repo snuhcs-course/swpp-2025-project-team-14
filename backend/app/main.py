@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .features.auth.router import router as auth_router
 from .features.user.router import router as user_router
-from .features.selfaware.router import self_aware_router
+from .features.selfaware.router import router as self_aware_router
 
 app = FastAPI(title='MindLog')
 

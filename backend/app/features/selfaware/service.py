@@ -20,7 +20,7 @@ from langchain.schema.runnable import RunnableMap
 from .models import Journal, Question, Answer, ValueMap, ValueScore
 from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from value_map import analyze_personality
+from .value_map import analyze_personality
 
 class QuestionService:
     def __init__(

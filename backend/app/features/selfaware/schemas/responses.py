@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List, Dict
 
@@ -70,7 +70,7 @@ class QAResponse(BaseModel):
 
 
 class QACursorResponse(BaseModel):
-    items = List[QAResponse]
+    items: List[QAResponse]
     next_cursor: int | None = Field(
         None, description="다음 페이지의 QA 데이터를 요청할 때 사용할 마지막 아이템의 ID"
     )
@@ -92,7 +92,7 @@ class QACursorResponse(BaseModel):
 
     
 class TopValueScoresResponse(BaseModel):
-    value_scores = List[Dict]
+    value_scores: List[Dict]
     update_at: datetime
     
 class ValueMapResponse(BaseModel):
@@ -126,58 +126,3 @@ class PersonalityInsightResponse(BaseModel):
             personality_insight=value_map.personality_insight,
             update_at=value_map.updated_at
         )
-
-
-class ValueScoreBase(BaseModel):
-    answer_id: int
-    user_id: int
-    category: str
-    value: str
-    confidence: float
-    intensity: float
-    polarity: float
-
-class ValueScore(ValueScoreBase):
-    created_at: datetime
-
-class ValueScoreCreate(ValueScoreBase):
-    pass
-
-class ValueScoreData(BaseModel):
-    user_id: int
-    category: str
-    intensity: float
-
-    model_config = {
-        "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
-    }
-
-class TopValueScoreResponse(BaseModel):
-    user_id: int
-    value_scores: list
-    updated_at: datetime
-# ValueMap
-
-class ValueMapBase(BaseModel):
-    pass
-
-class ValueMapCreate(ValueMapBase):
-    user_id: int
-
-class ValueMap(ValueMapBase):
-    id: int
-    user_id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-class PersonalityInsightResponse(BaseModel):
-    user_id: int
-    personality_insight: str
-    updated_at: datetime
-
-class CategoryScore(BaseModel):
-    category_ko: str
-    category_en: str
-    score: int
