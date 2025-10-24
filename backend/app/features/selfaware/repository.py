@@ -190,7 +190,7 @@ class ValueMapRepository:
             raise
 
         # 실제 객체에 반영
-        setattr(user_value_map, "text", text)
+        setattr(user_value_map, "personality_insight", text)
 
         # 커밋 및 새 값 반영
         self.session.add(user_value_map)

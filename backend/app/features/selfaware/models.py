@@ -120,7 +120,7 @@ class ValueMap(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
 
-    comment: Mapped[str] = mapped_column(String, nullable=True)
+    personality_insight: Mapped[str] = mapped_column(String, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="value_maps")
 
