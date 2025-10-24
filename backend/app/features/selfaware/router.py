@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi.security import HTTPBearer
 from app.common.schemas import ResponseEnvelope
-from .service import QuestionService, AnswerService, ValueMapService
+from .service import QuestionService, AnswerService, ValueMapService, ValueScoreService
 from .schemas.responses import (
     AnswerCreateRequest,
     ValueMap,
@@ -15,6 +15,7 @@ from .schemas.responses import (
     QuestionDateResponse,
     AnswerDateResponse,
     QuestionWithAnswerResponse,
+    TopValueScoreResponse
 )
 
 security = HTTPBearer()
@@ -163,5 +164,11 @@ def get_answers_by_user(
 
 
 # -----------------------------
-# 🗺️ Value Map 관련 엔드포인트
+# 🗺️ Value Map/Score 관련 엔드포인트
 # -----------------------------
+@self_aware_router.get("/top-value-scores/{user_id}", response_model=TopValueScoreResponse)
+def get_top_value_scores(
+    user_id: int,
+    value_score_service: Annotated[ValueScoreService, Depends()],
+):
+    return value_score_service.get_top_value_scores(user_id)
