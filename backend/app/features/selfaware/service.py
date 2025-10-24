@@ -19,7 +19,7 @@ from langchain.schema.runnable import RunnableMap
 
 from .prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt
 from .repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData
+from .schemas.responses import QuestionCreate, Question, AnswerCreate, ValueMapCreate, ValueScoreCreate, ValueScoreData, TopValueScoreResponse
 from value_map import analyze_personality
 
 class QuestionService:
@@ -257,6 +257,17 @@ class ValueScoreService:
         
         return detected_values
 
+
+    def get_top_value_scores(self, user_id: int) -> TopValueScoreResponse:
+        top_value_scores = self.value_score_repository.get_top_5_value_scores(user_id)
+        value_scores = []
+        if top_value_scores:
+            for top_value_score in top_value_scores:
+                value_scores.append({"value": top_value_score.value, "intensity": top_value_score.intensity})
+        response = TopValueScoreResponse(user_id = user_id, value_scores=value_scores, updated_at=datetime.utcnow())
+        return response
+    
+    
 class ValueMapService:
     def __init__(
         self,

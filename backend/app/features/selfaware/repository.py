@@ -1,6 +1,6 @@
 from typing import Annotated, Optional, List, Sequence
 from fastapi import Depends
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
 from sqlalchemy.orm import Session
 from app.database.session import get_db_session
 import models as model
@@ -104,6 +104,11 @@ class ValueScoreRepository:
         self.session.flush()
         self.session.refresh(db_value_score)
         return db_value_score
+    
+    def get_top_5_value_scores(self, user_id: int) -> Optional[Sequence[ValueScore]]:
+        self.session.scalars(
+            select(ValueScore).where(ValueScore.user_id == user_id).order_by(desc(ValueScore.intensity)).limit(5)
+        ).all()
 
 # -------------------------------
 # ValueMap Repository

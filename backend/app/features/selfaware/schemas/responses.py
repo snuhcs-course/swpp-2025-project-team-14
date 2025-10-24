@@ -92,7 +92,7 @@ class AnswerDateResponse(AnswerBase):
 class AnswerCreateRequest(AnswerCreate):
     pass
 
-# ValueMap
+# ValueScore
 
 class ValueScoreBase(BaseModel):
     answer_id: int
@@ -117,6 +117,11 @@ class ValueScoreData(BaseModel):
     model_config = {
         "from_attributes": True  # ✅ ORM 객체로부터 속성 추출 허용
     }
+
+class TopValueScoreResponse(BaseModel):
+    user_id: int
+    value_scores: list
+    updated_at: datetime
 # ValueMap
 
 class ValueMapBase(BaseModel):
