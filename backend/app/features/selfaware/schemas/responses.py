@@ -255,4 +255,15 @@ class ValueMapResponse(BaseModel):
             update_at=value_map.updated_at
         )
         
-    
+class PersonalityInsightResponse(BaseModel):
+    comment: str
+    personality_insight: str
+    update_at: datetime
+
+    @staticmethod
+    def from_value_map(value_map: ValueMap) -> "PersonalityInsightResponse":
+        return PersonalityInsightResponse(
+            comment=value_map.comment,
+            personality_insight=value_map.personality_insight,
+            update_at=value_map.updated_at
+        )
