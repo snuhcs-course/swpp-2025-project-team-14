@@ -6,8 +6,8 @@ from fastapi.security import HTTPBearer
 from app.common.schemas import ResponseEnvelope
 from app.common.authorization import get_current_user
 from app.features.user.models import User
-from .service import QuestionService, AnswerService, ValueMapService, ValueScoreService
-from .schemas.responses import (
+from app.features.selfaware.service import QuestionService, AnswerService, ValueMapService, ValueScoreService
+from app.features.selfaware.schemas.responses import (
     QAResponse,
     QuestionResponse,
     AnswerResponse,
@@ -16,7 +16,7 @@ from .schemas.responses import (
     TopValueScoresResponse,
     PersonalityInsightResponse
 )
-from .schemas.requests import (
+from app.features.selfaware.schemas.requests import (
     AnswerRequest
 )
 
@@ -50,7 +50,7 @@ def get_question(
     return QuestionResponse.from_question(question)
 
 
-@router.post(
+@router.get(
     "/question",
     response_model=QAResponse,
     status_code=status.HTTP_201_CREATED,
@@ -106,7 +106,7 @@ def get_user_QAs(
 # 💬 Answer 관련 엔드포인트
 # -----------------------------
 
-@router.get(
+@router.post(
     "/answer",
     response_model=AnswerResponse,
     status_code=status.HTTP_201_CREATED,
