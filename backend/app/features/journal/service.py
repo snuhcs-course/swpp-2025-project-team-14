@@ -3,6 +3,7 @@ import os
 import uuid
 from datetime import date
 from functools import partial
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -11,7 +12,6 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from openai import AsyncOpenAI
 
-from app.features.journal import prompt_text
 from app.features.journal.errors import (
     ImageUploadError,
     JournalBadRequestError,
@@ -29,6 +29,19 @@ from app.features.journal.schemas.responses import (
     JournalKeywordsListResponse,
     PresignedUrlResponse,
 )
+
+BASE_PROMPT_PATH = Path(__file__).parent / "prompt"
+
+
+def _load_prompt(file_name: str) -> str:
+    """(Helper) prompts 디렉터리에서 .txt 파일을 읽어옵니다."""
+    try:
+        with open(BASE_PROMPT_PATH / file_name, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError as e:
+        raise RuntimeError(f"Prompt file not found: {file_name}") from e
+    except Exception as e:
+        raise RuntimeError(f"Error loading prompt {file_name}: {e}") from e
 
 
 class JournalService:
@@ -192,34 +205,38 @@ class JournalOpenAIService:
         """
         self.journal_repository = journal_repository
 
+        self.prompt_american_comics = _load_prompt("image_american_comics.txt")
+        self.prompt_natural = _load_prompt("image_natural.txt")
+        self.prompt_watercolor = _load_prompt("image_watercolor.txt")
+        self.prompt_3d_animation = _load_prompt("image_3d_animation.txt")
+        self.prompt_pixel_art = _load_prompt("image_pixel_art.txt")
+
+        keyword_prompt_text = _load_prompt("keyword_prompt.txt")
+
         self.client = AsyncOpenAI()
         if not self.client.api_key:
             raise ValueError("OPENAI_API_KEY not found.")
 
         self.structured_llm = ChatOpenAI(
-            model="gpt-5-nano", temperature=0
+            model="gpt-5-mini", temperature=0
         ).with_structured_output(JournalKeywordsListResponse)
 
-        self.keyword_prompt_template = PromptTemplate.from_template(
-            prompt_text.keyword_prompt_template
-        )
+        self.keyword_prompt_template = PromptTemplate.from_template(keyword_prompt_text)
 
     async def request_image_generation(self, request: ImageGenerateRequest) -> str:
         """
         일기를 받아 이미지를 생성하고 Base64로 반환합니다.
         """
 
-        prompt_template = ""
-        if request.style == "american-comics":
-            prompt_template = prompt_text.image_prompt_template_american_comics
-        elif request.style == "natural":
-            prompt_template = prompt_text.image_prompt_template_natural
-        elif request.style == "watercolor":
-            prompt_template = prompt_text.image_prompt_template_watercolor
-        elif request.style == "3d-animation":
-            prompt_template = prompt_text.image_prompt_template_3d_animation
-        elif request.style == "pixel-art":
-            prompt_template = prompt_text.image_prompt_template_pixel_art
+        style_prompt_map = {
+            "american-comics": self.prompt_american_comics,
+            "natural": self.prompt_natural,
+            "watercolor": self.prompt_watercolor,
+            "3d-animation": self.prompt_3d_animation,
+            "pixel-art": self.prompt_pixel_art,
+        }
+
+        prompt_template = style_prompt_map.get(request.style)
 
         try:
             prompt = await self._generate_scene_prompt_from_diary(

@@ -117,6 +117,10 @@ class JournalRepository:
         journal_id: int,
         keyword_emotion_associations: list[KeywordEmotionAssociationItem],
     ) -> list[JournalKeyword]:
+        # delete the existing keywords list
+        journal = self.get_journal_by_id(journal_id)
+        if journal:
+            self.drop_journal_keywords(journal_id)
         journal_keyword_list = []
         for entry in keyword_emotion_associations:
             journal_keyword = JournalKeyword(
@@ -129,6 +133,13 @@ class JournalRepository:
             journal_keyword_list.append(journal_keyword)
         self.session.flush()
         return journal_keyword_list
+
+    def drop_journal_keywords(
+        self,
+        journal_id: int,
+    ):
+        journal = self.get_journal_by_id(journal_id)
+        journal.keywords = []
 
     def get_image_by_journal_id(self, journal_id: int) -> JournalImage | None:
         return (
