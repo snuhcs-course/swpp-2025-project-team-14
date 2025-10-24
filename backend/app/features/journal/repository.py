@@ -2,7 +2,6 @@ from datetime import date, datetime, timedelta
 from typing import IO, Annotated
 
 import boto3
-import httpx
 from botocore.exceptions import ClientError
 from fastapi import Depends
 from fastapi.concurrency import run_in_threadpool
@@ -10,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.database.session import get_db_session
-from app.features.journal.schemas.responses import JournalKeywordListResponseEnvelope
+from app.features.journal.schemas.responses import JournalKeywordsListResponse
 
 from .models import Journal, JournalEmotion, JournalImage, JournalKeyword
 
@@ -91,6 +90,8 @@ class JournalRepository:
         title: str | None = None,
         start_date: date | None = None,
         end_date: date | None = None,
+        limit: int = 10,
+        cursor: int | None = None,
     ) -> list[Journal]:
         query = self.session.query(Journal).filter(Journal.user_id == user_id)
 
@@ -106,42 +107,15 @@ class JournalRepository:
                 < datetime.combine(end_date + timedelta(days=1), datetime.min.time())
             )
 
-        return query.order_by(Journal.created_at.desc()).all()
+        if cursor is not None:
+            query = query.filter(Journal.id < cursor)
 
-    # def create_journal_image(self, journal_id: int, image_url: str) -> JournalImage:
-    #     journal_image = JournalImage(journal_id=journal_id, image_url=image_url)
-    #     self.session.add(journal_image)
-    #     self.session.flush()
-    #     return journal_image
-
-    # def create_image_generation_job(self, journal_id: int, job_id: str) -> JournalImage:
-    #     """AI 이미지 생성 Job 레코드를 생성합니다. 최종 s3_key는 아직 없습니다."""
-    #     journal_image_job = JournalImage(
-    #         journal_id=journal_id, job_id=job_id, s3_key=None
-    #     )
-    #     self.session.add(journal_image_job)
-    #     self.session.flush()
-    #     return journal_image_job
-
-    def update_image_generation_url_by_job_id(
-        self, job_id: str, image_url: str
-    ) -> JournalImage | None:
-        """Job ID로 레코드를 찾아 최종 이미지 URL을 업데이트합니다."""
-        journal_image = (
-            self.session.query(JournalImage)
-            .filter(JournalImage.job_id == job_id)
-            .first()
-        )
-        if journal_image:
-            journal_image.image_url = image_url
-            journal_image.job_id = None  # 더 이상 필요 없으므로 초기화
-        self.session.flush()
-        return journal_image
+        return query.limit(limit).all()
 
     def add_keywords_emotion_associations(
         self,
         journal_id: int,
-        keyword_emotion_associations: JournalKeywordListResponseEnvelope,
+        keyword_emotion_associations: JournalKeywordsListResponse,
     ) -> list[JournalKeyword]:
         journal_keyword_list = []
         for entry in keyword_emotion_associations.data:
@@ -260,16 +234,3 @@ class S3Repository:
             return True
         except ClientError:
             return False
-
-
-class ImageGenerationRepository:
-    def __init__(self):
-        self.base_url = settings.IMAGE_GENERATION_URL_BASE
-        self.client = httpx.AsyncClient()
-
-    async def enqueue_image_generation(self, prompt: str, journal_id: int) -> dict:
-        # 웹훅에 journal_id가 필요하므로 메타데이터로 함께 전달
-        payload = {"prompt": prompt, "metadata": {"journal_id": journal_id}}
-        response = await self.client.post(f"{self.base_url}/enqueue", json=payload)
-        response.raise_for_status()
-        return response.json()

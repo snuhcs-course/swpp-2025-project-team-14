@@ -19,18 +19,14 @@ from app.features.journal.errors import (
     JournalUpdateError,
 )
 from app.features.journal.models import Journal, JournalImage, JournalKeyword
-from app.features.journal.repository import (
-    ImageGenerationRepository,
-    JournalRepository,
-    S3Repository,
-)
+from app.features.journal.repository import JournalRepository, S3Repository
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
     ImageGenerateRequest,
     ImageUploadRequest,
 )
 from app.features.journal.schemas.responses import (
-    JournalKeywordListResponseEnvelope,
+    JournalKeywordsListResponse,
     PresignedUrlResponse,
 )
 
@@ -40,11 +36,9 @@ class JournalService:
         self,
         journal_repository: Annotated[JournalRepository, Depends()],
         s3_repository: Annotated[S3Repository, Depends()],
-        image_generation_repository: Annotated[ImageGenerationRepository, Depends()],
     ) -> None:
         self.journal_repository = journal_repository
         self.s3_repository = s3_repository
-        self.image_generation_repository = image_generation_repository
 
     def create_journal(
         self,
@@ -63,7 +57,10 @@ class JournalService:
         )
 
     def get_journal(self, journal_id: int) -> Journal | None:
-        return self.journal_repository.get_journal_by_id(journal_id)
+        journal = self.journal_repository.get_journal_by_id(journal_id)
+        if journal is None:
+            raise JournalNotFoundError()
+        return journal
 
     def delete_journal(self, journal_id: int) -> None:
         journal_to_delete = self.journal_repository.get_journal_by_id(journal_id)
@@ -107,11 +104,18 @@ class JournalService:
         title: str | None = None,
         start_date: date | None = None,
         end_date: date | None = None,
+        limit: int = 10,
+        cursor: int | None = None,
     ) -> list[Journal]:
         if start_date and end_date and start_date > end_date:
             raise JournalBadRequestError("start_date는 end_date보다 이전이어야 합니다.")
         return self.journal_repository.search_journals(
-            user_id=user_id, title=title, start_date=start_date, end_date=end_date
+            user_id=user_id,
+            title=title,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            curosr=cursor,
         )
 
     # image upload via S3 presigned URL
@@ -194,7 +198,7 @@ class JournalOpenAIService:
 
         self.structured_llm = ChatOpenAI(
             model="gpt-5-nano", temperature=0
-        ).with_structured_output(JournalKeywordListResponseEnvelope)
+        ).with_structured_output(JournalKeywordsListResponse)
 
         self.keyword_prompt_template = PromptTemplate.from_template(
             prompt_text.keyword_prompt_template

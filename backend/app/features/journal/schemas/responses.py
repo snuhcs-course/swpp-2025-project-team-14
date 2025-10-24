@@ -2,7 +2,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.common.schemas import ResponseEnvelope
 from app.features.journal.models import Journal, JournalImage, JournalKeyword
 
 
@@ -22,8 +21,19 @@ class KeywordEmotionAssociationItem(BaseModel):
         )
 
 
-class JournalKeywordListResponseEnvelope(ResponseEnvelope):
+class JournalKeywordsListResponse(BaseModel):
     data: list[KeywordEmotionAssociationItem]
+
+    @staticmethod
+    def from_journal_keywords(
+        keywords_list: list[JournalKeyword],
+    ) -> "JournalKeywordsListResponse":
+        return JournalKeywordsListResponse(
+            data=[
+                KeywordEmotionAssociationItem.from_journal_keyword(kw)
+                for kw in keywords_list
+            ]
+        )
 
 
 class JournalEmotionResponse(BaseModel):
@@ -65,10 +75,6 @@ class JournalResponse(BaseModel):
         )
 
 
-class JournalResponseEnvelope(ResponseEnvelope):
-    data: JournalResponse
-
-
 class JournalCursorResponse(BaseModel):
     items: list[JournalResponse]
     next_cursor: int | None = Field(
@@ -76,14 +82,12 @@ class JournalCursorResponse(BaseModel):
     )
 
     @staticmethod
-    def from_journals(journals: list[Journal]) -> "JournalCursorResponse":
+    def from_journals(journals: list[Journal], limit: int) -> "JournalCursorResponse":
         items = [JournalResponse.from_journal(journal) for journal in journals]
-        next_cursor = items[-1].id if items else None
+        next_cursor = None
+        if items and len(items) == limit:
+            next_cursor = items[-1].id
         return JournalCursorResponse(items=items, next_cursor=next_cursor)
-
-
-class JournalCursorEnvelope(ResponseEnvelope):
-    data: JournalCursorResponse
 
 
 class JournalListResponse(BaseModel):
@@ -93,10 +97,6 @@ class JournalListResponse(BaseModel):
     def from_journals(journals: list[Journal]) -> "JournalListResponse":
         items = [JournalResponse.from_journal(journal) for journal in journals]
         return JournalListResponse(data=items)
-
-
-class JournalListResponseEnvelope(ResponseEnvelope):
-    data: JournalListResponse
 
 
 class PresignedUrlResponse(BaseModel):
@@ -119,10 +119,6 @@ class JournalImageResponse(BaseModel):
             s3_key=journal_image.s3_key,
             created_at=journal_image.created_at,
         )
-
-
-class JournalImageResponseEnvelope(ResponseEnvelope):
-    data: JournalImageResponse
 
 
 class ImageGenerateResponse(BaseModel):
