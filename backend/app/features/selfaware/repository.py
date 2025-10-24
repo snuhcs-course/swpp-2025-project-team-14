@@ -78,16 +78,19 @@ class QuestionRepository:
             query = query.filter(Question.id < cursor)
         # limit만큼 가져오기
         return query.limit(limit).all()
-    
-    def get_question_by_date(self, target_date: date) -> Question | None:
+
+    def get_question_by_date(self, user_id: int, target_date: date) -> Question | None:
         # We store timestamps in UTC (models use timezone=True with utcnow),
         # so build a UTC day range: [start, end)
         start = datetime.combine(target_date, time.min, tzinfo=timezone.utc)
         end = start + timedelta(days=1)
+        
+        print(start, end)
 
         return self.session.scalar(
             select(Question)
             .where(
+                Question.user_id == user_id,
                 Question.created_at >= start,
                 Question.created_at < end,
             )

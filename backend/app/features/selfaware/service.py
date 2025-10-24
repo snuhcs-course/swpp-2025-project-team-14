@@ -156,8 +156,8 @@ class QuestionService:
     ) -> list[Question]:
         return self.question_repository.list_questions_by_user(user_id, limit, cursor)   
 
-    def get_questions_by_date(self, date: date) -> Question | None:
-        return self.question_repository.get_question_by_date(date)
+    def get_questions_by_date(self, user_id: int, date: date) -> Question | None:
+        return self.question_repository.get_question_by_date(user_id, date)
 
 
 class AnswerService:

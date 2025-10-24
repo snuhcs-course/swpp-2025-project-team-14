@@ -52,7 +52,7 @@ def get_question(
     user: User = Depends(get_current_user)
 ) -> QuestionResponse:
     """특정 질문을 조회합니다."""
-    question = question_service.get_questions_by_id(question_id)
+    question = question_service.get_questions_by_id(user.id, question_id)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found.")
     if question.user_id != user.id:
@@ -71,13 +71,13 @@ def create_or_get_today_question(
     question_service: Annotated[QuestionService, Depends(get_question_service)],
     answer_service: Annotated[AnswerService, Depends(get_answer_service)],
     user: User = Depends(get_current_user),
-    date: date = Query(default=date.today(), description="조회할 날짜 (YYYY-MM-DD)"),
+    date: date = Query(description="조회할 날짜 (YYYY-MM-DD)"),
 ) -> QAResponse:
     """
     오늘 날짜의 질문이 이미 존재하면 해당 질문을 반환하고 (답변이 있으면 함께 반환),
     존재하지 않으면 새로운 질문을 생성하여 저장한 후 반환합니다.
     """
-    question = question_service.get_questions_by_date(date)
+    question = question_service.get_questions_by_date(user.id, date)
     if not question: 
         question = question_service.generate_question(user.id)
         return QAResponse(question=QuestionResponse.from_question(question))
