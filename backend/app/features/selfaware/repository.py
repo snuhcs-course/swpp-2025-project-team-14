@@ -180,7 +180,7 @@ class ValueMapRepository:
             select(ValueMap).where(ValueMap.user_id == user_id)
         )
     
-    def generate_text(self, user_id: int, text: str):
+    def generate_text(self, user_id: int, personality_insight: str, comment: str):
         user_value_map = self.session.scalar(
             select(ValueMap)
             .where(ValueMap.user_id == user_id)
@@ -189,7 +189,8 @@ class ValueMapRepository:
             raise
 
         # 실제 객체에 반영
-        setattr(user_value_map, "personality_insight", text)
+        setattr(user_value_map, "personality_insight", personality_insight)
+        setattr(user_value_map, "comment", comment)
 
         # 커밋 및 새 값 반영
         self.session.add(user_value_map)

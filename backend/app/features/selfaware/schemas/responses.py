@@ -160,6 +160,17 @@ class PersonalityInsightResponse(BaseModel):
     personality_insight: str
     updated_at: datetime
 
+class CategoryScore(BaseModel):
+    category_ko: str
+    category_en: str
+    score: int
+
+class ValueMapResponse(BaseModel):
+    user_id: int
+    categories: List[CategoryScore]
+    update_at: datetime
+    comment: str
+
 # --- Combined ---
 class QuestionWithAnswerResponse(BaseModel):
     question: QuestionDateResponse

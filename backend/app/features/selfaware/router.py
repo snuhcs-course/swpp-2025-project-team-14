@@ -15,8 +15,9 @@ from .schemas.responses import (
     QuestionWithAnswerResponse,
     TopValueScoreResponse,
     PersonalityInsightResponse,
-    AnswerCreateBody,
     AnswerCreateResponse,
+    ValueMapResponse,
+    CategoryScore
 )
 
 security = HTTPBearer()
@@ -188,4 +189,35 @@ def get_personality_insight(
         personality_insight = value_map.personality_insight,
         updated_at = datetime.utcnow(),
     )
+    return response
+
+
+CATEGORIES = [
+    ("Growth & Self-Actualization", "성장과 자기실현"),
+    ("Relationships & Connection",  "관계와 연결"),
+    ("Security & Stability",        "안정과 안전"),
+    ("Freedom & Independence",      "자유와 자율"),
+    ("Achievement & Influence",     "성취와 영향력"),
+    ("Enjoyment & Fulfillment",     "즐거움과 만족"),
+    ("Ethics & Transcendence",      "윤리와 초월"),
+]
+
+
+@self_aware_router.get("/value-map/{user_id}", response_model=ValueMapResponse)
+def get_value_map(
+    user_id: int,
+    value_map_service: Annotated[ValueMapService, Depends()]
+):
+    value_map = value_map_service.get_value_map_by_user(user_id)
+    if not value_map:
+        raise
+    score_list = [value_map.score_0, value_map.score_1, value_map.score_2, value_map.score_3, value_map.score_4, value_map.score_5, value_map.score_6]
+    category_score_list = []
+    for i in range(7):
+        category_score_list.append(CategoryScore(
+            category_en = CATEGORIES[i][0],
+            category_ko = CATEGORIES[i][1],
+            score = score_list[i],
+        ))
+    response = ValueMapResponse(user_id=user_id, categories=category_score_list, update_at = datetime.utcnow(), comment = value_map.comment)
     return response

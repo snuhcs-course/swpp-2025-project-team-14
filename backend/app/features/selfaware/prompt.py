@@ -124,6 +124,24 @@ value_map_prompt = ChatPromptTemplate.from_template(
     - 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
     - 윤리와 초월 (Ethics & Transcendence): {score_6}
 
-    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 3개 이하의 문장으로 요약해 주세요.
+    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 3개 내외의 문장으로 요약해 주세요.
+    """
+)
+
+value_map_short_prompt = ChatPromptTemplate.from_template(
+    """
+    당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
+
+    다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
+
+    - 성장과 자기실현 (Growth & Self-Actualization): {score_0}
+    - 관계와 연결 (Relationships & Connection): {score_1}
+    - 안정과 안전 (Security & Stability): {score_2}
+    - 자유와 자율 (Freedom & Independence): {score_3}
+    - 성취와 영향력 (Achievement & Influence): {score_4}
+    - 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
+    - 윤리와 초월 (Ethics & Transcendence): {score_6}
+
+    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 한 문장으로 요약해 주세요.
     """
 )
