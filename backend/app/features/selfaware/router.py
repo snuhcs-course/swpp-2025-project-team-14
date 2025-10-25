@@ -83,7 +83,7 @@ def get_question(
     user: User = Depends(get_current_user)
 ) -> QuestionResponse:
     """특정 질문을 조회합니다."""
-    question = question_service.get_questions_by_id(user.id, question_id)
+    question = question_service.get_questions_by_id(question_id)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found.")
     if question.user_id != user.id:

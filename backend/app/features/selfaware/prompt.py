@@ -246,6 +246,10 @@ get_opposite_value_prompt = ChatPromptTemplate.from_template("""
 3. 출력은 OppositeValueStructure 구조로 작성하세요.
 """)
 
+# Journal Summary
+class JournalSummary(BaseModel):
+    summary: str = Field(description="최근 일기의 전반적인 요약")
+
 # Dead codes (아직 test를 위해 남겨둠, test 이후 삭제 예정)
 
 # replaced by value_score_structured_prompt
