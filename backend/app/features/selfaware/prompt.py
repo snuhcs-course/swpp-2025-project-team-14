@@ -127,7 +127,7 @@ multi_category_prompt = ChatPromptTemplate.from_template(
     """
 )
 
-# get value score from prompt
+# replaced by value_score_structured_prompt
 value_score_prompt = ChatPromptTemplate.from_template(
     """You are extracting personal values from a diary answer for a self-reflection app.
 
@@ -233,10 +233,10 @@ class ValueScoreStructure(BaseModel):
 value_score_structured_prompt = ChatPromptTemplate.from_template("""
 You are an assistant that analyzes diary entries to identify the user's underlying personal value and emotional tone.
 
-Given the following question and answer, extract one personal value expressed in the user's response.
+Given the following question and answer, extract up to six personal values expressed in the user's response.
 
 Guidelines:
-- Write all output in **Korean**, except the value name which should be in **English canonical form** (e.g., Family, Freedom, Achievement, Health, Honesty, Growth).
+- Write all output in **Korean**, except the value and category which should be in **English canonical form** (e.g., Family, Freedom, Achievement, Health, Honesty, Growth).
 - Select the **single category** that best matches the main theme or motivation.
 - Assess your confidence and emotional intensity on a 0.0-1.0 scale.
 - Assign polarity as -1 for negative, 0 for neutral, +1 for positive sentiment.
@@ -251,6 +251,44 @@ Answer:
 Return the structured result following the ValueScoreStructure.
 """)
 
+class ValueMapAnalysisStructure(BaseModel):
+    comment: str = Field(
+        description=(
+            "A short, natural Korean sentence (1 sentence) summarizing the person's most prominent values "
+            "and tendencies based on the given scores. "
+            "It should sound like a concise personality comment that could appear in an app UI."
+        )
+    )
+    personality_insight: str = Field(
+        description=(
+            "A longer, natural Korean summary (about 2-3 sentences) that provides a deeper psychological insight "
+            "into the person's core motivations, priorities, and worldview. "
+            "It should interpret the overall pattern of scores, describing what kind of person they might be "
+            "or what they value most in life."
+        )
+    )
+
+value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
+당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
+
+다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
+
+- 성장과 자기실현 (Growth & Self-Actualization): {score_0}
+- 관계와 연결 (Relationships & Connection): {score_1}
+- 안정과 안전 (Security & Stability): {score_2}
+- 자유와 자율 (Freedom & Independence): {score_3}
+- 성취와 영향력 (Achievement & Influence): {score_4}
+- 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
+- 윤리와 초월 (Ethics & Transcendence): {score_6}
+
+이 정보를 바탕으로:
+1. `comment`: 위 사람의 가치관과 성향을 자연스럽게 요약한 **한 문장짜리 코멘트**를 작성하세요.
+2. `personality_insight`: 위 점수의 전반적 패턴을 해석하여, **2~3문장 분량의 심리적 통찰**을 작성하세요.
+3. 모든 출력은 한국어로 하세요.
+
+결과는 ValueMapAnalysisStructure에 맞게 구조화하세요.
+""")
+
 
 class ValueMapStructure(BaseModel):
     score_0: int = Field(description="Growth & Self-Actualization")
@@ -260,7 +298,3 @@ class ValueMapStructure(BaseModel):
     score_4: int = Field(description="Achievement & Influence")
     score_5: int = Field(description="Enjoyment & Fulfillment")
     score_6: int = Field(description="Ethics & Transcendence")
-
-class ValueMapAnalysisStructure(BaseModel):
-    comment: str = Field(description="")
-    personality_insight: str = Field(description="")

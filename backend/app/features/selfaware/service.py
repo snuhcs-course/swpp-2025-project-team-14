@@ -20,8 +20,8 @@ from langchain.schema.runnable import RunnableMap
 from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
-from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt, value_score_structured_prompt
-from app.features.selfaware.prompt import MultiValueScoreStructure
+from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt, value_score_structured_prompt, value_map_combined_structured_prompt
+from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnalysisStructure
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.value_map import analyze_personality
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
@@ -282,35 +282,27 @@ class ValueMapService:
         self.value_score_repository = value_score_repository
         self.value_map_repository = value_map_repository
 
-    def create_value_map(self, user_id: int) -> None:
+    def create_value_map(self, user_id: int):
         return self.value_map_repository.create_value_map(user_id=user_id)
 
     def get_value_map_by_user(self, user_id) -> ValueMap | None:
         return self.value_map_repository.get_by_user(user_id)
 
-    def generate_comment(self, user_id: int) -> None:
+    def generate_comment(self, user_id: int):
         value_map = self.value_map_repository.get_by_user(user_id)
+        if not value_map:
+            raise Exception("value_map does't exist")
 
-        llm = ChatOpenAI(model="gpt-5-nano")
-        value_map_chain = value_map_prompt | llm | StrOutputParser()
-        value_map_short_chain = value_map_short_prompt | llm | StrOutputParser()
+        llm = ChatOpenAI(model="gpt-5-nano").with_structured_output(ValueMapAnalysisStructure)
+        value_map_combined_structured_chain = value_map_combined_structured_prompt | llm
 
-        value_map_text = value_map_chain.invoke(
-            {"score_0": value_map.score_0, # type: ignore
-             "score_1": value_map.score_1, # type: ignore
-             "score_2": value_map.score_2, # type: ignore
-             "score_3": value_map.score_3, # type: ignore
-             "score_4": value_map.score_4, # type: ignore
-             "score_5": value_map.score_5, # type: ignore
-             "score_6": value_map.score_6,}) # type: ignore
-        
-        value_map_short_text = value_map_short_chain.invoke(
-            {"score_0": value_map.score_0, # type: ignore
-             "score_1": value_map.score_1, # type: ignore
-             "score_2": value_map.score_2, # type: ignore
-             "score_3": value_map.score_3, # type: ignore
-             "score_4": value_map.score_4, # type: ignore
-             "score_5": value_map.score_5, # type: ignore
-             "score_6": value_map.score_6,}) # type: ignore
+        response = value_map_combined_structured_chain.invoke(
+            {"score_0": value_map.score_0,
+             "score_1": value_map.score_1,
+             "score_2": value_map.score_2,
+             "score_3": value_map.score_3,
+             "score_4": value_map.score_4,
+             "score_5": value_map.score_5,
+             "score_6": value_map.score_6,})
 
-        return self.value_map_repository.generate_comment(user_id, value_map_text, value_map_short_text)
+        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response['personality_insight'], comment = response['comment'])
