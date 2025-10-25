@@ -51,19 +51,22 @@ class QuestionRepository:
         return query.limit(limit).all()
 
     def get_question_by_date(self, user_id: int, target_date: date) -> Question | None:
-        # We store timestamps in UTC (models use timezone=True with utcnow),
-        # so build a UTC day range: [start, end)
-        start = datetime.combine(target_date, time.min, tzinfo=timezone.utc)
-        end = start + timedelta(days=1)
-        
-        print(start, end)
+        KST = timezone(timedelta(hours=9))
+
+        # 한국 시간으로 날짜 기준 구간 계산
+        start_kst = datetime.combine(target_date, time.min, tzinfo=KST)
+        end_kst = start_kst + timedelta(days=1)
+
+        # UTC로 변환
+        start_utc = start_kst.astimezone(timezone.utc)
+        end_utc = end_kst.astimezone(timezone.utc)
 
         return self.session.scalar(
             select(Question)
             .where(
                 Question.user_id == user_id,
-                Question.created_at >= start,
-                Question.created_at < end,
+                Question.created_at >= start_utc,
+                Question.created_at < end_utc,
             )
             .order_by(Question.created_at.desc())
             .limit(1)
@@ -158,6 +161,7 @@ class ValueScoreRepository:
         
         self.session.add(value_score)
         self.session.flush()
+        self.session.commit()
         return value_score
     
     def get_top_5_value_scores(self, user_id: int):
@@ -185,6 +189,7 @@ class ValueMapRepository:
         )
         self.session.add(value_map)
         self.session.flush()
+        self.session.commit()
         return value_map
     
     def update_by_value_score(
@@ -241,6 +246,7 @@ class ValueMapRepository:
         value_map.updated_at = datetime.utcnow()
 
         self.session.flush()
+        self.session.commit()
         return value_map
 
     def get_by_user(self, user_id: int) -> Optional[ValueMap]:
@@ -266,4 +272,5 @@ class ValueMapRepository:
         setattr(value_map, "comment", comment)
 
         self.session.flush()
+        self.session.commit()
         return value_map

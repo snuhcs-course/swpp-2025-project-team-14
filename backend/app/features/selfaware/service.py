@@ -237,12 +237,16 @@ class ValueScoreService:
 
         assert type(response) == MultiValueScoreStructure
         detected_values = response.detected_values
+        
+        print("detected_values:", detected_values)
 
         # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
         value_map = self.value_map_repository.get_by_user(user_id)
         if not value_map:
             print("value_map created")
             self.value_map_repository.create_value_map(user_id=user_id)
+        
+        print(value_map)
 
         for v in detected_values:
             value_score = self.value_score_repository.create_value_score(
@@ -265,6 +269,8 @@ class ValueScoreService:
         top_value_scores = self.value_score_repository.get_top_5_value_scores(user_id)
         value_scores = []
         seen_categories = set()  # 이미 추가된 category 추적
+        
+        print(top_value_scores)
 
         if top_value_scores:
             for top_value_score in top_value_scores:
