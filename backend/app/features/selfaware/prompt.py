@@ -127,68 +127,6 @@ multi_category_prompt = ChatPromptTemplate.from_template(
     """
 )
 
-# replaced by value_score_structured_prompt
-value_score_prompt = ChatPromptTemplate.from_template(
-    """You are extracting personal values from a diary answer for a self-reflection app.
-
-    "한국어로 추출하되, 값 이름은 영어 표준명(예: Family, Freedom)으로 반환하세요.
-
-    Rules:
-    - Detect up to 6 concrete 'values' (e.g., Family, Freedom, Achievement, Health, Authenticity).
-    - For each value, return:
-    - value_name (english canonical if possible)
-    - category_key (one of: 'Growth & Self-Actualization','Relationships & Connection','Security & Stability','Freedom & Independence','Achievement & Influence','Enjoyment & Fulfillment','Ethics & Transcendence')
-    - confidence [0..1]
-    - intensity [0..1] (how strongly the value was expressed)
-    - polarity in [-1, 0, +1]
-    - evidence: short quotes from the answer (1~2)
-    - If unsure of category_key, leave it null.
-
-    {question}
-    Answer:
-    \"\"\"{answer}\"\"\"
-
-    Return JSON with:
-    - detected_values: list of objects
-    """
-)
-
-value_map_prompt = ChatPromptTemplate.from_template(
-    """
-    당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
-
-    다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
-
-    - 성장과 자기실현 (Growth & Self-Actualization): {score_0}
-    - 관계와 연결 (Relationships & Connection): {score_1}
-    - 안정과 안전 (Security & Stability): {score_2}
-    - 자유와 자율 (Freedom & Independence): {score_3}
-    - 성취와 영향력 (Achievement & Influence): {score_4}
-    - 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
-    - 윤리와 초월 (Ethics & Transcendence): {score_6}
-
-    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 3개 내외의 문장으로 요약해 주세요.
-    """
-)
-
-value_map_short_prompt = ChatPromptTemplate.from_template(
-    """
-    당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
-
-    다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
-
-    - 성장과 자기실현 (Growth & Self-Actualization): {score_0}
-    - 관계와 연결 (Relationships & Connection): {score_1}
-    - 안정과 안전 (Security & Stability): {score_2}
-    - 자유와 자율 (Freedom & Independence): {score_3}
-    - 성취와 영향력 (Achievement & Influence): {score_4}
-    - 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
-    - 윤리와 초월 (Ethics & Transcendence): {score_6}
-
-    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 한 문장으로 요약해 주세요.
-    """
-)
-
 class MultiValueScoreStructure(BaseModel):
     detected_values: List[ValueScoreStructure]
 
@@ -298,3 +236,69 @@ class ValueMapStructure(BaseModel):
     score_4: int = Field(description="Achievement & Influence")
     score_5: int = Field(description="Enjoyment & Fulfillment")
     score_6: int = Field(description="Ethics & Transcendence")
+
+# Dead codes (아직 test를 위해 남겨둠, test 이후 삭제 예정)
+
+# replaced by value_score_structured_prompt
+value_score_prompt = ChatPromptTemplate.from_template(
+    """You are extracting personal values from a diary answer for a self-reflection app.
+
+    "한국어로 추출하되, 값 이름은 영어 표준명(예: Family, Freedom)으로 반환하세요.
+
+    Rules:
+    - Detect up to 6 concrete 'values' (e.g., Family, Freedom, Achievement, Health, Authenticity).
+    - For each value, return:
+    - value_name (english canonical if possible)
+    - category_key (one of: 'Growth & Self-Actualization','Relationships & Connection','Security & Stability','Freedom & Independence','Achievement & Influence','Enjoyment & Fulfillment','Ethics & Transcendence')
+    - confidence [0..1]
+    - intensity [0..1] (how strongly the value was expressed)
+    - polarity in [-1, 0, +1]
+    - evidence: short quotes from the answer (1~2)
+    - If unsure of category_key, leave it null.
+
+    {question}
+    Answer:
+    \"\"\"{answer}\"\"\"
+
+    Return JSON with:
+    - detected_values: list of objects
+    """
+)
+
+# replaced by value_map_combined_structured_prompt
+value_map_prompt = ChatPromptTemplate.from_template(
+    """
+    당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
+
+    다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
+
+    - 성장과 자기실현 (Growth & Self-Actualization): {score_0}
+    - 관계와 연결 (Relationships & Connection): {score_1}
+    - 안정과 안전 (Security & Stability): {score_2}
+    - 자유와 자율 (Freedom & Independence): {score_3}
+    - 성취와 영향력 (Achievement & Influence): {score_4}
+    - 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
+    - 윤리와 초월 (Ethics & Transcendence): {score_6}
+
+    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 3개 내외의 문장으로 요약해 주세요.
+    """
+)
+
+# replaced by value_map_combined_structured_prompt
+value_map_short_prompt = ChatPromptTemplate.from_template(
+    """
+    당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
+
+    다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
+
+    - 성장과 자기실현 (Growth & Self-Actualization): {score_0}
+    - 관계와 연결 (Relationships & Connection): {score_1}
+    - 안정과 안전 (Security & Stability): {score_2}
+    - 자유와 자율 (Freedom & Independence): {score_3}
+    - 성취와 영향력 (Achievement & Influence): {score_4}
+    - 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
+    - 윤리와 초월 (Ethics & Transcendence): {score_6}
+
+    이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 한 문장으로 요약해 주세요.
+    """
+)
