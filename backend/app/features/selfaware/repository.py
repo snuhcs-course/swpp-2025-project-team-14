@@ -210,31 +210,31 @@ class ValueMapRepository:
             raise 
 
         if value_score.category == "Growth & Self-Actualization":
-            value = (value_score.intensity + value_map.count_0 * value_map.score_0) // (value_map.count_0+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_0 * value_map.score_0) // (value_map.count_0+1)
             count =  value_map.count_0 + 1
             category = 0
         elif value_score.category == "Relationships & Connection":
-            value = (value_score.intensity + value_map.count_1 * value_map.score_1) // (value_map.count_1+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_1 * value_map.score_1) // (value_map.count_1+1)
             count =  value_map.count_1 + 1
             category = 1
         elif value_score.category == "Security & Stability":
-            value = (value_score.intensity + value_map.count_2 * value_map.score_2) // (value_map.count_2+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_2 * value_map.score_2) // (value_map.count_2+1)
             count =  value_map.count_2 + 1
             category = 2
         elif value_score.category == "Freedom & Independence":
-            value = (value_score.intensity + value_map.count_3 * value_map.score_3) // (value_map.count_3+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_3 * value_map.score_3) // (value_map.count_3+1)
             count =  value_map.count_3 + 1
             category = 3
         elif value_score.category == "Achievement & Influence":
-            value = (value_score.intensity + value_map.count_4 * value_map.score_4) // (value_map.count_4+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_4 * value_map.score_4) // (value_map.count_4+1)
             count =  value_map.count_4 + 1
             category = 4
         elif value_score.category == "Enjoyment & Fulfillment":
-            value = (value_score.intensity + value_map.count_5 * value_map.score_5) // (value_map.count_0+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_5 * value_map.score_5) // (value_map.count_0+1)
             count =  value_map.count_5 + 1
             category = 5
         elif value_score.category == "Ethics & Transcendence":
-            value = (value_score.intensity + value_map.count_6 * value_map.score_6) // (value_map.count_0+1)
+            value = ((value_score.intensity * value_score.polarity * value_score.confidence + 1) * 50 + value_map.count_6 * value_map.score_6) // (value_map.count_0+1)
             count =  value_map.count_6 + 1
             category = 6
         else:
