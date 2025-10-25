@@ -24,7 +24,7 @@ data class AnswerResponse(
 
 data class QAResponse(
     @SerializedName("question") val question: QuestionResponse,
-    @SerializedName("Answer") val answer: AnswerResponse? = null
+    @SerializedName("answer") val answer: AnswerResponse? = null
 )
 
 data class QACursorResponse(

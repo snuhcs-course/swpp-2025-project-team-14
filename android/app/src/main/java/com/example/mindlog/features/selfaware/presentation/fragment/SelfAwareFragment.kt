@@ -2,6 +2,7 @@ package com.example.mindlog.features.selfaware.presentation.fragment
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -31,9 +32,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
-
-        // initial load
-        viewModel.load()
 
         binding.etAnswer.doAfterTextChanged {
             viewModel.updateAnswerText(it?.toString().orEmpty())
@@ -105,6 +103,8 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             }
         }
 
+        // initial load
+        viewModel.load()
     }
 
     override fun onDestroyView() {

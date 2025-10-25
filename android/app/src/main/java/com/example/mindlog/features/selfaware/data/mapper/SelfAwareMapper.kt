@@ -3,12 +3,13 @@ package com.example.mindlog.features.selfaware.data.mapper
 import com.example.mindlog.features.selfaware.data.dto.*
 import com.example.mindlog.features.selfaware.domain.model.*
 import java.time.Instant
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 // feature/selfaware/data/mapper/SelfAwareMapper.kt
 class SelfAwareMapper @Inject constructor() {
 
-    fun parseInstant(s: String) = Instant.parse(s)
+    fun parseLocalDateTime(s: String) = LocalDateTime.parse(s).toLocalDate()
 
     fun toQuestion(dto: QuestionResponse) = Question(
         id = dto.id,
@@ -16,7 +17,7 @@ class SelfAwareMapper @Inject constructor() {
         text = dto.text,
         categoriesKo = dto.categoriesKo,
         categoriesEn = dto.categoriesEn,
-        createdAt = parseInstant(dto.createdAt)
+        createdAt = parseLocalDateTime(dto.createdAt)
     )
 
     fun toAnswer(dto: AnswerResponse) = Answer(
@@ -24,8 +25,8 @@ class SelfAwareMapper @Inject constructor() {
         questionId = dto.questionId,
         type = dto.type,
         text = dto.text,
-        createdAt = parseInstant(dto.createdAt),
-        updatedAt = parseInstant(dto.updatedAt),
+        createdAt = parseLocalDateTime(dto.createdAt),
+        updatedAt = parseLocalDateTime(dto.updatedAt),
     )
 
     fun toQAItem(dto: QAResponse) = QAItem(
@@ -58,7 +59,7 @@ class SelfAwareMapper @Inject constructor() {
     fun toValueMap(dto: ValueMapResponse): ValueMap {
         return ValueMap(
             categoryScores = dto.categoryScores.map(::toCategory),
-            updatedAt = parseInstant(dto.updatedAt)
+            updatedAt = parseLocalDateTime(dto.updatedAt)
         )
     }
 
@@ -66,7 +67,7 @@ class SelfAwareMapper @Inject constructor() {
         return PersonalityInsight(
             comment = dto.comment,
             personalityInsight = dto.personalityInsight,
-            updatedAt = parseInstant(dto.updatedAt)
+            updatedAt = parseLocalDateTime(dto.updatedAt)
         )
     }
 }

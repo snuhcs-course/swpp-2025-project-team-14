@@ -1,6 +1,6 @@
 package com.example.mindlog.features.selfaware.domain.model
 
-import java.time.Instant
+import java.time.LocalDate
 
 data class Question(
     val id: Int,
@@ -8,7 +8,7 @@ data class Question(
     val text: String,
     val categoriesKo: List<String>?,
     val categoriesEn: List<String>?,
-    val createdAt: Instant
+    val createdAt: LocalDate
 )
 
 data class Answer(
@@ -16,8 +16,8 @@ data class Answer(
     val questionId: Int,
     val type: String,
     val text: String,
-    val createdAt: Instant,
-    val updatedAt: Instant,
+    val createdAt: LocalDate,
+    val updatedAt: LocalDate,
 )
 
 data class QAItem(
@@ -43,13 +43,13 @@ data class CategoryScore(
 
 data class ValueMap(
     val categoryScores: List<CategoryScore>,
-    val updatedAt: Instant
+    val updatedAt: LocalDate
 )
 
 data class PersonalityInsight(
     val comment: String,
     val personalityInsight: String,
-    val updatedAt: Instant
+    val updatedAt: LocalDate
 )
 
 
