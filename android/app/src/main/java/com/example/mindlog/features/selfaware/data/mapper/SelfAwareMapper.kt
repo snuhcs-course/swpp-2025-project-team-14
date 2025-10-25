@@ -40,6 +40,13 @@ class SelfAwareMapper @Inject constructor() {
         )
     }
 
+    fun toTopValueScores(dto: TopValueScoresResponse): TopValueScores {
+        return TopValueScores(
+            valueScores = dto.valueScores.map(::toValueScore)
+        )
+    }
+
+
     private fun toCategory(dto: CategoryResponse): CategoryScore {
         return CategoryScore(
             categoryEn = dto.categoryEn,

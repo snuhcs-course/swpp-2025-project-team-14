@@ -18,7 +18,7 @@ class SelfAwareRepositoryImpl @Inject constructor(
 ) : SelfAwareRepository {
 
     override suspend fun getTodayQA(date: LocalDate) = withContext(dispatcher.io) {
-        runCatching { mapper.toTodayQA(api.getTodayQA(date.toString())) }.toResult()
+        runCatching { mapper.toQAItem(api.getTodayQA(date.toString())) }.toResult()
     }
 
     override suspend fun submitAnswer(questionId: Int, answer: String) = withContext(dispatcher.io) {
@@ -28,13 +28,38 @@ class SelfAwareRepositoryImpl @Inject constructor(
         }.toResult()
     }
 
-    override suspend fun getQAHistory(cursor: Int, size: Int) = withContext(dispatcher.io) {
+    override suspend fun getQAHistory(limit: Int, cursor: Int) = withContext(dispatcher.io) {
         runCatching {
-            val dto = api.getQAHistory(cursor = cursor, size = size)
+            val dto = api.getQAHistory(limit = limit, cursor = cursor)
             Paged(
                 items = dto.items.map(mapper::toQAItem),
-                cursor = dto.cursor, size = dto.size
+                cursor = dto.next_cursor,
+                size = limit
             )
+        }.toResult()
+    }
+
+    // Top value scores (e.g., ["성장", "관계", ...])
+    override suspend fun getTopValueScores() = withContext(dispatcher.io) {
+        runCatching {
+            val res = api.getTopValueScores()
+            mapper.toTopValueScores(res)
+        }.toResult()
+    }
+
+    // Value map (e.g., {"성장": 78.0, "관계": 64.0, ...})
+    override suspend fun getValueMap() = withContext(dispatcher.io) {
+        runCatching {
+            val res = api.getValueMap()
+            mapper.toValueMap(res)
+        }.toResult()
+    }
+
+    // Personality insight (e.g., plain text)
+    override suspend fun getPersonalityInsight() = withContext(dispatcher.io) {
+        runCatching {
+            val res = api.getPersonalityInsight()
+            mapper.toPersonalityInsight(res)
         }.toResult()
     }
 }
