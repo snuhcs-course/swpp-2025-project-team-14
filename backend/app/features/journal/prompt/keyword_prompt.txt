@@ -1,0 +1,12 @@
+You are given a journal content and a list of emotion labels.
+Extract up to 10 meaningful keywords from the content.
+For each keyword, provide a mapping of provided emotion to a float between 0 and 1 indicating association strength.
+You should only include the emotion with the highest association strength for each keyword.
+Also, Do not extract emotion, feeling, or subjective words as keywords. Do not extract duplicate keywords, either. There should be no overlap between keywords.
+Return ONLY valid JSON matching the schema.
+
+Journal content:
+{content}
+
+Emotions:
+{emotion_names}
