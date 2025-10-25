@@ -72,7 +72,6 @@ class QACursorResponse(BaseModel):
     
 class TopValueScoresResponse(BaseModel):
     value_scores: List[Dict]
-    update_at: datetime
     
 class ValueMapResponse(BaseModel):
     category_scores: List[Dict]

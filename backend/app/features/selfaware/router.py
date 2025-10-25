@@ -177,8 +177,7 @@ def get_top_value_scores(
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="No Authorization.")    
     value_scores = value_score_service.get_top_value_scores(user_id)
-    return value_scores
-
+    return TopValueScoresResponse(value_scores=value_scores)
 
 @router.get(
     "/{user_id}", 
