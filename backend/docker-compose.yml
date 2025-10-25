@@ -21,7 +21,8 @@ services:
     build: .
     container_name: mindlog-backend
     environment:
-      OPENAI_API_KEY: OPENAI_API_KEY
+      - ENV=local
+      - OPENAI_API_KEY=OPENAI_API_KEY
     ports:
       - "3000:3000"
     volumes:
@@ -36,7 +37,5 @@ services:
       "
     env_file:
       - .env.local
-    environment:
-      - ENV=local
 volumes:
   dbdata:
