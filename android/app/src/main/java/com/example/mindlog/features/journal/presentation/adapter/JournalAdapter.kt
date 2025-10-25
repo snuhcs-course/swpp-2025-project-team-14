@@ -1,5 +1,6 @@
 package com.example.mindlog.features.journal.presentation.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.databinding.ItemJournalCardBinding
+import com.example.mindlog.features.journal.presentation.write.JournalEditActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -22,9 +24,15 @@ class JournalAdapter : ListAdapter<JournalEntry, JournalAdapter.ViewHolder>(Jour
             binding.tvBodyPreview.text = journal.content // 본문 내용은 tv_body_preview에 바인딩
             binding.tvDate.text = dateFormat.format(journal.createdAt) // 날짜 포맷 적용
 
-            // (선택사항) 아이템 클릭 리스너 설정
+            // 아이템 클릭 시 JournalEditActivity 실행
             itemView.setOnClickListener {
-                // TODO: 아이템 클릭 시 일기 상세 페이지로 이동하는 로직 구현
+                val context = itemView.context
+                // JournalFragment가 ActivityResult를 처리하도록 Launcher를 사용하는 것이 좋음
+                // 여기서는 Activity를 직접 시작.
+                val intent = Intent(context, JournalEditActivity::class.java).apply {
+                    putExtra(JournalEditActivity.EXTRA_JOURNAL_ID, journal.id)
+                }
+                context.startActivity(intent)
             }
         }
     }

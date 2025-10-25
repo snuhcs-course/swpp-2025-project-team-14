@@ -1,10 +1,10 @@
 package com.example.mindlog.features.journal.data.repository
 
-//import androidx.paging.map
-import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.features.journal.data.api.JournalApi
+import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.journal.data.dto.JournalListResponse
 import com.example.mindlog.features.journal.data.dto.JournalRequest
+import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import javax.inject.Inject
 
@@ -29,5 +29,20 @@ class JournalRepositoryImpl @Inject constructor(
 
     override suspend fun getJournals(limit: Int, cursor: Int?): JournalListResponse {
         return journalApi.getJournals(limit = limit, cursor = cursor)
+    }
+
+    override suspend fun getJournalById(journalId: Int): JournalItemResponse {
+        return journalApi.getJournalById(journalId = journalId)
+    }
+
+    override suspend fun updateJournal(
+        journalId: Int,
+        request: UpdateJournalRequest
+    ) {
+        journalApi.updateJournal(journalId = journalId, request = request)
+    }
+
+    override suspend fun deleteJournal(journalId: Int) {
+        journalApi.deleteJournal(journalId = journalId)
     }
 }

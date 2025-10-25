@@ -61,24 +61,25 @@ class JournalWriteActivity : AppCompatActivity() {
     }
 
     // 3. ViewModel의 saveResult 이벤트를 구독하고 결과에 따라 UI 처리
+
     private fun observeViewModel() {
-        lifecycleScope.launch {
-            viewModel.saveResult.collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        Toast.makeText(this@JournalWriteActivity, "일기가 저장되었습니다.", Toast.LENGTH_SHORT).show()
-                        finish() // 성공 시 액티비티 종료
-                    }
-                    is Result.Error -> {
-                        // 실패 시 사용자에게 토스트 메시지로 에러 알림
-                        val errorMessage = result.message ?: "알 수 없는 오류가 발생했습니다."
-                        Toast.makeText(this@JournalWriteActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                    }
+        lifecycleScope.launch {viewModel.saveResult.collect { result ->
+            // 👇 Loading 브랜치를 삭제하고, Success와 Error만 남깁니다.
+            when (result) {
+                is Result.Success -> {
+                    Toast.makeText(this@JournalWriteActivity, "일기가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                is Result.Error -> {
+                    binding.btnNextOrSave.isEnabled = true
+                    binding.btnCancelOrBack.isEnabled = true
+                    val errorMessage = result.message ?: "알 수 없는 오류가 발생했습니다."
+                    Toast.makeText(this@JournalWriteActivity, errorMessage, Toast.LENGTH_SHORT).show()
                 }
             }
         }
+        }
     }
-
 
     private fun handleBackButton() {
         if (supportFragmentManager.backStackEntryCount > 0) {

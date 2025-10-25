@@ -40,7 +40,10 @@
             android:name=".features.journal.presentation.write.JournalWriteActivity"
             android:exported="false"
             android:theme="@style/Theme.MindLog" />
-
+        <activity
+            android:name=".features.journal.presentation.write.JournalEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MindLog" />
         <activity android:name=".features.auth.presentation.login.LoginActivity" />
         <activity android:name=".features.auth.presentation.signup.SignupActivity" />
 
