@@ -26,7 +26,7 @@ class CreateJournalUseCase @Inject constructor(
         title: String,
         content: String,
         emotions: Map<String, Int>,
-        gratitude: String?
+        gratitude: String
     ) {
         // 2. 주입받은 Repository의 함수를 호출하여 실제 데이터 처리를 위임한다.
         repository.createJournal(title, content, emotions, gratitude)

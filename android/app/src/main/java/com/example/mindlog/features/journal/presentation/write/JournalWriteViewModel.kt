@@ -17,32 +17,44 @@ class JournalWriteViewModel @Inject constructor(
     private val createJournalUseCase: CreateJournalUseCase
 ) : ViewModel() {
 
-    // UI 상태를 관리하는 StateFlow
-    val emotionScores = MutableStateFlow<Map<String, Int>>(emptyMap())
+    // --- 👇 [핵심] emotionScores의 초기값을 여기서 설정합니다. ---
+    private val initialEmotionScores = mapOf(
+        "happy" to 0,
+        "sad" to 0,
+        "anxious" to 0,
+        "calm" to 0,
+        "annoyed" to 0,
+        "satisfied" to 0,
+        "bored" to 0,
+        "interested" to 0,
+        "lethargic" to 0,
+        "energetic" to 0
+    )
+
+    // 1. emotionScores의 초기값으로 위에서 정의한 initialEmotionScores를 사용합니다.
+    val emotionScores = MutableStateFlow(initialEmotionScores)
     val title = MutableStateFlow("")
     val content = MutableStateFlow("")
-    val gratitude = MutableStateFlow("") // 1. 감사한 일 StateFlow 추가
+    val gratitude = MutableStateFlow("")
 
     private val _saveResult = MutableSharedFlow<Result<Unit>>()
     val saveResult = _saveResult.asSharedFlow()
 
     fun saveJournal() {
-        // 현재 StateFlow에 저장된 값들을 가져온다.
         val currentTitle = title.value
         val currentContent = content.value
         val currentEmotions = emotionScores.value
-        val currentGratitude = gratitude.value // 2. 감사한 일 값 가져오기
+        val currentGratitude = gratitude.value
 
-        if (currentTitle.isBlank() || currentContent.isBlank()) {
+        if (currentTitle.isBlank() || currentContent.isBlank() || currentGratitude.isBlank()) {
             viewModelScope.launch {
-                _saveResult.emit(Result.Error(message = "제목과 내용을 모두 입력해주세요."))
+                _saveResult.emit(Result.Error(message = "제목, 내용, 감사한 일을 모두 입력해주세요."))
             }
             return
         }
 
         viewModelScope.launch {
             try {
-                // 3. UseCase 호출 시 gratitude 인자 추가
                 createJournalUseCase(
                     title = currentTitle,
                     content = currentContent,

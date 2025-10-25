@@ -43,17 +43,17 @@ class EmotionSelectFragment : Fragment() {
         )
         setupEmotionRow(
             binding.rowAnxiousConfident,
-            "불안", "anxious", "자신감", "confident",
+            "불안", "anxious", "만족", "satisfied",
             R.color.emotion_anxious_purple, R.color.emotion_confident_green
         )
         setupEmotionRow(
             binding.rowAngryCalm,
-            "짜증/분노", "angry", "편안", "calm",
+            "짜증", "annoyed", "편안", "calm",
             R.color.emotion_angry_red, R.color.emotion_calm_green
         )
         setupEmotionRow(
             binding.rowBoredExcited,
-            "지루함", "bored", "흥미/설렘", "excited",
+            "지루함", "bored", "흥미", "interested",
             R.color.emotion_bored_blue, R.color.emotion_excited_pink
         )
         setupEmotionRow(

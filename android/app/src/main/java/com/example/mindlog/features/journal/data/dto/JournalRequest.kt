@@ -21,5 +21,5 @@ data class JournalRequest(
     val emotions: Map<String, Int>,
 
     @SerializedName("gratitude")
-    val gratitude: String? // null을 허용하거나, 빈 문자열로 처리할 수 있음
+    val gratitude: String
 )

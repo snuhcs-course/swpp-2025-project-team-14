@@ -56,6 +56,9 @@ class ContentWriteFragment : Fragment() {
             // 텍스트가 변경될 때마다 ViewModel의 content StateFlow를 업데이트
             viewModel.content.value = text.toString()
         }
+        binding.etGratitude.addTextChangedListener { text ->
+            viewModel.gratitude.value = text.toString()
+        }
     }
 
 
