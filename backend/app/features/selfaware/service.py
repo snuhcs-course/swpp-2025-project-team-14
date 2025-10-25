@@ -248,12 +248,12 @@ class ValueScoreService:
                 user_id = user_id,
                 question_id = question_id,
                 answer_id = answer_id,
-                category = v['category_key'],
-                value = v['value_name'],
-                confidence= v['confidence'],
-                intensity= v['intensity'],
-                polarity= v['polarity'],
-                evidence_quotes= v.get('evidence', []),
+                category = v.category_key,
+                value = v.value,
+                confidence= v.confidence,
+                intensity= v.intensity,
+                polarity= v.polarity,
+                evidence_quotes= [v.evidence],
             )
             self.value_map_repository.update_by_value_score(value_score)
         
@@ -322,5 +322,5 @@ class ValueMapService:
              "score_4": value_map.score_4,
              "score_5": value_map.score_5,
              "score_6": value_map.score_6,})
-
-        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response['personality_insight'], comment = response['comment'])
+        assert type(response) == ValueMapAnalysisStructure
+        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response.personality_insight, comment = response.comment)
