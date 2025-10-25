@@ -99,8 +99,6 @@ class QuestionService:
             user_id=user_id,
             question_type="personalized_category",  
             text=response.question,
-            categories_ko=[cat[1] for cat in category_response.categories],
-            categories_en=[cat[0] for cat in category_response.categories],
         )
 
         return question
@@ -124,8 +122,6 @@ class QuestionService:
             user_id=user_id,
             question_type="single_category",
             text=response.question,
-            catergories_ko=[category_ko],
-            catergories_en=[category_en]
         )
 
         return question
@@ -153,8 +149,6 @@ class QuestionService:
             user_id=user_id,
             question_type="multi_category",
             text=response.question,
-            catergories_en=[cat[0] for cat in selected_categories],
-            catergories_ko=[cat[1] for cat in selected_categories],
         )
 
         return question
@@ -241,7 +235,9 @@ class ValueScoreService:
             "answer": answer.text
         })
 
-        detected_values = response['detected_values']
+        assert type(response) == MultiValueScoreStructure
+        detected_values = response.detected_values
+
         # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
         value_map = self.value_map_repository.get_by_user(user_id)
         if not value_map:

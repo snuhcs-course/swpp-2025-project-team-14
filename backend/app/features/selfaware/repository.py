@@ -21,18 +21,12 @@ class QuestionRepository:
         user_id: int,
         question_type: str,
         text: str,        
-        catergories_ko: Optional[List[str]] = None,
-        catergories_en: Optional[List[str]] = None,
     ) -> Question:
         question = Question(
             user_id=user_id,
             question_type=question_type,
             text=text,
         )
-        
-        if catergories_ko and catergories_en:
-            question.categories_ko = catergories_ko
-            question.categories_en = catergories_en
         
         self.session.add(question)
         self.session.flush()
