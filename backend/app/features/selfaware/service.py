@@ -21,7 +21,7 @@ from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
 from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt, value_score_structured_prompt, value_map_combined_structured_prompt, get_opposite_value_prompt
-from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnalysisStructure, OppositeValueStructure
+from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnalysisStructure, OppositeValueStructure, JournalSummary
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.value_map import analyze_personality
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
@@ -42,6 +42,7 @@ class QuestionService:
         특정 사용자의 일기를 DB에서 불러와 요약 → 감정 분석 및 카테고리 추출 → 자기성찰 질문을 생성 → DB 저장
         """
         llm = ChatOpenAI(model="gpt-5-nano")
+        summary_parser  = PydanticOutputParser(pydantic_object=JournalSummary)
         category_parser = PydanticOutputParser(pydantic_object=CategoryExtractionResponse)
         question_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
 
@@ -66,12 +67,16 @@ class QuestionService:
             최근 일기 내용:
             {journal_text}
             
-            Return JSON:
-            - summary: 최근 일기 내용 요약
+            {format_instructions}
             """
         )
-        summary_chain = summary_prompt | llm | StrOutputParser()
-        summary_response = summary_chain.invoke({"journal_text": combined_content})
+
+        summary_chain = summary_prompt | llm | summary_parser
+        
+        summary_response = summary_chain.invoke({
+            "journal_text": combined_content,
+            "format_instructions": summary_parser.get_format_instructions()
+        })
         summary = summary_response.summary
 
         # ✅ 4. 감정 분석 및 관련 카테고리 추출
