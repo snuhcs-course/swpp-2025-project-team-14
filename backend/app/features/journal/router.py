@@ -51,21 +51,18 @@ def create_journal_entry(
 
 
 @router.get(
-    "/user/{user_id}",
+    "/me",
     response_model=JournalCursorResponse,
     status_code=status.HTTP_200_OK,
-    summary="Get all journal entries by user ID with pagination",
+    summary="Get all journal entries of logged in user with pagination",
 )
 def get_journal_entries_by_user(
-    user_id: int,
     journal_service: Annotated[JournalService, Depends()],
     limit: int = Query(default=10, le=50),
     cursor: int | None = Query(None, description="마지막으로 본 Journal의 ID"),
     user: User = Depends(get_current_user),
 ) -> JournalCursorResponse:
-    if user.id != user_id:
-        raise PermissionDeniedError()
-    journals = journal_service.list_journals_by_user(user_id, limit, cursor)
+    journals = journal_service.list_journals_by_user(user.id, limit, cursor)
     return JournalCursorResponse.from_journals(journals, limit)
 
 
