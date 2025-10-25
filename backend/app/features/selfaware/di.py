@@ -3,8 +3,9 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db_session
+from app.features.journal.repository import JournalRepository
 from app.features.selfaware.repository import (
-    JournalRepository, QuestionRepository, AnswerRepository,
+    QuestionRepository, AnswerRepository,
     ValueMapRepository, ValueScoreRepository,
 )
 from app.features.selfaware.service import (

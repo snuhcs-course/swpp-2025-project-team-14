@@ -1,5 +1,6 @@
+from typing import Any
+
 from pydantic import BaseModel
-from typing import Optional, Any
 
 
 class ErrorResponse(BaseModel):
@@ -9,9 +10,5 @@ class ErrorResponse(BaseModel):
 
 class ResponseEnvelope(BaseModel):
     ok: bool = True
-    data: Optional[Any] = None
-    error: Optional[ErrorResponse] = None
-
-
-
-    
+    data: Any | None = None
+    error: ErrorResponse | None = None

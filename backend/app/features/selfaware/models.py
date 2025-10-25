@@ -13,24 +13,6 @@ if TYPE_CHECKING:
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
-# Journal class는 테스트 용 merge 후 삭제 예정
-class Journal(Base):
-    __tablename__ = "journals"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
-
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
-    gratitude: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-
-    # (Many to One)
-    user: Mapped[User] = relationship(back_populates="journals")
-
 class Question(Base):
     __tablename__ = "questions"
 

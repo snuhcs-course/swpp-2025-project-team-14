@@ -17,9 +17,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 from langchain.schema.runnable import RunnableMap
 
-from app.features.selfaware.models import Journal, Question, Answer, ValueMap, ValueScore
+from app.features.journal.models import Journal
+from app.features.journal.repository import JournalRepository
+from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
 from app.features.selfaware.prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
-from app.features.selfaware.repository import JournalRepository, QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
+from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.value_map import analyze_personality
 
 class QuestionService:

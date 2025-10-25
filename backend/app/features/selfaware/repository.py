@@ -6,31 +6,8 @@ from sqlalchemy import select, func, desc
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db_session
-from app.features.selfaware.models import Journal, Question, Answer, ValueMap, ValueScore
-
-
-# -------------------------------
-# Journal Repository 테스트 용, merge 후 삭제 예정
-# -------------------------------
-class JournalRepository:
-    def __init__(self, session: Annotated[Session, Depends(get_db_session)]) -> None:
-        self.session = session
-
-    def list_journals_by_user(
-        self, user_id: int, limit: int = 10, cursor: int | None = None
-    ) -> list[Journal]:
-        # cursor가 None이면 최신 글부터, cursor가 주어지면 해당 ID보다 작은 글부터
-        query = (
-            self.session.query(Journal)
-            .filter(Journal.user_id == user_id)
-            .order_by(Journal.id.desc())
-        )
-        # cursor가 주어지면 해당 ID보다 작은 글부터
-        if cursor is not None:
-            query = query.filter(Journal.id < cursor)
-        # limit만큼 가져오기
-        return query.limit(limit).all()
-
+from app.features.journal.models import Journal
+from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
 
 # -------------------------------
 # Question Repository
