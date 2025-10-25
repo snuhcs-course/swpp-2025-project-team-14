@@ -241,6 +241,7 @@ class ValueScoreService:
         # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
         value_map = self.value_map_repository.get_by_user(user_id)
         if not value_map:
+            print("value_map created")
             self.value_map_repository.create_value_map(user_id=user_id)
 
         for v in detected_values:
