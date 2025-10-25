@@ -27,6 +27,17 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str
 
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str = "ap-northeast-2"
+    AWS_S3_BUCKET_NAME: str = "mindlog-s3"
+
+    IMAGE_GENERATION_URL_BASE: str = (
+        "http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3001"
+    )
+    WEBHOOK_SECRET: str
+    OPENAI_API_KEY: str
+
     model_config = SettingsConfigDict(env_file=f".env.{ENV}", env_file_encoding="utf-8")
 
 
