@@ -20,7 +20,8 @@ from langchain.schema.runnable import RunnableMap
 from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
-from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
+from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt, value_score_structured_prompt
+from app.features.selfaware.prompt import MultiValueScoreStructure
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.value_map import analyze_personality
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
@@ -221,21 +222,23 @@ class ValueScoreService:
 
 
     def extract_value_score_from_answer(self, user_id:int, question_id:int, answer_id: int):
-        llm = ChatOpenAI(model="gpt-5-nano")
+        llm = ChatOpenAI(model="gpt-5-nano").with_structured_output(MultiValueScoreStructure)
 
         question = self.question_repository.get_question_by_id(question_id)
         answer = self.answer_repository.get_answer_by_id(answer_id)
-        value_score_chain = value_score_prompt | llm
-        response = value_score_chain.invoke({
+
+        if not question or not answer:
+            raise Exception("question or answer not written")
+
+        value_score_structured_chain = value_score_structured_prompt | llm
+
+        response = value_score_structured_chain.invoke({
             "question": question.text, 
             "answer": answer.text
         })
-        content = response.content if hasattr(response, "content") else str(response)
 
         try:
-            data = json.loads(content) # type: ignore
-            detected_values = data.get("detected_values", [])
-
+            detected_values = response['detected_values']
             # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
             value_map = self.value_map_repository.get_by_user(user_id)
             if not value_map:

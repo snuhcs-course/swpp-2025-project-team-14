@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Literal
+from typing import Literal, List
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -188,3 +188,79 @@ value_map_short_prompt = ChatPromptTemplate.from_template(
     이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 한 문장으로 요약해 주세요.
     """
 )
+
+class MultiValueScoreStructure(BaseModel):
+    detected_values: List[ValueScoreStructure]
+
+class ValueScoreStructure(BaseModel):
+    value: str = Field(
+        description=(
+            "Summarize the specific personal value, belief, or priority reflected in the user's response "
+            "(e.g., 'self-improvement', 'honesty', 'family closeness')."
+        )
+    )
+    category_key: str = Field(
+        description=(
+            "Choose **one** category that best represents the value expressed "
+            "in the user's response. Available options: "
+            "[Growth & Self-Actualization, Relationships & Connection, Security & Stability, "
+            "Freedom & Independence, Achievement & Influence, Enjoyment & Fulfillment, Ethics & Transcendence]."
+        )
+    )
+    confidence: float = Field(
+        description=(
+            "Model's confidence level (0.0-1.0) in the selected category and value assignment."
+        )
+    )
+    intensity: float = Field(
+        description=(
+            "Degree of emotional or motivational intensity (0.0-1.0) expressed by the user toward this value."
+        )
+    )
+    polarity: int = Field(
+        description=(
+            "Overall sentiment polarity of the response: use -1 for negative, 0 for neutral, and +1 for positive tone."
+        )
+    )
+    evidence: str = Field(
+        description=(
+            "Directly quote or paraphrase the key part of the user's response that supports the selected value/category."
+        )
+    )
+
+# get value score from prompt
+
+value_score_structured_prompt = ChatPromptTemplate.from_template("""
+You are an assistant that analyzes diary entries to identify the user's underlying personal value and emotional tone.
+
+Given the following question and answer, extract one personal value expressed in the user's response.
+
+Guidelines:
+- Write all output in **Korean**, except the value name which should be in **English canonical form** (e.g., Family, Freedom, Achievement, Health, Honesty, Growth).
+- Select the **single category** that best matches the main theme or motivation.
+- Assess your confidence and emotional intensity on a 0.0-1.0 scale.
+- Assign polarity as -1 for negative, 0 for neutral, +1 for positive sentiment.
+- Use a short quote (1-2 sentences) from the answer as evidence.
+
+Question:
+{question}
+
+Answer:
+\"\"\"{answer}\"\"\"
+
+Return the structured result following the ValueScoreStructure.
+""")
+
+
+class ValueMapStructure(BaseModel):
+    score_0: int = Field(description="Growth & Self-Actualization")
+    score_1: int = Field(description="Relationships & Connection")
+    score_2: int = Field(description="Security & Stability intensity")
+    score_3: int = Field(description="Freedom & Independence")
+    score_4: int = Field(description="Achievement & Influence")
+    score_5: int = Field(description="Enjoyment & Fulfillment")
+    score_6: int = Field(description="Ethics & Transcendence")
+
+class ValueMapAnalysisStructure(BaseModel):
+    comment: str = Field(description="")
+    personality_insight: str = Field(description="")
