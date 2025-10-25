@@ -2,6 +2,8 @@ package com.example.mindlog.features.selfaware.presentation.fragment
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
@@ -64,8 +66,13 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
                     // 완료 상태 UI
                     binding.groupQuestion.isVisible = !s.isAnsweredToday
-                    binding.btnSubmit.text = if (s.isAnsweredToday) "오늘 답변 완료" else "답변 완료"
-                    binding.btnSubmit.isEnabled = !s.isAnsweredToday && s.questionText != null && s.answerText.isNotBlank()
+                    // 답변 완료 시 오버레이 한 번만 표시
+                    if (s.isAnsweredToday && binding.completionOverlay.visibility != View.VISIBLE) {
+                        // 입력 비활성화 및 축하 오버레이 표시
+                        binding.etAnswer.isEnabled = false
+                        binding.btnSubmit.isEnabled = false
+                        showCompletionOverlay()
+                    }
 
                     // 가치 레이더 차트 렌더링
                     if (s.categoryScores.isNotEmpty() && s.valueCatogories.size == s.categoryScores.size) {
@@ -110,6 +117,10 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showCompletionOverlay() {
+        binding.completionOverlay.visibility = View.VISIBLE
     }
 
     private fun renderRadar(

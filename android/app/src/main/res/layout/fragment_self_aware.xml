@@ -121,16 +121,47 @@
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
                             android:layout_marginTop="10dp"
-                            android:text="답변 완료"
+                            android:text="답변 제출!"
                             android:textColor="#2D3142"
                             android:textSize="14sp"
                             app:cornerRadius="12dp"
                             android:backgroundTint="#EFE9DE"/>
                     </LinearLayout>
 
-                    <!-- 완료 UI가 필요하면 여기 아래에 groupCompleted 추가 (GONE/ VISIBLE 토글) -->
+                    <!-- 완료 오버레이 뷰 (처음엔 GONE) -->
+                    <FrameLayout
+                        android:id="@+id/completionOverlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:visibility="gone">
 
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_gravity="center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                            <!-- ✅ 벡터 아이콘으로 교체 -->
+                            <ImageView
+                                android:id="@+id/ivCheck"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:contentDescription="답변 완료 표시 아이콘"
+                                app:srcCompat="@drawable/ic_success_check" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="오늘 답변 완료!"
+                                android:textSize="16sp"
+                                android:textColor="#2D3142"
+                                android:layout_marginTop="12dp"/>
+                        </LinearLayout>
+                    </FrameLayout>
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
             <!-- 카드 2 : 나의 가치 지도 -->
