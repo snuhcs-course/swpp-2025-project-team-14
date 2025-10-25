@@ -75,7 +75,7 @@ class TopValueScoresResponse(BaseModel):
     
 class ValueMapResponse(BaseModel):
     category_scores: List[Dict]
-    update_at: datetime
+    updated_at: datetime
 
     @staticmethod
     def from_value_map(value_map: ValueMap) -> "ValueMapResponse":
@@ -89,18 +89,18 @@ class ValueMapResponse(BaseModel):
         
         return ValueMapResponse(
             category_scores=category_scores,
-            update_at=value_map.updated_at
+            updated_at=value_map.updated_at
         )
         
 class PersonalityInsightResponse(BaseModel):
     comment: str
     personality_insight: str
-    update_at: datetime
+    updated_at: datetime
 
     @staticmethod
     def from_value_map(value_map: ValueMap) -> "PersonalityInsightResponse":
         return PersonalityInsightResponse(
             comment=value_map.comment,
             personality_insight=value_map.personality_insight,
-            update_at=value_map.updated_at
+            updated_at=value_map.updated_at
         )
