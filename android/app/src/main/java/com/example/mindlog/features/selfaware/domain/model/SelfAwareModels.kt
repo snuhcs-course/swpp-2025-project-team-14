@@ -14,7 +14,7 @@ data class Question(
 data class Answer(
     val id: Int,
     val questionId: Int,
-    val type: String,
+    val type: String?,
     val text: String,
     val createdAt: LocalDate,
     val updatedAt: LocalDate,

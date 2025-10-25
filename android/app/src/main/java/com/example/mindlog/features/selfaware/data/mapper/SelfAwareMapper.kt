@@ -2,7 +2,6 @@ package com.example.mindlog.features.selfaware.data.mapper
 
 import com.example.mindlog.features.selfaware.data.dto.*
 import com.example.mindlog.features.selfaware.domain.model.*
-import java.time.Instant
 import java.time.LocalDateTime
 import javax.inject.Inject
 
