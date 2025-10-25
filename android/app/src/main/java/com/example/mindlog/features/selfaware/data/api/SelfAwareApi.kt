@@ -5,6 +5,7 @@ import com.example.mindlog.features.selfaware.data.dto.AnswerResponse
 import com.example.mindlog.features.selfaware.data.dto.PersonalityInsightResponse
 import com.example.mindlog.features.selfaware.data.dto.QACursorResponse
 import com.example.mindlog.features.selfaware.data.dto.QAResponse
+import com.example.mindlog.features.selfaware.data.dto.TopValueScoresResponse
 import com.example.mindlog.features.selfaware.data.dto.ValueMapResponse
 import com.example.mindlog.features.selfaware.data.dto.ValueScoreResponse
 import retrofit2.http.Body
@@ -26,7 +27,7 @@ interface SelfAwareApi {
     suspend fun getValueMap(): ValueMapResponse
 
     @GET("self-aware/top-value-scores")
-    suspend fun getTopValueScores(): ValueScoreResponse
+    suspend fun getTopValueScores(): TopValueScoresResponse
 
     @GET("self-aware/personality-insight")
     suspend fun getPersonalityInsight(): PersonalityInsightResponse

@@ -33,11 +33,22 @@ data class QACursorResponse(
 )
 
 data class ValueScoreResponse(
-    @SerializedName("value_scores") val valueScores: Dictionary<String, Any>,
+    @SerializedName("value")     val value: String,
+    @SerializedName("intensity") val intensity: Float
+)
+
+data class TopValueScoresResponse(
+    @SerializedName("value_scores") val valueScores: List<ValueScoreResponse>,
+)
+
+data class CategoryResponse(
+    @SerializedName("category_en") val categoryEn: String,
+    @SerializedName("category_ko") val categoryKo: String,
+    @SerializedName("score") val score: Int
 )
 
 data class ValueMapResponse(
-    @SerializedName("category_scores") val categoryScores: Dictionary<String, Any>,
+    @SerializedName("category_scores") val categoryScores: List<CategoryResponse>,
     @SerializedName("updated_at") val updatedAt: String // ISO8601
 )
 
