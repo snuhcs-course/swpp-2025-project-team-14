@@ -123,25 +123,21 @@ def create_or_get_today_question(
             )
             
 @router.get(
-    "/user/{user_id}",
+    "/QA-history",
     response_model=QACursorResponse,
     status_code=status.HTTP_200_OK,
     summary="Get all question & answer pairs by user ID with pagination",
 )
 def get_user_QAs(
-    user_id: int,
     question_service: Annotated[QuestionService, Depends(get_question_service)],
     answer_service: Annotated[AnswerService, Depends(get_answer_service)],
     limit: int = Query(default=10, le=50, description="Number of items to retrieve"),
     cursor: int | None = Query(None, description="ID of the last item from the previous page for pagination"),
     user: User = Depends(get_current_user)
 ) -> QACursorResponse:
-    if user.id != user_id:
-        raise HTTPException(status_code=403, detail="No Authorization.")
-
-    questions = question_service.list_questions_by_user(user_id, limit, cursor)
+    questions = question_service.list_questions_by_user(user.id, limit, cursor)
     questions_ids = [q.id for q in questions]
-    answers = answer_service.list_answers_by_user(user_id, questions_ids)
+    answers = answer_service.list_answers_by_user(user.id, questions_ids)
     return QACursorResponse.from_QAs(questions, answers)
 
 # -----------------------------
@@ -192,54 +188,45 @@ def submit_answer(
 # -----------------------------
 
 @router.get(
-    "/value-map/{user_id}", 
+    "/value-map",
     response_model=ValueMapResponse,
     status_code=status.HTTP_200_OK,
     summary="Get value map by user ID",
 )
 def get_value_map_by_user(
-    user_id: int,
     value_map_service: Annotated[ValueMapService, Depends(get_value_map_service)],
     user: User = Depends(get_current_user)
 ) -> ValueMapResponse:
-    if user.id != user_id:
-        raise HTTPException(status_code=403, detail="No Authorization.")
-    value_map = value_map_service.get_value_map_by_user(user_id)
+    value_map = value_map_service.get_value_map_by_user(user.id)
     if not value_map:
         raise HTTPException(status_code=404, detail="Value map not found.")
     return ValueMapResponse.from_value_map(value_map)
 
     
 @router.get(
-    "/top-value-scores/{user_id}", 
+    "/top-value-scores", 
     response_model=TopValueScoresResponse,
     status_code=status.HTTP_200_OK,
     summary="Get top value scores by user ID",
 )
 def get_top_value_scores(
-    user_id: int,
     value_score_service: Annotated[ValueScoreService, Depends(get_value_score_service)],
     user: User = Depends(get_current_user)
 ) -> TopValueScoresResponse:
-    if user.id != user_id:
-        raise HTTPException(status_code=403, detail="No Authorization.")    
-    value_scores = value_score_service.get_top_value_scores(user_id)
+    value_scores = value_score_service.get_top_value_scores(user.id)
     return TopValueScoresResponse(value_scores=value_scores)
 
 @router.get(
-    "/{user_id}", 
+    "/personality-insight", 
     response_model=PersonalityInsightResponse,
     status_code=status.HTTP_200_OK,
     summary="Get personality insight by user ID",
 )
 def get_personality_insight(
-    user_id: int,
     value_map_service: Annotated[ValueMapService, Depends(get_value_map_service)],
     user: User = Depends(get_current_user)
 ) -> PersonalityInsightResponse:
-    if user.id != user_id:
-        raise HTTPException(status_code=403, detail="No Authorization.")
-    value_map = value_map_service.get_value_map_by_user(user_id)
+    value_map = value_map_service.get_value_map_by_user(user.id)
     if not value_map:
         raise HTTPException(status_code=404, detail="Value map not found.")
     return PersonalityInsightResponse.from_value_map(value_map)
