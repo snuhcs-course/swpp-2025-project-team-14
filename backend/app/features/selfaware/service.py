@@ -237,29 +237,25 @@ class ValueScoreService:
             "answer": answer.text
         })
 
-        try:
-            detected_values = response['detected_values']
-            # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
-            value_map = self.value_map_repository.get_by_user(user_id)
-            if not value_map:
-                self.value_map_repository.create_value_map(user_id=user_id)
+        detected_values = response['detected_values']
+        # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
+        value_map = self.value_map_repository.get_by_user(user_id)
+        if not value_map:
+            self.value_map_repository.create_value_map(user_id=user_id)
 
-            for v in detected_values:
-                value_score = self.value_score_repository.create_value_score(
-                    user_id = user_id,
-                    question_id = question_id,
-                    answer_id = answer_id,
-                    category = v['category_key'],
-                    value = v['value_name'],
-                    confidence= v['confidence'],
-                    intensity= v['intensity'],
-                    polarity= v['polarity'],
-                    evidence_quotes= v.get('evidence', []),
-                )
-                self.value_map_repository.update_by_value_score(value_score)
-        except json.JSONDecodeError:
-            print("JSON 파싱 실패. 모델의 출력 형식을 확인하세요.")
-            detected_values = []
+        for v in detected_values:
+            value_score = self.value_score_repository.create_value_score(
+                user_id = user_id,
+                question_id = question_id,
+                answer_id = answer_id,
+                category = v['category_key'],
+                value = v['value_name'],
+                confidence= v['confidence'],
+                intensity= v['intensity'],
+                polarity= v['polarity'],
+                evidence_quotes= v.get('evidence', []),
+            )
+            self.value_map_repository.update_by_value_score(value_score)
         
         return detected_values
 
