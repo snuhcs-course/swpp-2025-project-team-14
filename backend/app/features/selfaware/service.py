@@ -20,8 +20,8 @@ from langchain.schema.runnable import RunnableMap
 from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
-from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt, value_score_structured_prompt, value_map_combined_structured_prompt
-from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnalysisStructure
+from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt, value_score_structured_prompt, value_map_combined_structured_prompt, get_opposite_value_prompt
+from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnalysisStructure, OppositeValueStructure
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.value_map import analyze_personality
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
@@ -263,9 +263,31 @@ class ValueScoreService:
     def get_top_value_scores(self, user_id: int):
         top_value_scores = self.value_score_repository.get_top_5_value_scores(user_id)
         value_scores = []
+        seen_categories = set()  # 이미 추가된 category 추적
+
         if top_value_scores:
             for top_value_score in top_value_scores:
-                value_scores.append({"value": top_value_score.value, "intensity": top_value_score.intensity})
+                if top_value_score.category in seen_categories:
+                    continue  # 중복 category는 건너뛰기
+
+                if top_value_score.polarity == 0:
+                    continue  # polarity가 0이면 append하지 않음
+                
+                if top_value_score.polarity == -1:
+                    llm = ChatOpenAI(model="gpt-5-nano").with_structured_output(OppositeValueStructure)
+                    get_opposite_value_chain = get_opposite_value_prompt | llm
+                    response = get_opposite_value_chain.invoke({"value":top_value_score.value, "category":top_value_score.category})
+                    value_scores.append({
+                    "value": response['opposite_value'],
+                    "intensity": top_value_score.intensity
+                    })
+                else:
+                    value_scores.append({
+                    "value": top_value_score.value,
+                    "intensity": top_value_score.intensity
+                    })
+                seen_categories.add(top_value_score.category)
+
         return value_scores
     
     

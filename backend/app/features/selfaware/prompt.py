@@ -227,15 +227,24 @@ value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
 결과는 ValueMapAnalysisStructure에 맞게 구조화하세요.
 """)
 
+class OppositeValueStructure(BaseModel):
+    opposite_value: str = Field(
+        description="주어진 value와 category를 기준으로, 동일 카테고리 내에서 반대되는 가치를 영어 canonical 형태로 반환합니다."
+    )
 
-class ValueMapStructure(BaseModel):
-    score_0: int = Field(description="Growth & Self-Actualization")
-    score_1: int = Field(description="Relationships & Connection")
-    score_2: int = Field(description="Security & Stability intensity")
-    score_3: int = Field(description="Freedom & Independence")
-    score_4: int = Field(description="Achievement & Influence")
-    score_5: int = Field(description="Enjoyment & Fulfillment")
-    score_6: int = Field(description="Ethics & Transcendence")
+
+get_opposite_value_prompt = ChatPromptTemplate.from_template("""
+당신은 사람의 가치관을 분석하고, 주어진 카테고리 내에서 반대되는 가치를 추출하는 전문가입니다.
+
+입력:
+- value: {value}
+- category: {category}
+
+지시사항:
+1. 주어진 value와 같은 category 내부에서 가장 적절한 반대되는 value를 선택하세요.
+2. 반드시 영어 canonical 형태로 반환하세요.
+3. 출력은 OppositeValueStructure 구조로 작성하세요.
+""")
 
 # Dead codes (아직 test를 위해 남겨둠, test 이후 삭제 예정)
 

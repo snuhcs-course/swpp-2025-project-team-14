@@ -167,10 +167,14 @@ class ValueScoreRepository:
         self.session.flush()
         return value_score
     
-    def get_top_5_value_scores(self, user_id: int) -> Optional[Sequence[ValueScore]]:
-        self.session.scalars(
-            select(ValueScore).where(ValueScore.user_id == user_id).order_by(desc(ValueScore.intensity)).limit(5)
-        ).all()
+    def get_top_5_value_scores(self, user_id: int):
+        query = (
+            select(ValueScore)
+            .where(ValueScore.user_id == user_id)
+            .order_by(desc(ValueScore.intensity * ValueScore.confidence * (ValueScore.polarity * ValueScore.polarity)))  # intensity * confidence 기준 정렬, polarity 0이면 후순위
+            .limit(5)
+        )
+        return self.session.scalars(query).all()
 
 # -------------------------------
 # ValueMap Repository
