@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Literal
+from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 
 CATEGORIES = [
@@ -21,6 +22,15 @@ QuestionType = Literal[
     "personalized_category" # 사용자의 일기 데이터를 바탕으로 한 질문
 ]
 
+
+class CategoryExtractionResponse(BaseModel):
+    analysis: str = Field(description="일기의 주요 감정과 그 이유에 대한 분석")
+    categories: list[tuple[str, str]] = Field(description="관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태")
+
+class QuestionGenerationResponse(BaseModel):
+    question: str = Field(description="생성된 자기성찰 질문")
+    rationale: str = Field(description="질문 생성 이유")
+
 # 감정 분석 프롬프트
 emotion_prompt = ChatPromptTemplate.from_template(
     """
@@ -29,18 +39,52 @@ emotion_prompt = ChatPromptTemplate.from_template(
 
     일기:
     {journal}
+    
+    Return Json
+    """
+)
+
+category_prompt = ChatPromptTemplate.from_template(
+    """다음 일기 요약을 분석하여:
+    1. 주요 감정과 그 이유를 분석해주세요
+    2. 다음 가치 카테고리 중 일기 내용과 가장 관련이 깊은 1-2개를 선택해주세요:
+       - 성장과 자기실현 (Growth & Self-Actualization)
+       - 관계와 연결 (Relationships & Connection) 
+       - 안정과 안전 (Security & Stability)
+       - 자유와 자율 (Freedom & Independence)
+       - 성취와 영향력 (Achievement & Influence)
+       - 즐거움과 만족 (Enjoyment & Fulfillment)
+       - 윤리와 초월 (Ethics & Transcendence)
+
+    일기 요약:
+    {summary}
+    
+    Return JSON:
+    - analysis: 주요 감정과 그 이유
+    - categories: 관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태
     """
 )
 
 # 자기 성찰 질문 생성 프롬프트
-question_prompt = ChatPromptTemplate.from_template(
+personalized_prompt = ChatPromptTemplate.from_template(
     """
-    다음 감정 분석 결과를 기반으로,
-    사용자가 자기 성찰을 할 수 있도록 돕는 질문 1개를 만들어줘.
+    다음 일기 내용과 감정 분석 결과를 기반으로
+    해당 카테고리와 관련된 사용자가 자기 성찰을 할 수 있도록 돕는 질문 1개를 만들어줘.
     질문은 구체적이고, 감정의 원인을 탐색할 수 있도록 구성해줘.
 
-    감정 분석 결과:
-    {analysis}
+    일기 요약: {summary}  
+    감정 분석 결과: {analysis}
+    Target categories: {categories}
+    
+    Guidelines:
+    - Invite a concrete episode, feelings, and why it mattered.
+    - Avoid yes/no; ask one sentence only.
+    - Tone/Style: "사려 깊고 비판단적"
+    - 질문은 한국어 한 문장으로 작성하세요.
+
+    Return JSON:
+    - question
+    - rationale
     """
 )
 
@@ -49,7 +93,7 @@ single_category_prompt = ChatPromptTemplate.from_template(
 
     Goal: Create exactly ONE open-ended question about a single value category, natural and everyday-language (no category names).
 
-    Target category: {cat}
+    Target category: {category}
 
     Guidelines:
     - Invite a concrete episode, feelings, and why it mattered.
@@ -58,7 +102,7 @@ single_category_prompt = ChatPromptTemplate.from_template(
     - 질문은 한국어 한 문장으로 작성하세요.
 
     Return JSON:
-    - text
+    - question
     - rationale
     """
 )
@@ -68,8 +112,7 @@ multi_category_prompt = ChatPromptTemplate.from_template(
 
     Goal: Create exactly ONE open-ended question that explores tensions/trade-offs or priorities ACROSS multiple value categories, without naming categories.
 
-    Target categories:
-    {cats}
+    Target categories: {categories}
 
     Guidelines:
     - Encourage reflection on how the user balances these values in real-life decisions.
@@ -79,7 +122,7 @@ multi_category_prompt = ChatPromptTemplate.from_template(
     - 질문은 한국어 한 문장으로 작성하세요.
 
     Return JSON:
-    - text
+    - question
     - rationale
     """
 )

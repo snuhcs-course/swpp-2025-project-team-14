@@ -20,9 +20,11 @@ from langchain.schema.runnable import RunnableMap
 from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
-from app.features.selfaware.prompt import emotion_prompt, question_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
+from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_prompt, value_map_prompt, value_map_short_prompt
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.value_map import analyze_personality
+from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
+
 
 class QuestionService:
     def __init__(
@@ -36,15 +38,20 @@ class QuestionService:
 
     def generate_selfaware_question(self, user_id: int) -> Question:
         """
-        특정 사용자의 일기를 DB에서 불러와 요약 → 자기성찰 질문을 생성 → DB 저장
+        특정 사용자의 일기를 DB에서 불러와 요약 → 감정 분석 및 카테고리 추출 → 자기성찰 질문을 생성 → DB 저장
         """
         llm = ChatOpenAI(model="gpt-5-nano")
-        output_parser = StrOutputParser()
+        category_parser = PydanticOutputParser(pydantic_object=CategoryExtractionResponse)
+        question_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
 
         # ✅ 1. 유저의 일기 가져오기
         journals = self.journal_repository.list_journals_by_user(user_id)
         if not journals or len(journals) == 0:
-            raise ValueError(f"User {user_id} has no journal entries.")
+            type = random.randint(0, 1)
+            if type == 0:
+                return self.generate_single_category_question(user_id)
+            if type == 1:
+                return self.generate_multi_category_question(user_id)
 
         # ✅ 2. 최근 일기 3~5개만 선택 (토큰 제한 방지)
         recent_journals = journals[-5:]
@@ -52,26 +59,42 @@ class QuestionService:
 
         # ✅ 3. 일기 요약 (너무 길면 LLM 부담됨)
         summary_prompt = ChatPromptTemplate.from_template(
-            "다음은 한 사용자의 최근 일기 내용입니다. 이 일기들의 전반적인 감정과 주제를 간결하게 요약해 주세요.\n\n{journal_text}"
+            """다음은 한 사용자의 최근 일기 내용입니다. 
+            이 일기들의 전반적인 감정과 주제를 간결하게 요약해 주세요.
+            
+            최근 일기 내용:
+            {journal_text}
+            
+            Return JSON:
+            - summary: 최근 일기 내용 요약
+            """
         )
         summary_chain = summary_prompt | llm | StrOutputParser()
-        journal_summary = summary_chain.invoke({"journal_text": combined_content})
+        summary_response = summary_chain.invoke({"journal_text": combined_content})
+        summary = summary_response.summary
 
-        # ✅ 4. 감정 분석 → 자기성찰 질문 생성
-        emotion_chain = emotion_prompt | llm
-        question_chain = question_prompt | llm
+        # ✅ 4. 감정 분석 및 관련 카테고리 추출
+        category_chain = category_prompt | llm | category_parser
+        category_response: CategoryExtractionResponse = category_chain.invoke({"summary": summary})
 
-        reflection_agent = RunnableMap({
-            "analysis": emotion_chain,
-        }) | question_chain | output_parser
+        analysis = category_response.analysis
+        categories = category_response.categories
+        categories_text_list = []
+        for category_en, category_ko in categories:
+            categories_text_list.append("{}({})".format(category_en, category_ko))
+        categories_text = ", ".join(categories_text_list)
 
-        response = reflection_agent.invoke({"journal": journal_summary})
+        # ✅ 5. 분석 결과를 바탕으로 자기성찰 질문 생성
+        question_chain = personalized_prompt | llm | question_parser
+        response: QuestionGenerationResponse = question_chain.invoke({"summary": summary, "analysis": analysis, "categories": categories_text})
 
         # DB에 저장
         question = self.question_repository.create_question(
             user_id=user_id,
-            question_type="personalized_category",
-            text=response,
+            question_type="personalized_category",  
+            text=response.question,
+            categories_ko=[cat[1] for cat in category_response.categories],
+            categories_en=[cat[0] for cat in category_response.categories],
         )
 
         return question
@@ -79,31 +102,24 @@ class QuestionService:
 
     def generate_single_category_question(self, user_id: int) -> Question:
         llm = ChatOpenAI(model="gpt-5-nano")
-        output_parser = StrOutputParser()
-
-        # ✅ 1. 유저의 일기 가져오기
-        journals = self.journal_repository.list_journals_by_user(user_id)
-        if not journals or len(journals) == 0:
-            raise ValueError(f"User {user_id} has no journal entries.")
-
-        # ✅ 2. 최근 일기 선택 
-        recent_journal = journals[-1]
-
-        # ✅ 3. 유사 카테고리 선택
-        category_prompt = ChatPromptTemplate.from_template(
-            "다음은 한 사용자의 최근 일기 내용입니다. '성장과 자기실현','관계와 연결','안정과 안전','자유와 자율','성취와 영향력','즐거움과 만족', '윤리와 초월' 중 일기의 내용과 가장 가까운 것을 선택하여 출력해주세요.\n\n{journal_text}"
-        )
-        category_chain = category_prompt | llm | StrOutputParser()
-        category = category_chain.invoke({"journal_text": recent_journal})
+        output_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
+        
+        # 랜덤하게 카테고리 선택
+        selected_category = random.choice(CATEGORIES)
+        category_en = selected_category[0]
+        category_ko = selected_category[1]
+        category = "{}({})".format(category_en, category_ko)
 
         single_category_chain = single_category_prompt | llm | output_parser
-        response = single_category_chain.invoke({"cat": category})
+        response: QuestionGenerationResponse = single_category_chain.invoke({"category": category})
 
         # DB에 저장
         question = self.question_repository.create_question(
             user_id=user_id,
             question_type="single_category",
-            text=response,
+            text=response.question,
+            catergories_ko=[category_ko],
+            catergories_en=[category_en]
         )
 
         return question
@@ -111,31 +127,28 @@ class QuestionService:
 
     def generate_multi_category_question(self, user_id: int) -> Question:
         llm = ChatOpenAI(model="gpt-5-nano")
-        output_parser = StrOutputParser()
+        output_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
 
-        # ✅ 1. 유저의 일기 가져오기
-        journals = self.journal_repository.list_journals_by_user(user_id)
-        if not journals or len(journals) == 0:
-            raise ValueError(f"User {user_id} has no journal entries.")
-
-        # ✅ 2. 최근 일기 선택 
-        recent_journal = journals[-1]
-
-        # ✅ 3. 유사 카테고리 선택
-        categories_prompt = ChatPromptTemplate.from_template(
-            "다음은 한 사용자의 최근 일기 내용입니다. '성장과 자기실현','관계와 연결','안정과 안전','자유와 자율','성취와 영향력','즐거움과 만족', '윤리와 초월' 중 일기의 내용과 가까운 것을 2가지 내지 3가지 선택하여 출력해주세요.\n\n{journal_text}"
-        )
-        categories_chain = categories_prompt | llm | StrOutputParser()
-        categories = categories_chain.invoke({"journal_text": recent_journal})
+        # 랜덤하게 2-3개 카테고리 선택
+        num_categories = random.randint(2, 3)
+        selected_categories = random.sample(CATEGORIES, num_categories)
+        
+        categories_text = []
+        for category_en, category_ko in selected_categories:
+            categories_text.append("{}({})".format(category_en, category_ko))
+        
+        categories = ", ".join(categories_text)
 
         multi_category_chain = multi_category_prompt | llm | output_parser
-        response = multi_category_chain.invoke({"cats": categories})
-
+        response: QuestionGenerationResponse = multi_category_chain.invoke({"categories": categories})
+    
         # DB에 저장
         question = self.question_repository.create_question(
             user_id=user_id,
             question_type="multi_category",
-            text=response,
+            text=response.question,
+            catergories_en=[cat[0] for cat in selected_categories],
+            catergories_ko=[cat[1] for cat in selected_categories],
         )
 
         return question
