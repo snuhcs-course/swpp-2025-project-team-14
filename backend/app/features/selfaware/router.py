@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from typing import Annotated
+import asyncio
 
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
 from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
@@ -35,6 +36,36 @@ security = HTTPBearer()
 
 # ✅ 하나의 self-aware 라우터
 router = APIRouter(prefix="/self-aware", tags=["selfaware"])
+
+# -----------------------------
+# 🔧 백그라운드 작업 함수
+# -----------------------------
+def process_value_score_extraction(
+    user_id: int,
+    question_id: int, 
+    answer_id: int,
+    value_score_service: ValueScoreService,
+    value_map_service: ValueMapService
+):
+    """백그라운드에서 value score 추출 및 value map 업데이트"""
+    try:
+        print(f"Starting value score extraction for user {user_id}, question {question_id}, answer {answer_id}")
+        
+        # 1. value score 추출 및 value map 업데이트
+        detected_values = value_score_service.extract_value_score_from_answer(user_id, question_id, answer_id)
+        print(f"Extracted {len(detected_values)} value scores for user {user_id}")
+        
+        # 2. value map comment 생성 (선택적)
+        try:
+            value_map_service.generate_comment(user_id)
+            print(f"Generated comment for user {user_id}")
+        except Exception as comment_error:
+            print(f"Warning: Could not generate comment for user {user_id}: {comment_error}")
+            # comment 생성 실패는 전체 프로세스를 중단하지 않음
+            
+    except Exception as e:
+        print(f"Error processing value score for user {user_id}, question {question_id}, answer {answer_id}: {e}")
+        # 로깅을 위해 에러를 출력하지만 예외를 다시 발생시키지 않음
 
 # -----------------------------
 # 🧠 Question 관련 엔드포인트
@@ -125,11 +156,14 @@ def get_user_QAs(
 )
 def submit_answer(
     request: AnswerRequest,
+    background_tasks: BackgroundTasks,
     question_service: Annotated[QuestionService, Depends(get_question_service)],
     answer_service: Annotated[AnswerService, Depends(get_answer_service)],
+    value_score_service: Annotated[ValueScoreService, Depends(get_value_score_service)],
+    value_map_service: Annotated[ValueMapService, Depends(get_value_map_service)],
     user: User = Depends(get_current_user)
 ) -> AnswerResponse:
-    """특정 질문(question_id)에 대한 모든 답변 조회"""
+    """답변을 제출하고 백그라운드에서 value score를 추출하여 value map을 업데이트합니다."""
     question_id = request.question_id
     question = question_service.get_questions_by_id(question_id)
     if not question:
@@ -137,7 +171,20 @@ def submit_answer(
     if question.user_id != user.id:
         raise HTTPException(status_code=403, detail="No Authorization.")
 
-    return answer_service.create_answer(user_id=user.id, question_id=question_id,  text=request.text)
+    # 1. 답변 생성 및 즉시 응답 반환
+    answer = answer_service.create_answer(user_id=user.id, question_id=question_id, text=request.text)
+    
+    # 2. 백그라운드에서 value score 추출 및 value map 업데이트
+    background_tasks.add_task(
+        process_value_score_extraction,
+        user.id,
+        question_id,
+        answer.id,
+        value_score_service,
+        value_map_service
+    )
+    
+    return AnswerResponse.from_answer(answer)
     
 
 # -----------------------------
