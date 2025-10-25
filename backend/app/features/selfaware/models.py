@@ -35,9 +35,12 @@ class Answer(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
-
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    question_id: Mapped[int] = mapped_column(
+        ForeignKey("questions.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
     type: Mapped[str | None] = mapped_column(String(50), nullable=True) # single_category | multi_category | personalized_category
     text: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -60,7 +63,9 @@ class ValueScore(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    answer_id: Mapped[int] = mapped_column(ForeignKey("answers.id", ondelete="SET NULL"), nullable=False, index=True)
+    answer_id: Mapped[int] = mapped_column(
+        ForeignKey("answers.id", ondelete="CASCADE"), nullable=False, index=True
+    )
 
     user_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
 
@@ -84,7 +89,9 @@ class ValueMap(Base):
     __tablename__ = "value_maps"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
 
     score_0: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     score_1: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
@@ -105,8 +112,8 @@ class ValueMap(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
 
-    comment: Mapped[str] = mapped_column(String, nullable=True)
-    personality_insight: Mapped[str] = mapped_column(String, nullable=True)
+    comment: Mapped[str] = mapped_column(Text, nullable=True)
+    personality_insight: Mapped[str] = mapped_column(Text, nullable=True)
 
     user: Mapped[User] = relationship(back_populates="value_maps")
 
