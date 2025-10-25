@@ -12,7 +12,7 @@ import java.time.LocalDate
 interface SelfAwareRepository {
     suspend fun getTodayQA(date: LocalDate): Result<QAItem>
     suspend fun submitAnswer(questionId: Int, answer: String): Result<Answer>
-    suspend fun getQAHistory(cursor: Int, size: Int): Result<Paged<QAItem>>
+    suspend fun getQAHistory(limit: Int, cursor: Int?): Result<Paged<QAItem>>
 
     suspend fun getTopValueScores(): Result<TopValueScores>
     suspend fun getValueMap(): Result<ValueMap>

@@ -28,7 +28,7 @@ class SelfAwareRepositoryImpl @Inject constructor(
         }.toResult()
     }
 
-    override suspend fun getQAHistory(limit: Int, cursor: Int) = withContext(dispatcher.io) {
+    override suspend fun getQAHistory(limit: Int, cursor: Int?) = withContext(dispatcher.io) {
         runCatching {
             val dto = api.getQAHistory(limit = limit, cursor = cursor)
             Paged(

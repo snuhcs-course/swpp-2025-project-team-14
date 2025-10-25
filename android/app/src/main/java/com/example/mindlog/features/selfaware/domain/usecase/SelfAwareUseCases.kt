@@ -11,7 +11,7 @@ class SubmitAnswerUseCase @Inject constructor(private val repo: SelfAwareReposit
     suspend operator fun invoke(questionId: Int, answer: String) = repo.submitAnswer(questionId, answer)
 }
 class GetQAHistoryUseCase @Inject constructor(private val repo: SelfAwareRepository) {
-    suspend operator fun invoke(cursor: Int, size: Int) = repo.getQAHistory(cursor, size)
+    suspend operator fun invoke(limit: Int, cursor: Int?) = repo.getQAHistory(limit, cursor)
 }
 
 class GetTopValueScoresUseCase @Inject constructor(private val repo: SelfAwareRepository) {

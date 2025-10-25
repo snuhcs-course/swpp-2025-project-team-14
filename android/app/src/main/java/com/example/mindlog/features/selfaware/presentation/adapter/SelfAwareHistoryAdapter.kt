@@ -22,11 +22,9 @@ class SelfAwareHistoryAdapter :
 
         fun bind(item: QAItem) = with(binding) {
             tvDate.text = item.answer?.createdAt.toString()
-            tvQuestion.text = item.question.text
-            tvAnswer.text = item.answer?.text
+            tvQuestion.text = "Q. ${item.question.text}"
+            tvAnswer.text = "A. ${item.answer?.text}"
         }
-
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

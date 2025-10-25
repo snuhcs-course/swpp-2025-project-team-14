@@ -1,5 +1,6 @@
 package com.example.mindlog.features.selfaware.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
@@ -20,11 +21,10 @@ class SelfAwareHistoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     data class UiState(
-        val cursor: Int = 1,
-        val size: Int = 20,
+        val next_cursor: Int? = null,
+        val limit: Int = 10,
         val items: List<QAItem> = emptyList(),
         val isLoading: Boolean = false,
-        val isEnd: Boolean = false,
         val error: String? = null
     )
     private val _state = MutableStateFlow(UiState())
@@ -33,13 +33,12 @@ class SelfAwareHistoryViewModel @Inject constructor(
     fun refresh() = viewModelScope.launch(dispatcher.io) {
         val s = _state.value
         _state.update { it.copy(isLoading = true, error = null) }
-        when (val res = getHistoryUseCase(cursor = 1, size = s.size)) {
+        when (val res = getHistoryUseCase(limit = s.limit, cursor = s.next_cursor)) {
             is Result.Success -> _state.update {
                 it.copy(
                     isLoading = false,
-                    cursor = 1,
-                    items = res.data.items,
-                    isEnd = res.data.items.size < s.size
+                    next_cursor = res.data.cursor,
+                    items = res.data.items
                 )
             }
             is Result.Error -> _state.update { it.copy(isLoading = false, error = res.message) }
@@ -47,17 +46,17 @@ class SelfAwareHistoryViewModel @Inject constructor(
     }
 
     fun loadNext() = viewModelScope.launch(dispatcher.io) {
+        Log.d("loadNext", "called")
         val s = _state.value
-        if (s.isLoading || s.isEnd) return@launch
+        if (s.isLoading) return@launch
         _state.update { it.copy(isLoading = true) }
-        when (val res = getHistoryUseCase(cursor = s.cursor + 1, size = s.size)) {
+        when (val res = getHistoryUseCase(limit = s.limit, cursor = s.next_cursor)) {
             is Result.Success -> _state.update {
                 val more = res.data.items
                 it.copy(
                     isLoading = false,
-                    cursor = s.cursor + 1,
-                    items = s.items + more,
-                    isEnd = more.size < s.size
+                    next_cursor = res.data.cursor,
+                    items = s.items + more
                 )
             }
             is Result.Error -> _state.update { it.copy(isLoading = false, error = res.message) }

@@ -21,7 +21,7 @@ interface SelfAwareApi {
     suspend fun submitAnswer(@Body answerRequest: AnswerRequest): AnswerResponse
 
     @GET("self-aware/QA-history")
-    suspend fun getQAHistory(@Query("limit") limit: Int, @Query("cursor") cursor: Int): QACursorResponse
+    suspend fun getQAHistory(@Query("limit") limit: Int, @Query("cursor") cursor: Int?): QACursorResponse
 
     @GET("self-aware/value-map")
     suspend fun getValueMap(): ValueMapResponse
