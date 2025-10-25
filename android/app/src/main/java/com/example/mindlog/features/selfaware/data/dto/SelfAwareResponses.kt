@@ -8,8 +8,6 @@ data class QuestionResponse(
     @SerializedName("id")             val id: Int,
     @SerializedName("question_type")  val questionType: String,
     @SerializedName("text")           val text: String,
-    @SerializedName("categories_ko")  val categoriesKo: List<String>?,
-    @SerializedName("categories_en")  val categoriesEn: List<String>?,
     @SerializedName("created_at")     val createdAt: String // ISO8601
 )
 

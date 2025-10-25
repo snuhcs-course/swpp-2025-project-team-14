@@ -39,7 +39,13 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             viewModel.updateAnswerText(it?.toString().orEmpty())
         }
 
-        binding.btnSubmit.setOnClickListener { viewModel.submit() }
+        binding.btnSubmit.setOnClickListener {
+            if (!binding.btnSubmit.isEnabled) return@setOnClickListener
+            // 즉시 반응
+            binding.btnSubmit.isEnabled = false
+            binding.completionOverlay.visibility = View.VISIBLE
+            viewModel.submit()
+        }
 
         binding.btnOpenHistory.setOnClickListener {
             findNavController().navigate(R.id.selfAwareHistoryFragment)
@@ -53,7 +59,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
                     // 질문 입력/완료 토글
                     binding.groupQuestion.isVisible = !s.isAnsweredToday
-                    binding.tvQuestion.text = s.questionText ?: "질문을 불러오는 중…"
+                    binding.tvQuestion.text = s.questionText ?: "AI가 오늘의 질문을 생성 중이에요…"
                     binding.btnSubmit.isEnabled = s.questionText != null && s.answerText.isNotBlank()
 
                     // 가치 점수 UI 갱신 (예: 막대/레이더 등)

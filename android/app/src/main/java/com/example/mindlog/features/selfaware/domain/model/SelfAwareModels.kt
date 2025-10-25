@@ -6,8 +6,6 @@ data class Question(
     val id: Int,
     val type: String,
     val text: String,
-    val categoriesKo: List<String>?,
-    val categoriesEn: List<String>?,
     val createdAt: LocalDate
 )
 

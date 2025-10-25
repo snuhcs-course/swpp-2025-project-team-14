@@ -14,8 +14,6 @@ class SelfAwareMapper @Inject constructor() {
         id = dto.id,
         type = dto.questionType,
         text = dto.text,
-        categoriesKo = dto.categoriesKo,
-        categoriesEn = dto.categoriesEn,
         createdAt = parseLocalDateTime(dto.createdAt)
     )
 
