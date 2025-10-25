@@ -72,7 +72,7 @@ class QuestionService:
         )
 
         summary_chain = summary_prompt | llm | summary_parser
-        
+
         summary_response = summary_chain.invoke({
             "journal_text": combined_content,
             "format_instructions": summary_parser.get_format_instructions()
@@ -165,8 +165,7 @@ class QuestionService:
             return self.generate_selfaware_question(user_id)
         if type == 1:
             return self.generate_single_category_question(user_id)
-        if type == 2:
-            return self.generate_multi_category_question(user_id)
+        return self.generate_multi_category_question(user_id)
 
 
     def get_questions_by_id(self, question_id: int) -> Question | None:
