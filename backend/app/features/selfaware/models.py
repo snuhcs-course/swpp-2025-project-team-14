@@ -21,9 +21,6 @@ class Question(Base):
 
     question_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # single_category | multi_category | personalized_category
     text: Mapped[str] = mapped_column(Text, nullable=False)
-
-    categories_ko: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
-    categories_en: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 

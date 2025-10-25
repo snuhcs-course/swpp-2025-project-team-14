@@ -294,6 +294,7 @@ value_map_prompt = ChatPromptTemplate.from_template(
     - 윤리와 초월 (Ethics & Transcendence): {score_6}
 
     이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 3개 내외의 문장으로 요약해 주세요.
+    Tone/Style: "사려 깊고 높임말로 작성된 심리 분석가의 코멘트"
     """
 )
 
@@ -313,5 +314,6 @@ value_map_short_prompt = ChatPromptTemplate.from_template(
     - 윤리와 초월 (Ethics & Transcendence): {score_6}
 
     이 정보를 기반으로, 해당 사람이 중요하게 생각하는 가치, 성향, 삶의 우선순위 등을 자연스럽게 한 문장으로 요약해 주세요.
+    Tone/Style: "사려 깊고 높임말로 작성된 심리 분석가의 코멘트"
     """
 )

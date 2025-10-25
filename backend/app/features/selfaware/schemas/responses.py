@@ -9,8 +9,6 @@ class QuestionResponse(BaseModel):
     id: int
     question_type: str
     text: str
-    categories_ko: Optional[List[str]] = None
-    categories_en: Optional[List[str]] = None
     created_at: datetime
     
     @staticmethod
@@ -19,8 +17,6 @@ class QuestionResponse(BaseModel):
             id=question.id,
             question_type=question.question_type,
             text=question.text,
-            categories_ko=question.categories_ko,
-            categories_en=question.categories_en,
             created_at=question.created_at
         )
     

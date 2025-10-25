@@ -99,8 +99,6 @@ class QuestionService:
             user_id=user_id,
             question_type="personalized_category",  
             text=response.question,
-            categories_ko=[cat[1] for cat in category_response.categories],
-            categories_en=[cat[0] for cat in category_response.categories],
         )
 
         return question
@@ -124,8 +122,6 @@ class QuestionService:
             user_id=user_id,
             question_type="single_category",
             text=response.question,
-            catergories_ko=[category_ko],
-            catergories_en=[category_en]
         )
 
         return question
@@ -153,8 +149,6 @@ class QuestionService:
             user_id=user_id,
             question_type="multi_category",
             text=response.question,
-            catergories_en=[cat[0] for cat in selected_categories],
-            catergories_ko=[cat[1] for cat in selected_categories],
         )
 
         return question
@@ -241,23 +235,30 @@ class ValueScoreService:
             "answer": answer.text
         })
 
-        detected_values = response['detected_values']
+        assert type(response) == MultiValueScoreStructure
+        detected_values = response.detected_values
+        
+        print("detected_values:", detected_values)
+
         # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
         value_map = self.value_map_repository.get_by_user(user_id)
         if not value_map:
+            print("value_map created")
             self.value_map_repository.create_value_map(user_id=user_id)
+        
+        print(value_map)
 
         for v in detected_values:
             value_score = self.value_score_repository.create_value_score(
                 user_id = user_id,
                 question_id = question_id,
                 answer_id = answer_id,
-                category = v['category_key'],
-                value = v['value_name'],
-                confidence= v['confidence'],
-                intensity= v['intensity'],
-                polarity= v['polarity'],
-                evidence_quotes= v.get('evidence', []),
+                category = v.category_key,
+                value = v.value,
+                confidence= v.confidence,
+                intensity= v.intensity,
+                polarity= v.polarity,
+                evidence_quotes= [v.evidence],
             )
             self.value_map_repository.update_by_value_score(value_score)
         
@@ -268,6 +269,8 @@ class ValueScoreService:
         top_value_scores = self.value_score_repository.get_top_5_value_scores(user_id)
         value_scores = []
         seen_categories = set()  # 이미 추가된 category 추적
+        
+        print(top_value_scores)
 
         if top_value_scores:
             for top_value_score in top_value_scores:
@@ -326,5 +329,5 @@ class ValueMapService:
              "score_4": value_map.score_4,
              "score_5": value_map.score_5,
              "score_6": value_map.score_6,})
-
-        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response['personality_insight'], comment = response['comment'])
+        assert type(response) == ValueMapAnalysisStructure
+        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response.personality_insight, comment = response.comment)
