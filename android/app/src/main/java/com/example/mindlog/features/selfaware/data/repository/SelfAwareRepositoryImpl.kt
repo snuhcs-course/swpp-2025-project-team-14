@@ -39,7 +39,6 @@ class SelfAwareRepositoryImpl @Inject constructor(
         }.toResult()
     }
 
-    // Top value scores (e.g., ["성장", "관계", ...])
     override suspend fun getTopValueScores() = withContext(dispatcher.io) {
         runCatching {
             val res = api.getTopValueScores()
@@ -47,7 +46,6 @@ class SelfAwareRepositoryImpl @Inject constructor(
         }.toResult()
     }
 
-    // Value map (e.g., {"성장": 78.0, "관계": 64.0, ...})
     override suspend fun getValueMap() = withContext(dispatcher.io) {
         runCatching {
             val res = api.getValueMap()
@@ -55,7 +53,6 @@ class SelfAwareRepositoryImpl @Inject constructor(
         }.toResult()
     }
 
-    // Personality insight (e.g., plain text)
     override suspend fun getPersonalityInsight() = withContext(dispatcher.io) {
         runCatching {
             val res = api.getPersonalityInsight()

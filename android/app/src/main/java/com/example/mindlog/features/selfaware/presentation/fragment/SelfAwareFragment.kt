@@ -70,15 +70,37 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                     binding.btnSubmit.isEnabled = !s.isAnsweredToday && s.questionText != null && s.answerText.isNotBlank()
 
                     // 가치 레이더 차트 렌더링
-                    if (s.valueScores.isNotEmpty() && s.valueLabels.isNotEmpty() && s.valueLabels.size == s.valueScores.size) {
+                    if (s.categoryScores.isNotEmpty() && s.valueCatogories.size == s.categoryScores.size) {
+                        val scores = s.categoryScores.map { it.score.toFloat() }
                         binding.cardValueMap.isVisible = true
-                        renderRadar(binding.radar, s.valueLabels, s.valueScores)
+                        renderRadar(binding.radar, s.valueCatogories, scores)
                         binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
                     } else {
                         // 값이 없으면 카드 숨김(또는 플레이스홀더 유지)
                         binding.cardValueMap.isVisible = false
                     }
 
+                    // 상위 가치 키워드
+                    val chipGroup = binding.chipGroupValues
+                    val chips = listOf(
+                        binding.chipValueFirst,
+                        binding.chipValueSecond,
+                        binding.chipValueThird,
+                        binding.chipValueFourth,
+                        binding.chipValueFifth
+                    )
+                    for (i in chips.indices) {
+                        val chip = chips[i]
+                        val value = s.topValueScores.getOrNull(i)?.value ?: ""
+                        chip.text = value
+                        chip.isVisible = value.isNotBlank()
+                    }
+
+                    // 성격 및 인사이트 업데이트
+                    binding.tvPersonalityInsight.text =
+                        if (s.personalityInsight.isNotBlank()) s.personalityInsight else "성격 및 가치 분석 결과를 불러오는 중입니다."
+                    binding.tvComment.text =
+                        if (s.comment.isNotBlank()) s.comment else "AI 코멘트를 불러오는 중입니다."
                 }
             }
         }
@@ -92,14 +114,14 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
     private fun renderRadar(
         chart: RadarChart,
-        labels: List<String>,
-        values: List<Float>,
+        categories: List<String>,
+        scores: List<Float>,
     ) {
-        if (labels.isEmpty() || values.isEmpty() || labels.size != values.size) {
+        if (categories.isEmpty() || scores.isEmpty() || categories.size != scores.size) {
             chart.clear(); return
         }
 
-        val entries = values.map { RadarEntry(it ) }
+        val entries = scores.map { RadarEntry(it ) }
 
         val set = RadarDataSet(entries, "").apply {
             // 외각선 설정
@@ -130,7 +152,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
             // X축 = 카테고리 라벨
             xAxis.apply {
-                valueFormatter = IndexAxisValueFormatter(labels)
+                valueFormatter = IndexAxisValueFormatter(categories)
                 textColor = Color.parseColor("#636779")   // 라벨 색
                 textSize = 12f
                 yOffset = 12f

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.selfaware.domain.model.QAItem
-import com.example.mindlog.features.selfaware.domain.usecase.GetHistoryUseCase
+import com.example.mindlog.features.selfaware.domain.usecase.GetQAHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SelfAwareHistoryViewModel @Inject constructor(
-    private val getHistoryUseCase: GetHistoryUseCase,
+    private val getHistoryUseCase: GetQAHistoryUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
