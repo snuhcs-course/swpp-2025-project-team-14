@@ -1,10 +1,7 @@
 package com.example.mindlog.features.journal.data.api
 
-import com.example.mindlog.features.journal.data.dto.JournalItemResponse
-import com.example.mindlog.features.journal.data.dto.JournalListResponse
-import com.example.mindlog.features.journal.data.dto.JournalRequest
-import com.example.mindlog.features.journal.data.dto.JournalResponse
-import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest // 1. 수정 요청 DTO import
+import ImageUploadCompleteRequest
+import com.example.mindlog.features.journal.data.dto.*
 import retrofit2.Response // 2. Retrofit Response import
 import retrofit2.http.*
 
@@ -46,4 +43,35 @@ interface JournalApi {
     suspend fun deleteJournal(
         @Path("journal_id") journalId: Int
     ): Response<String> // 4. "Delete Success" 문자열을 받기 위해 Response<String> 사용
+
+    /**
+     * 이미지 업로드를 위한 Presigned URL을 요청합니다.
+     */
+    @POST("journal/{journal_id}/image")
+    suspend fun generatePresignedUrl(
+        @Path("journal_id") journalId: Int,
+        @Body request: ImageUploadRequest
+    ): PresignedUrlResponse
+
+    /**
+     * Presigned URL로 실제 이미지 파일을 업로드합니다.
+     * @param url Presigned URL
+     * @param fileBody 이미지 파일의 RequestBody
+     * @param contentType 이미지의 Content-Type (e.g., "image/jpeg")
+     */
+    @PUT
+    suspend fun uploadImageToS3(
+        @Url url: String,
+        @Body fileBody: ByteArray,
+        @Header("Content-Type") contentType: String
+    ): Response<Unit>
+
+    /**
+     * 이미지 업로드가 완료되었음을 서버에 알립니다.
+     */
+    @POST("journal/{journal_id}/image/complete")
+    suspend fun completeImageUpload(
+        @Path("journal_id") journalId: Int,
+        @Body request: ImageUploadCompleteRequest
+    ): ImageUploadCompleteResponse
 }
