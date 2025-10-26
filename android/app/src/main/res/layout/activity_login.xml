@@ -17,7 +17,7 @@
             android:id="@+id/logoImage"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:src="@drawable/ic_launcher_foreground"
+            android:src="@mipmap/ic_launcher"
             android:contentDescription="앱 로고"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -66,29 +66,64 @@ class AnalysisViewModel @Inject constructor(
      * - aiInsight/aiComment: 감정 필터에 따른 요약/팁
      */
     private fun regenerateDummy(period: PeriodPreset? = null, emotion: String? = null) {
-        val baseReasons = listOf(
-            "가족과 즐거운 시간을 보냈다",
-            "프로젝트 목표를 달성했다",
-            "산책/운동으로 기분을 전환했다",
-            "친구와의 대화로 위로를 받았다",
-            "새 취미를 시도했다",
-            "주말에 충분히 쉬었다",
-            "좋은 음식을 즐겼다"
+        val happyReasons = listOf(
+            "가족과 함께 웃으며 저녁 시간을 보냈다",
+            "팀 프로젝트를 성공적으로 마무리했다",
+            "산책하면서 가을 공기를 느꼈다",
+            "좋아하는 음악을 들으며 하루를 정리했다",
+            "친구와 오랜만에 만나 즐겁게 대화했다"
         )
 
-        val reasons = baseReasons.shuffled().take(5)
+        val anxiousReasons = listOf(
+            "내일 있을 발표 준비가 부족하다고 느꼈다",
+            "일정이 밀려서 마음이 조급했다",
+            "다른 사람의 평가를 지나치게 의식했다",
+            "미래에 대한 걱정이 머릿속을 떠나지 않았다",
+            "잠들기 전에 여러 생각이 떠올라 뒤척였다"
+        )
+
+        val sadReasons = listOf(
+            "소중한 사람과의 대화에서 상처를 받았다",
+            "계획했던 일이 잘 풀리지 않았다",
+            "혼자 있는 시간이 길어져 외로움을 느꼈다",
+            "지나간 일들을 자꾸 떠올리며 후회했다",
+            "의욕이 없어 하루 종일 무기력했다"
+        )
+
+        val angryReasons = listOf(
+            "업무 중 다른 사람의 말에 기분이 상했다",
+            "노력한 결과가 제대로 인정받지 못했다",
+            "교통체증 때문에 약속 시간에 늦었다",
+            "의견 충돌로 가족과 언성이 높아졌다",
+            "작은 실수에도 스스로에게 화가 났다"
+        )
+
+        val calmReasons = listOf(
+            "차분히 책을 읽으며 마음을 정리했다",
+            "명상을 하며 하루를 돌아봤다",
+            "정리된 방 안에서 커피 한 잔을 즐겼다",
+            "조용히 음악을 들으며 마음의 여유를 느꼈다",
+            "하루를 계획대로 보내며 안정감을 느꼈다"
+        )
+
+        val reasons = when (emotion) {
+            "행복" -> happyReasons
+            "불안" -> anxiousReasons
+            "슬픔" -> sadReasons
+            "분노" -> angryReasons
+            "평온" -> calmReasons
+            else -> listOf(
+                "가족과 즐거운 시간을 보냈다",
+                "프로젝트 목표를 달성했다",
+                "산책/운동으로 기분을 전환했다",
+                "친구와의 대화로 위로를 받았다",
+                "새 취미를 시도했다"
+            )
+        }
 
         val categories = listOf("성장", "관계", "자율", "안정", "성취", "건강", "여가")
-        val bias = when (emotion) {
-            "행복" -> 15
-            "불안" -> -10
-            "슬픔" -> -6
-            "분노" -> -8
-            "평온" -> 10
-            else -> 0
-        }
-        val valueScores = categories.map { value ->
-            val score = (50 + bias + Random.nextInt(-15, 16)).coerceIn(0, 100).toFloat()
+        val fixedScores = listOf(80f, 75f, 60f, 70f, 85f, 65f, 90f)
+        val valueScores = categories.zip(fixedScores).map { (value, score) ->
             ValueScoreItem(value = value, score = score)
         }
 

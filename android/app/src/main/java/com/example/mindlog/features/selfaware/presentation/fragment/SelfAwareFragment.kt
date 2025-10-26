@@ -3,6 +3,8 @@ package com.example.mindlog.features.selfaware.presentation.fragment
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -38,10 +40,46 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private var lastRadarCats: List<String>? = null
     private var lastRadarScores: List<Float>? = null
 
+    private fun showOverlay(force: Boolean) {
+        if (force) forceOverlay = true
+        val overlay = binding.completionOverlay
+        overlay.visibility = View.VISIBLE
+        overlay.alpha = 1f
+        ViewCompat.setElevation(overlay, 10000f)
+        overlay.bringToFront()
+
+        // Ensure it covers the parent fully even if XML had wrap/0dp issues
+        overlay.layoutParams = overlay.layoutParams.apply {
+            width = ViewGroup.LayoutParams.MATCH_PARENT
+            height = ViewGroup.LayoutParams.MATCH_PARENT
+        }
+        overlay.isClickable = true
+        overlay.isFocusable = true
+
+        // Hide/disable question UI while overlay is up
+        binding.groupQuestion.isVisible = false
+        binding.etAnswer.isEnabled = false
+        binding.btnSubmit.isEnabled = false
+    }
+
+    private fun hideOverlay() {
+        forceOverlay = false
+        val overlay = binding.completionOverlay
+        overlay.visibility = View.GONE
+        overlay.isClickable = false
+        overlay.isFocusable = false
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
 
         binding.completionOverlay.bringToFront()
+
+        ViewCompat.setElevation(binding.completionOverlay, 10000f)
+        binding.completionOverlay.layoutParams = binding.completionOverlay.layoutParams.apply {
+            width = ViewGroup.LayoutParams.MATCH_PARENT
+            height = ViewGroup.LayoutParams.MATCH_PARENT
+        }
 
         binding.etAnswer.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -55,19 +93,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
         binding.btnSubmit.setOnClickListener {
             if (!binding.btnSubmit.isEnabled) return@setOnClickListener
-
-            // 깜빡임 방지용 로컬 플래그
-            forceOverlay = true
-
-            // 즉시 UI 반응
-            binding.btnSubmit.isEnabled = false
-            binding.etAnswer.isEnabled = false
-            binding.groupQuestion.isVisible = false
-            binding.completionOverlay.isVisible = true
-            binding.completionOverlay.bringToFront()
-            binding.completionOverlay.isClickable = true
-            binding.completionOverlay.isFocusable = true
-
+            showOverlay(force = true)
             viewModel.submit()
         }
 
@@ -80,17 +106,13 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
 
-                    // 0) 제출 흐름: 오버레이 표시 우선 규칙 (한 곳에서만 결정)
+                    // 0) 제출 흐름: 오버레이 표시 우선 규칙
                     val shouldShowOverlay = forceOverlay || s.isSubmitting || s.isAnsweredToday
-                    binding.completionOverlay.isVisible = shouldShowOverlay
-                    binding.groupQuestion.isVisible = !shouldShowOverlay
-
                     if (shouldShowOverlay) {
-                        binding.completionOverlay.bringToFront()
-                        // 오버레이가 보이는 동안엔 질문 섹션/입력/버튼 상태를 건드리지 않는다.
-                        binding.btnSubmit.isEnabled = false
-                        binding.etAnswer.isEnabled = false
+                        showOverlay(force = false)
                     } else {
+                        hideOverlay()
+
                         // 1) 질문 섹션 표시/로딩 (오버레이가 없을 때만 제어)
                         val isQuestionVisible = !s.isAnsweredToday && !s.isSubmitting
                         binding.groupQuestion.isVisible = isQuestionVisible
