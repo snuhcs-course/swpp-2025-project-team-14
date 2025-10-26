@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:paddingStart="32dp"
     android:paddingEnd="32dp"
-    tools:background="@color/bg">
+    tools:background="#F8F6F0">
 
     <LinearLayout
         android:id="@+id/emotion_container"

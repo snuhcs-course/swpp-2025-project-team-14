@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/bg"
+    android:background="#F8F6F0"
+    android:layout_marginTop="30dp"
     tools:context=".features.journal.presentation.write.ContentWriteFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
