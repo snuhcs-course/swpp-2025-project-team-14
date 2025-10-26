@@ -21,7 +21,7 @@ class SelfAwareHistoryAdapter :
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: QAItem) = with(binding) {
-            tvDate.text = item.answer?.createdAt.toString()
+            tvDate.text = item.question?.createdAt.toString()
             tvQuestion.text = "Q. ${item.question.text}"
             tvAnswer.text = "A. ${item.answer?.text}"
         }

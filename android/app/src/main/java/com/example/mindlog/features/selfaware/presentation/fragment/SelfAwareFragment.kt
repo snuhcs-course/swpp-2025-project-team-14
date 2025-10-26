@@ -2,9 +2,6 @@ package com.example.mindlog.features.selfaware.presentation.fragment
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -25,6 +22,10 @@ import com.github.mikephil.charting.data.RadarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import android.text.Editable
+import android.text.Spannable
+import android.text.TextWatcher
+import android.view.inputmethod.BaseInputConnection
 
 @AndroidEntryPoint
 class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
@@ -32,18 +33,41 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private val binding get() = _binding!!
     private val viewModel: SelfAwareViewModel by viewModels()
 
+    private var suppressAnswerTextChange = false
+    private var forceOverlay: Boolean = false
+    private var lastRadarCats: List<String>? = null
+    private var lastRadarScores: List<Float>? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
 
-        binding.etAnswer.doAfterTextChanged {
-            viewModel.updateAnswerText(it?.toString().orEmpty())
-        }
+        binding.completionOverlay.bringToFront()
+
+        binding.etAnswer.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(editable: Editable?) {
+                if (suppressAnswerTextChange) return
+                if (isComposing(editable)) return
+                viewModel.updateAnswerText(editable?.toString().orEmpty())
+            }
+        })
 
         binding.btnSubmit.setOnClickListener {
             if (!binding.btnSubmit.isEnabled) return@setOnClickListener
-            // 즉시 반응
+
+            // 깜빡임 방지용 로컬 플래그
+            forceOverlay = true
+
+            // 즉시 UI 반응
             binding.btnSubmit.isEnabled = false
-            binding.completionOverlay.visibility = View.VISIBLE
+            binding.etAnswer.isEnabled = false
+            binding.groupQuestion.isVisible = false
+            binding.completionOverlay.isVisible = true
+            binding.completionOverlay.bringToFront()
+            binding.completionOverlay.isClickable = true
+            binding.completionOverlay.isFocusable = true
+
             viewModel.submit()
         }
 
@@ -55,40 +79,60 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
-                    binding.btnSubmit.isEnabled = !s.isLoading && !s.isSubmitting
 
-                    // 질문 입력/완료 토글
-                    binding.groupQuestion.isVisible = !s.isAnsweredToday
-                    binding.tvQuestion.text = s.questionText ?: "AI가 오늘의 질문을 생성 중이에요…"
-                    binding.btnSubmit.isEnabled = s.questionText != null && s.answerText.isNotBlank()
+                    // 0) 제출 흐름: 오버레이 표시 우선 규칙 (한 곳에서만 결정)
+                    val shouldShowOverlay = forceOverlay || s.isSubmitting || s.isAnsweredToday
+                    binding.completionOverlay.isVisible = shouldShowOverlay
+                    binding.groupQuestion.isVisible = !shouldShowOverlay
 
-                    // 가치 점수 UI 갱신 (예: 막대/레이더 등)
-                    // 에디트텍스트와 상태 동기화(무한 루프 방지: 값이 다를 때만 반영)
-                    val current = binding.etAnswer.text?.toString().orEmpty()
-                    if (current != s.answerText) {
-                        binding.etAnswer.setText(s.answerText)
-                        binding.etAnswer.setSelection(binding.etAnswer.text?.length ?: 0)
-                    }
-
-                    // 완료 상태 UI
-                    binding.groupQuestion.isVisible = !s.isAnsweredToday
-                    // 답변 완료 시 오버레이 한 번만 표시
-                    if (s.isAnsweredToday && binding.completionOverlay.visibility != View.VISIBLE) {
-                        // 입력 비활성화 및 축하 오버레이 표시
-                        binding.etAnswer.isEnabled = false
+                    if (shouldShowOverlay) {
+                        binding.completionOverlay.bringToFront()
+                        // 오버레이가 보이는 동안엔 질문 섹션/입력/버튼 상태를 건드리지 않는다.
                         binding.btnSubmit.isEnabled = false
-                        showCompletionOverlay()
+                        binding.etAnswer.isEnabled = false
+                    } else {
+                        // 1) 질문 섹션 표시/로딩 (오버레이가 없을 때만 제어)
+                        val isQuestionVisible = !s.isAnsweredToday && !s.isSubmitting
+                        binding.groupQuestion.isVisible = isQuestionVisible
+                        binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion
+
+                        // 2) 질문 텍스트
+                        binding.tvQuestion.text = s.questionText ?: "오늘의 질문을 불러오고 있어요…"
+
+                        // 3) EditText 내용 동기화 (IME 합성 중/포커스 중엔 되도록 건드리지 않는 게 좋음)
+                        val desired = s.answerText
+                        val et = binding.etAnswer
+                        val current = et.text?.toString().orEmpty()
+                        val composing = isComposing(et.text)
+                        if (!et.hasFocus() && !composing && current != desired) {
+                            suppressAnswerTextChange = true
+                            et.setText(desired)
+                            et.setSelection(et.text?.length ?: 0)
+                            suppressAnswerTextChange = false
+                        }
+
+                        // 4) 제출 버튼 활성화 조건 (오버레이가 없을 때만 계산)
+                        binding.btnSubmit.isEnabled =
+                            (s.questionText != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion && !s.isSubmitting
                     }
 
                     // 가치 레이더 차트 렌더링
                     if (s.categoryScores.isNotEmpty() && s.valueCatogories.size == s.categoryScores.size) {
                         val scores = s.categoryScores.map { it.score.toFloat() }
+                        val cats = s.valueCatogories
+                        val needRender = lastRadarCats != cats || lastRadarScores != scores
+
                         binding.cardValueMap.isVisible = true
-                        renderRadar(binding.radar, s.valueCatogories, scores)
+                        if (needRender) {
+                            renderRadar(binding.radar, cats, scores)
+                            lastRadarCats = cats.toList()
+                            lastRadarScores = scores.toList()
+                        }
                         binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
                     } else {
-                        // 값이 없으면 카드 숨김(또는 플레이스홀더 유지)
                         binding.cardValueMap.isVisible = false
+                        lastRadarCats = null
+                        lastRadarScores = null
                     }
 
                     // 상위 가치 키워드
@@ -109,9 +153,9 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
                     // 성격 및 인사이트 업데이트
                     binding.tvPersonalityInsight.text =
-                        if (s.personalityInsight.isNotBlank()) s.personalityInsight else "성격 및 가치 분석 결과를 불러오는 중입니다."
+                        if (s.personalityInsight.isNotBlank()) s.personalityInsight else "성격 및 가치 분석 결과를 불러오는 중이에요..."
                     binding.tvComment.text =
-                        if (s.comment.isNotBlank()) s.comment else "AI 코멘트를 불러오는 중입니다."
+                        if (s.comment.isNotBlank()) s.comment else "AI 코멘트를 불러오는 중이에요..."
                 }
             }
         }
@@ -125,8 +169,11 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         _binding = null
     }
 
-    private fun showCompletionOverlay() {
-        binding.completionOverlay.visibility = View.VISIBLE
+    private fun isComposing(text: CharSequence?): Boolean {
+        val sp = text as? Spannable ?: return false
+        val start = BaseInputConnection.getComposingSpanStart(sp)
+        val end = BaseInputConnection.getComposingSpanEnd(sp)
+        return start != -1 && end != -1 && start != end
     }
 
     private fun renderRadar(

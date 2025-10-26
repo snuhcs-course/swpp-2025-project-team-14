@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -56,6 +58,7 @@ class SelfAwareViewModel @Inject constructor(
 
         // 로딩/에러
         val isLoading: Boolean = false,
+        val isLoadingQuestion: Boolean = true,
         val isSubmitting: Boolean = false,
         val error: String? = null
     )
@@ -66,76 +69,83 @@ class SelfAwareViewModel @Inject constructor(
     private var pollJob: Job? = null
 
     fun load() = viewModelScope.launch(dispatcher.io) {
-        _state.update { it.copy(isLoading = true, error = null) }
+        // 화면 전체 스피너는 해제, 질문 섹션만 로딩 상태 유지
+        _state.update { it.copy(isLoading = false, isLoadingQuestion = true, error = null) }
 
         val date = _state.value.date
-
-        val todayQARes = getTodayQAUseCase(date)
-        val valueMapRes = getValueMapUseCase(Unit)
-        val topValuesRes = getTopValueScoresUseCase(Unit)
-        val insightRes = getPersonalityInsightUseCase(Unit)
-
         var firstError: String? = null
 
-        // 2) 가치 맵
-        val categories: List<CategoryScore> = when (valueMapRes) {
-            is Result.Success -> valueMapRes.data.categoryScores
-            is Result.Error -> {
-                if (firstError == null) firstError = valueMapRes.message
-                emptyList()
+        coroutineScope {
+            // 병렬 실행
+            val valueMapDeferred = async { getValueMapUseCase(Unit) }
+            val topValuesDeferred = async { getTopValueScoresUseCase(Unit) }
+            val insightDeferred = async { getPersonalityInsightUseCase(Unit) }
+            val todayQADeferred = async { getTodayQAUseCase(date) }
+
+            // Value Map
+            when (val valueMapRes = valueMapDeferred.await()) {
+                is Result.Success -> {
+                    _state.update { it.copy(categoryScores = valueMapRes.data.categoryScores) }
+                }
+                is Result.Error -> {
+                    if (firstError == null) firstError = valueMapRes.message
+                }
             }
-        }
 
-        // 3) 상위 가치 점수
-        val topValues: List<ValueScore> = when (topValuesRes) {
-            is Result.Success -> topValuesRes.data.valueScores
-            is Result.Error -> {
-                if (firstError == null) firstError = topValuesRes.message
-                emptyList()
+            // Top Value Scores
+            when (val topValuesRes = topValuesDeferred.await()) {
+                is Result.Success -> {
+                    _state.update { it.copy(topValueScores = topValuesRes.data.valueScores) }
+                }
+                is Result.Error -> {
+                    if (firstError == null) firstError = topValuesRes.message
+                }
             }
-        }
 
-        // 4) 인사이트
-        val (commentText, insightText) = when (insightRes) {
-            is Result.Success -> insightRes.data.comment to insightRes.data.personalityInsight
-            is Result.Error -> {
-                if (firstError == null) firstError = insightRes.message
-                "" to ""
+            // Personality Insight
+            when (val insightRes = insightDeferred.await()) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            comment = insightRes.data.comment,
+                            personalityInsight = insightRes.data.personalityInsight
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    if (firstError == null) firstError = insightRes.message
+                }
             }
-        }
 
-        // 1) 오늘의 질문/답변
-        val todayQA: QAItem? = when (todayQARes) {
-            is Result.Success -> todayQARes.data
-            is Result.Error -> {
-                firstError = todayQARes.message
-                null
+            // Today's Question (느릴 수 있음)
+            when (val todayQARes = todayQADeferred.await()) {
+                is Result.Success -> {
+                    val qa = todayQARes.data
+                    if (qa?.question != null) {
+                        _state.update {
+                            it.copy(
+                                questionId = qa.question.id,
+                                questionText = qa.question.text,
+                                isAnsweredToday = qa.answer != null,
+                                isLoadingQuestion = false,
+                                error = firstError
+                            )
+                        }
+                    } else {
+                        // 아직 생성 중 → 폴링 시작 (질문 섹션만 로딩 유지)
+                        _state.update { it.copy(isLoadingQuestion = true, error = firstError) }
+                        pollJob?.cancel()
+                        pollJob = launch(dispatcher.io) { pollTodayQuestion() }
+                    }
+                }
+                is Result.Error -> {
+                    // 서버 준비 중일 수 있으니 사용자 에러는 보류하고 폴링으로 전환
+                    if (firstError == null) firstError = todayQARes.message
+                    _state.update { it.copy(isLoadingQuestion = true, error = firstError) }
+                    pollJob?.cancel()
+                    pollJob = launch(dispatcher.io) { pollTodayQuestion() }
+                }
             }
-        }
-
-        _state.update { s ->
-            s.copy(
-                // 질문/답변(없으면 아직 생성 중)
-                questionId = todayQA?.question?.id,
-                questionText = todayQA?.question?.text,
-                isAnsweredToday = todayQA?.answer != null,
-
-                // 분석 섹션
-                categoryScores = categories,
-                topValueScores = topValues,
-                comment = commentText,
-                personalityInsight = insightText,
-
-                // 아직 질문이 없으면 로딩 유지, 있으면 해제
-                isLoading = todayQA?.question == null,
-                error = firstError
-            )
-        }
-
-        // 아직 오늘 질문이 생성되지 않았다면 폴링 시작
-        if (todayQA?.question == null) {
-            pollJob?.cancel()
-            pollJob = launch(dispatcher.io) { pollTodayQuestion() }
         }
     }
 
@@ -159,7 +169,7 @@ class SelfAwareViewModel @Inject constructor(
                     if (qa?.question != null) {
                         _state.update { s ->
                             s.copy(
-                                isLoading = false,
+                                isLoadingQuestion = false,
                                 questionId = qa.question.id,
                                 questionText = qa.question.text,
                                 isAnsweredToday = qa.answer != null,
@@ -169,12 +179,12 @@ class SelfAwareViewModel @Inject constructor(
                         return
                     } else {
                         // 아직 없음 → 계속 로딩 유지
-                        _state.update { it.copy(isLoading = true, error = null) }
+                        _state.update { it.copy(isLoadingQuestion = true, error = null) }
                     }
                 }
                 is Result.Error -> {
                     // 서버가 준비 중(404/204 등)인 경우도 있으니 사용자 에러는 숨기고 재시도
-                    _state.update { it.copy(isLoading = true) }
+                    _state.update { it.copy(isLoadingQuestion = true) }
                 }
             }
 
@@ -183,7 +193,7 @@ class SelfAwareViewModel @Inject constructor(
         }
 
         // 타임아웃
-        _state.update { it.copy(isLoading = false, error = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요.") }
+        _state.update { it.copy(isLoadingQuestion = false, error = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요.") }
     }
 
     override fun onCleared() {
@@ -207,7 +217,7 @@ class SelfAwareViewModel @Inject constructor(
 
         when (val res = submitAnswerUsecase(qid, s.answerText)) {
             is Result.Success -> {
-                _state.update { it.copy(isSubmitting = false, isAnsweredToday = true) }
+                _state.update { it.copy(isSubmitting = false, isAnsweredToday = true, answerText = "") }
             }
             is Result.Error -> {
                 _state.update { it.copy(isSubmitting = false, error = res.message) }
