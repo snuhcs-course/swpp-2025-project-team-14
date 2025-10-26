@@ -2,4 +2,25 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="bg">#D8D4C8</color>
+    <color name="surface">#F3F1EB</color>
+    <color name="text_primary">#2D3142</color>
+    <color name="text_secondary">#636779</color>
+    <color name="divider">#C9C9C9</color>
+    <color name="divider_alt">#C3C3C2</color>
+    <color name="accent">#743600</color>
+    <color name="accent_alt">#422B0D</color>
+    <color name="navigator">#CFC9B9</color>
+    <!-- Emotion Colors -->
+    <color name="emotion_sad_blue">#5A8FCD</color>
+    <color name="emotion_anxious_purple">#8A7AD6</color>
+    <color name="emotion_angry_red">#D96B6B</color>
+    <color name="emotion_lethargic_gray">#9E9E9E</color>
+    <color name="emotion_calm_green">#6BCDA8</color>
+    <color name="emotion_excited_pink">#D66BA8</color>
+    <color name="emotion_happy_orange">#D6A36B</color>
+    <color name="emotion_confident_green">#3CAF85</color>
+    <color name="emotion_bored_blue">#7A8DA6</color>
+    <color name="emotion_lethargic_indigo">#5C5B7F</color>
+
 </resources>

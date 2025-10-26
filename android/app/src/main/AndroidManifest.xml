@@ -17,6 +17,7 @@
         android:usesCleartextTraffic="false">
 
         <!--  앱 실행 진입점 -->
+
         <activity
             android:name=".features.auth.presentation.main.MainActivity"
             android:exported="true">
@@ -25,10 +26,27 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- 로그인 / 회원가입 -->
+        <!--
+        <activity
+            android:name=".features.home.presentation.HomeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        -->
+        <activity
+            android:name=".features.journal.presentation.write.JournalWriteActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MindLog" />
+        <activity
+            android:name=".features.journal.presentation.write.JournalEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MindLog" />
         <activity android:name=".features.auth.presentation.login.LoginActivity" />
         <activity android:name=".features.auth.presentation.signup.SignupActivity" />
+
         <activity android:name=".features.home.presentation.HomeActivity" />
 
     </application>
