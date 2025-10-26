@@ -77,6 +77,21 @@ class JournalRepositoryImpl @Inject constructor(
             request = ImageUploadCompleteRequest(s3Key = presignedUrlResponse.s3Key)
         )
     }
+    override suspend fun searchJournals(
+        startDate: String?,
+        endDate: String?,
+        title: String?,
+        limit: Int,
+        cursor: Int?
+    ): JournalListResponse {
+        return journalApi.searchJournals(
+            startDate = startDate,
+            endDate = endDate,
+            title = title,
+            limit = limit,
+            cursor = cursor
+        )
+    }
 
     private fun getFileInfoFromUri(uri: Uri): Pair<String, String>? {
         return context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->

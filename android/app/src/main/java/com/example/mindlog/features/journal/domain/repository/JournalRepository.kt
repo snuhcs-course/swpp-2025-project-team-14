@@ -41,4 +41,11 @@ interface JournalRepository {
      */
     suspend fun uploadJournalImage(journalId: Int, imageUri: Uri)
 
+    suspend fun searchJournals(
+        startDate: String?,
+        endDate: String?,
+        title: String?,
+        limit: Int,
+        cursor: Int?
+    ): JournalListResponse
 }

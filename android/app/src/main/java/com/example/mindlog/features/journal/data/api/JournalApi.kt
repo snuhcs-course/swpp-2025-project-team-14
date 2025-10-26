@@ -74,4 +74,13 @@ interface JournalApi {
         @Path("journal_id") journalId: Int,
         @Body request: ImageUploadCompleteRequest
     ): ImageUploadCompleteResponse
+
+    @GET("journal/search")
+    suspend fun searchJournals(
+        @Query("start_date") startDate: String?, // YYYY-MM-DD
+        @Query("end_date") endDate: String?,   // YYYY-MM-DD
+        @Query("title") title: String?,
+        @Query("limit") limit: Int,
+        @Query("cursor") cursor: Int?
+    ): JournalListResponse
 }
