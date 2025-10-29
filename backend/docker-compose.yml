@@ -34,7 +34,5 @@ services:
       "
     env_file:
       - .env.local
-    environment:
-      - ENV=local
 volumes:
   dbdata:
