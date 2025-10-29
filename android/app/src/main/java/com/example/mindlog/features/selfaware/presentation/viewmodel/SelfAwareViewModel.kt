@@ -2,7 +2,6 @@ package com.example.mindlog.features.selfaware.presentation.viewmodel
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
@@ -16,12 +15,15 @@ import com.example.mindlog.features.selfaware.domain.usecase.GetValueMapUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTopValueScoresUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetPersonalityInsightUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeout
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -52,8 +54,7 @@ class SelfAwareViewModel @Inject constructor(
         // 로딩/에러
         val isLoadingQuestion: Boolean = true,
         val isSubmitting: Boolean = false,
-        val isLoadingValueMap: Boolean = false,
-        val isLoadingInsight: Boolean = false,
+        val isLoading: Boolean = false,
 
         val error: String? = null
     )
@@ -66,7 +67,7 @@ class SelfAwareViewModel @Inject constructor(
     fun load() = viewModelScope.launch(dispatcher.io) {
         // 화면 전체 스피너는 해제, 질문 섹션만 로딩 상태 유지
         val date = _state.value.date
-        _state.update { it.copy(isLoadingQuestion = true, error = null) }
+        _state.update { it.copy(isLoadingQuestion = true, isLoading = true, error = null) }
 
         var errorMessage: String? = null
         pollJob?.cancel()
@@ -89,6 +90,7 @@ class SelfAwareViewModel @Inject constructor(
                     topValueScores = (topRes as? Result.Success)?.data?.valueScores ?: emptyList(),
                     personalityInsight = (insightRes as? Result.Success)?.data?.personalityInsight.orEmpty(),
                     comment = (insightRes as? Result.Success)?.data?.comment.orEmpty(),
+                    isLoading = false,
                     error = listOfNotNull(
                         (valueMapRes as? Result.Error)?.message,
                         (topRes as? Result.Error)?.message,
@@ -114,8 +116,20 @@ class SelfAwareViewModel @Inject constructor(
                     }
 
                     is Result.Error -> {
-                        startPolling()
-                        errorMessage = todayQARes.message
+                        val code = todayQARes.code
+                        if (code == null) {
+                            startPolling()
+                        } else {
+                            _state.update {
+                                it.copy(
+                                    questionId = null,
+                                    questionText = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
+                                    isLoadingQuestion = false,
+                                    isAnsweredToday = false,
+                                    error = todayQARes.message
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -125,46 +139,69 @@ class SelfAwareViewModel @Inject constructor(
     }
 
     /** polling 로직 분리 */
-    private fun startPolling() {
+    private fun startPolling(
+        maxWaitMs: Long = 60_000L,
+        initialDelayMs: Long = 1_500L,
+        intervalMs: Long = 2_000L,
+        maxIntervalMs: Long = 6_000L
+    ) {
         pollJob?.cancel()
         pollJob = viewModelScope.launch(dispatcher.io) {
-            val startTime = SystemClock.elapsedRealtime()
-            val timeout = 60_000L
-            var interval = 2_000L
+            // 폴링 시작: 질문 섹션만 로딩 유지
+            _state.update { it.copy(isLoadingQuestion = true, error = null) }
 
-            delay(1_500L)
-            while (SystemClock.elapsedRealtime() - startTime < timeout) {
-                val date = _state.value.date
-                when (val res = getTodayQAUseCase(date)) {
-                    is Result.Success -> {
-                        val qa = res.data
-                        if (qa?.question != null) {
-                            _state.update {
-                                it.copy(
-                                    questionId = qa.question.id,
-                                    questionText = qa.question.text,
-                                    isLoadingQuestion = false,
-                                    isAnsweredToday = qa.answer != null,
-                                )
+            try {
+                withTimeout(maxWaitMs) {
+                    delay(initialDelayMs)
+                    var next = intervalMs
+
+                    while (isActive) {
+                        val date = _state.value.date
+                        when (val res = getTodayQAUseCase(date)) {
+                            is Result.Success -> {
+                                val qa = res.data
+                                if (qa?.question != null) {
+                                    _state.update {
+                                        it.copy(
+                                            questionId = qa.question.id,
+                                            questionText = qa.question.text,
+                                            isAnsweredToday = qa.answer != null,
+                                            isLoadingQuestion = false,
+                                            error = null
+                                        )
+                                    }
+                                    return@withTimeout
+                                }
                             }
-                            return@launch
+                            is Result.Error -> {
+                                val code = res.code
+                                if (code != null) {
+                                    _state.update {
+                                        it.copy(
+                                            questionId = null,
+                                            questionText = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
+                                            isLoadingQuestion = false,
+                                            isAnsweredToday = false,
+                                            error = res.message
+                                        )
+                                    }
+                                    return@withTimeout
+                                }
+                            }
                         }
-                    }
-                    is Result.Error -> {
-                        _state.update {
-                            it.copy(
-                                questionText = "질문을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-                                isLoadingQuestion = false,
-                                isAnsweredToday = false,
-                                error = res.message)
-                        }
-                        return@launch
+
+                        delay(next)
+                        next = (next * 1.5f).toLong().coerceAtMost(maxIntervalMs) // 지수 백오프
                     }
                 }
-                delay(interval)
-                interval = (interval * 1.5f).toLong().coerceAtMost(6_000L)
+            } catch (_: TimeoutCancellationException) {
+                _state.update {
+                    it.copy(
+                        isLoadingQuestion = false,
+                        error = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요."
+                    )
+                }
             }
-            _state.update { it.copy(isLoadingQuestion = false, error = "질문 생성이 지연되고 있어요.") }
         }
     }
 
