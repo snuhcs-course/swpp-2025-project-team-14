@@ -9,6 +9,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import javax.inject.Singleton
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -22,8 +24,11 @@ object JournalModule {
      */
     @Provides
     @Singleton
-    fun provideJournalRepository(journalApi: JournalApi): JournalRepository {
-        return JournalRepositoryImpl(journalApi)
+    fun provideJournalRepository(
+        journalApi: JournalApi,
+        @ApplicationContext context: Context // Hilt에게 Context를 주입해달라고 요청
+    ): JournalRepository {
+        return JournalRepositoryImpl(journalApi, context) // 생성자에 context 전달
     }
 
     /**

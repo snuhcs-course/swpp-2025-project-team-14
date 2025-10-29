@@ -1,17 +1,30 @@
 package com.example.mindlog.features.journal.presentation.list
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat
+import androidx.core.util.Pair
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentJournalListBinding
 import com.example.mindlog.features.journal.presentation.adapter.JournalAdapter
+import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class JournalFragment : Fragment() {
@@ -33,17 +46,144 @@ class JournalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupWeeklyCalendar()
         setupRecyclerView()
+        setupClickListeners()
         observeViewModel()
 
-        // 첫 페이지 로드 시작 (loadJournals는 이제 새로고침/초기 로드용)
         viewModel.loadJournals()
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 여기서 데이터를 로드하면, 일기 작성 후 돌아왔을 때 목록이 새로고침됩니다.
-        viewModel.loadJournals()
+    private fun setupClickListeners() {
+        val topBar = binding.topBarLayout
+
+        topBar.btnSearch.setOnClickListener {
+            toggleSearchView(true)
+        }
+
+        topBar.btnSearchClose.setOnClickListener {
+            toggleSearchView(false)
+
+            if (viewModel.searchQuery.value?.isNotEmpty() == true) {
+                viewModel.searchQuery.value = ""
+            }
+        }
+
+        topBar.btnDateRangeClose.setOnClickListener {
+            val rootLayout = topBar.homeTopRoot
+            val originalTransition = rootLayout.layoutTransition
+            rootLayout.layoutTransition = null
+
+            topBar.dateRangeBarContainer.visibility = View.GONE
+            viewModel.setDateRange(null, null)
+
+            rootLayout.post {
+                rootLayout.layoutTransition = originalTransition
+            }
+        }
+
+        topBar.tvToday.setOnClickListener {
+            showDateRangePicker()
+        }
+
+        topBar.etSearch.addTextChangedListener { text ->
+            viewModel.searchQuery.value = text?.toString()
+        }
+
+        topBar.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val imm = ContextCompat.getSystemService(requireContext(), InputMethodManager::class.java)
+                imm?.hideSoftInputFromWindow(topBar.etSearch.windowToken, 0)
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun toggleSearchView(isSearchVisible: Boolean) {
+        binding.topBarLayout.apply {
+            if (isSearchVisible) {
+                normalTopBar.visibility = View.GONE
+                searchBarContainer.visibility = View.VISIBLE
+
+                etSearch.requestFocus()
+                val imm = ContextCompat.getSystemService(requireContext(), InputMethodManager::class.java)
+                imm?.showSoftInput(etSearch, InputMethodManager.SHOW_IMPLICIT)
+            } else {
+                searchBarContainer.visibility = View.GONE
+                normalTopBar.visibility = View.VISIBLE
+
+                etSearch.text.clear()
+                etSearch.clearFocus()
+                val imm = ContextCompat.getSystemService(requireContext(), InputMethodManager::class.java)
+                imm?.hideSoftInputFromWindow(etSearch.windowToken, 0)
+            }
+        }
+    }
+
+    private fun showDateRangePicker() {
+        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("기간으로 검색")
+            .build()
+
+        dateRangePicker.addOnPositiveButtonClickListener { selection: Pair<Long, Long> ->
+            val startDate = Date(selection.first)
+            val endDate = Date(selection.second)
+
+            val apiFormat = SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN)
+            val chipFormat = SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.KOREAN)
+
+            viewModel.setDateRange(apiFormat.format(startDate), apiFormat.format(endDate))
+
+            binding.topBarLayout.tvDateRange.text =
+                "${chipFormat.format(startDate)} ~ ${chipFormat.format(endDate)}"
+
+            val rootLayout = binding.topBarLayout.homeTopRoot
+            val originalTransition = rootLayout.layoutTransition
+            rootLayout.layoutTransition = null
+
+            binding.topBarLayout.dateRangeBarContainer.visibility = View.VISIBLE
+
+            rootLayout.post {
+                rootLayout.layoutTransition = originalTransition
+            }
+        }
+
+        dateRangePicker.show(parentFragmentManager, "DATE_PICKER")
+    }
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun setupWeeklyCalendar() {
+        val calendar = Calendar.getInstance()
+        val todayDateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.KOREAN)
+        binding.topBarLayout.tvToday.text = todayDateFormat.format(calendar.time)
+
+        val dayViews = listOf(
+            binding.topBarLayout.day1, binding.topBarLayout.day2, binding.topBarLayout.day3,
+            binding.topBarLayout.day4, binding.topBarLayout.day5, binding.topBarLayout.day6,
+            binding.topBarLayout.day7
+        )
+
+        calendar.add(Calendar.DATE, -6)
+
+        val dayFormat = SimpleDateFormat("d", Locale.KOREAN)
+        val dowFormat = SimpleDateFormat("E", Locale.KOREAN)
+
+        dayViews.forEachIndexed { index, dayBinding ->
+            val date = calendar.time
+            dayBinding.tvDay.text = dayFormat.format(date)
+            dayBinding.tvDow.text = dowFormat.format(date)
+
+            if (index == dayViews.size - 1) {
+                dayBinding.weekItemRoot.background = requireContext().getDrawable(R.drawable.bg_week_chip_selected)
+                dayBinding.tvDay.setTextColor(requireContext().getColor(R.color.white))
+            } else {
+                dayBinding.weekItemRoot.background = requireContext().getDrawable(R.drawable.bg_week_chip)
+                dayBinding.tvDay.setTextColor(requireContext().getColor(R.color.text_primary))
+            }
+
+            calendar.add(Calendar.DATE, 1)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -52,23 +192,14 @@ class JournalFragment : Fragment() {
         binding.rvDiaryFeed.apply {
             layoutManager = linearLayoutManager
             adapter = journalAdapter
-
-            // --- 무한 스크롤 리스너 추가 ---
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-
-                    // 스크롤이 아래로 내려갈 때만 확인
                     if (dy > 0) {
-                        val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                        val visibleItemCount = layoutManager.childCount
-                        val totalItemCount = layoutManager.itemCount
-                        val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-
-                        // 로딩 중이 아닐 때, 마지막 아이템이 보이면 다음 페이지 로드
-                        // (마지막 아이템 전에 미리 로드하려면 5 정도의 버퍼를 둔다)
-                        if (viewModel.isLoading.value == false) {
-                            if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 5 && firstVisibleItemPosition >= 0) {
+                        val lastVisibleItemPosition = linearLayoutManager.findLastVisibleItemPosition()
+                        val totalItemCount = linearLayoutManager.itemCount
+                        if (viewModel.isLoading.value == false && !viewModel.isLastPage) {
+                            if (lastVisibleItemPosition >= totalItemCount - 3) {
                                 viewModel.loadMoreJournals()
                             }
                         }
@@ -80,17 +211,13 @@ class JournalFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.journals.observe(viewLifecycleOwner, Observer { journalList ->
-            journalAdapter.submitList(journalList)
+            journalAdapter.submitList(journalList.toList())
         })
-
-        // TODO: 로딩 인디케이터(ProgressBar) 표시/숨김 처리
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            // 로딩 처리
         }
-
-        // TODO: 에러 메시지 토스트 등으로 표시
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            // message?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
+            // 에러 처리
         }
     }
 
