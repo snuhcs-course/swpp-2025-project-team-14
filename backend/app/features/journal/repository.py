@@ -72,15 +72,12 @@ class JournalRepository:
         journal: Journal,
         title: str | None = None,
         content: str | None = None,
-        summary: str | None = None,
         gratitude: str | None = None,
     ) -> None:
         if title is not None:
             journal.title = title
         if content is not None:
             journal.content = content
-        if summary is not None:
-            journal.summary = summary
         if gratitude is not None:
             journal.gratitude = gratitude
         self.session.flush()
@@ -128,6 +125,7 @@ class JournalRepository:
                 journal_id=journal_id,
                 keyword=entry.keyword,
                 emotion=entry.emotion,
+                summary=entry.summary,
                 weight=entry.weight,
             )
             self.session.add(journal_keyword)

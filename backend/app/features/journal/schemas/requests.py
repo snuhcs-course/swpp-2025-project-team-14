@@ -119,7 +119,6 @@ class JournalCreateRequest(BaseModel):
 class JournalUpdateRequest(BaseModel):
     title: Annotated[str | None, AfterValidator(validate_title)] = None
     content: Annotated[str | None, AfterValidator(validate_content)] = None
-    summary: str | None = None
     gratitude: str | None = None
 
 
