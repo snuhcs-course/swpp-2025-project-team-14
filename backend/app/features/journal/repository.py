@@ -5,6 +5,7 @@ import boto3
 from botocore.exceptions import ClientError
 from fastapi import Depends
 from fastapi.concurrency import run_in_threadpool
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -71,15 +72,12 @@ class JournalRepository:
         journal: Journal,
         title: str | None = None,
         content: str | None = None,
-        summary: str | None = None,
         gratitude: str | None = None,
     ) -> None:
         if title is not None:
             journal.title = title
         if content is not None:
             journal.content = content
-        if summary is not None:
-            journal.summary = summary
         if gratitude is not None:
             journal.gratitude = gratitude
         self.session.flush()
@@ -127,12 +125,29 @@ class JournalRepository:
                 journal_id=journal_id,
                 keyword=entry.keyword,
                 emotion=entry.emotion,
+                summary=entry.summary,
                 weight=entry.weight,
             )
             self.session.add(journal_keyword)
             journal_keyword_list.append(journal_keyword)
         self.session.flush()
         return journal_keyword_list
+
+    def get_journals_by_keyword(
+        self,
+        user_id: int,
+        keyword: str,
+        limit: int = 10,
+        cursor: int | None = None,
+    ) -> list[Journal]:
+        stmt = select(Journal).where(
+            Journal.user_id == user_id,
+            Journal.keywords.any(JournalKeyword.keyword == keyword),
+        )
+        if cursor is not None:
+            stmt = stmt.where(Journal.id < cursor)
+        stmt = stmt.order_by(Journal.id.desc()).limit(limit)
+        return self.session.execute(stmt).scalars().all()
 
     def drop_journal_keywords(
         self,

@@ -24,7 +24,7 @@ class Journal(Base):
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     gratitude: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
 
@@ -93,6 +93,7 @@ class JournalKeyword(Base):
 
     keyword: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     emotion: Mapped[str] = mapped_column(String(50), nullable=False)
+    summary: Mapped[str] = mapped_column(String(100), nullable=False)
     weight: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=get_korea_time)
 
