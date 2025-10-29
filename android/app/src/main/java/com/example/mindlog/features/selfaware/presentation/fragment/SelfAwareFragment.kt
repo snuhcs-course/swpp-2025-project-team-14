@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -31,8 +30,9 @@ import android.view.inputmethod.BaseInputConnection
 class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private var _binding: FragmentSelfAwareBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: SelfAwareViewModel by viewModels()
+    private val vm: SelfAwareViewModel by viewModels()
 
+    private var answerWatcher: TextWatcher? = null
     private var suppressAnswerTextChange = false
     private var forceOverlay: Boolean = false
     private var lastRadarCats: List<String>? = null
@@ -40,35 +40,23 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
-
         binding.completionOverlay.bringToFront()
 
-        binding.etAnswer.addTextChangedListener(object : TextWatcher {
+        answerWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(editable: Editable?) {
                 if (suppressAnswerTextChange) return
                 if (isComposing(editable)) return
-                viewModel.updateAnswerText(editable?.toString().orEmpty())
+                vm.updateAnswerText(editable?.toString().orEmpty())
             }
-        })
+        }
+        binding.etAnswer.addTextChangedListener(answerWatcher)
 
         binding.btnSubmit.setOnClickListener {
             if (!binding.btnSubmit.isEnabled) return@setOnClickListener
-
-            // 깜빡임 방지용 로컬 플래그
             forceOverlay = true
-
-            // 즉시 UI 반응
-            binding.btnSubmit.isEnabled = false
-            binding.etAnswer.isEnabled = false
-            binding.groupQuestion.isVisible = false
-            binding.completionOverlay.isVisible = true
-            binding.completionOverlay.bringToFront()
-            binding.completionOverlay.isClickable = true
-            binding.completionOverlay.isFocusable = true
-
-            viewModel.submit()
+            vm.submit()
         }
 
         binding.btnOpenHistory.setOnClickListener {
@@ -76,30 +64,26 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         }
 
         // observe state
+        // collect
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state.collect { s ->
-
-                    // 0) 제출 흐름: 오버레이 표시 우선 규칙 (한 곳에서만 결정)
+                vm.state.collect { s ->
                     val shouldShowOverlay = forceOverlay || s.isSubmitting || s.isAnsweredToday
                     binding.completionOverlay.isVisible = shouldShowOverlay
                     binding.groupQuestion.isVisible = !shouldShowOverlay
 
                     if (shouldShowOverlay) {
                         binding.completionOverlay.bringToFront()
-                        // 오버레이가 보이는 동안엔 질문 섹션/입력/버튼 상태를 건드리지 않는다.
                         binding.btnSubmit.isEnabled = false
                         binding.etAnswer.isEnabled = false
+                        // 제출 확정/종료되면 오버레이 강제 플래그 해제
+                        if (!s.isSubmitting) forceOverlay = false
                     } else {
-                        // 1) 질문 섹션 표시/로딩 (오버레이가 없을 때만 제어)
                         val isQuestionVisible = !s.isAnsweredToday && !s.isSubmitting
                         binding.groupQuestion.isVisible = isQuestionVisible
                         binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion
-
-                        // 2) 질문 텍스트
                         binding.tvQuestion.text = s.questionText ?: "오늘의 질문을 불러오고 있어요…"
 
-                        // 3) EditText 내용 동기화 (IME 합성 중/포커스 중엔 되도록 건드리지 않는 게 좋음)
                         val desired = s.answerText
                         val et = binding.etAnswer
                         val current = et.text?.toString().orEmpty()
@@ -111,32 +95,25 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                             suppressAnswerTextChange = false
                         }
 
-                        // 4) 제출 버튼 활성화 조건 (오버레이가 없을 때만 계산)
                         binding.btnSubmit.isEnabled =
-                            (s.questionText != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion && !s.isSubmitting
+                            (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
                     }
 
-                    // 가치 레이더 차트 렌더링
-                    if (s.categoryScores.isNotEmpty() && s.valueCatogories.size == s.categoryScores.size) {
-                        val scores = s.categoryScores.map { it.score.toFloat() }
-                        val cats = s.valueCatogories
-                        val needRender = lastRadarCats != cats || lastRadarScores != scores
+                    // 카테고리/점수 안전 매핑 + 빈 차트 방어
+                    val categories = s.valueCategories
+                    val scores = s.categoryScores.map { (it.score ?: 0).toFloat() }
+                    val chartEmpty = (binding.radar.data == null || binding.radar.data.dataSetCount == 0)
+                    val needRender = chartEmpty || lastRadarCats != categories || lastRadarScores != scores
 
-                        binding.cardValueMap.isVisible = true
-                        if (needRender) {
-                            renderRadar(binding.radar, cats, scores)
-                            lastRadarCats = cats.toList()
-                            lastRadarScores = scores.toList()
-                        }
-                        binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
-                    } else {
-                        binding.cardValueMap.isVisible = false
-                        lastRadarCats = null
-                        lastRadarScores = null
+                    val visible = s.categoryScores.isNotEmpty()
+                    if (needRender) {
+                        renderRadar(binding.radar, categories, scores)
+                        lastRadarCats = categories.toList()
+                        lastRadarScores = scores.toList()
                     }
+                    binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
 
-                    // 상위 가치 키워드
-                    val chipGroup = binding.chipGroupValues
+                    // chips
                     val chips = listOf(
                         binding.chipValueFirst,
                         binding.chipValueSecond,
@@ -151,22 +128,25 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                         chip.isVisible = value.isNotBlank()
                     }
 
-                    // 성격 및 인사이트 업데이트
                     binding.tvPersonalityInsight.text =
-                        if (s.personalityInsight.isNotBlank()) s.personalityInsight else "성격 및 가치 분석 결과를 불러오는 중이에요..."
+                        if (s.personalityInsight.isNotBlank()) s.personalityInsight
+                        else "성격 및 가치 분석 결과를 불러오는 중이에요..."
                     binding.tvComment.text =
-                        if (s.comment.isNotBlank()) s.comment else "AI 코멘트를 불러오는 중이에요..."
+                        if (s.comment.isNotBlank()) s.comment
+                        else "AI 코멘트를 불러오는 중이에요..."
                 }
             }
         }
 
         // initial load
-        viewModel.load()
+        vm.load()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        lastRadarCats = null
+        lastRadarScores = null
     }
 
     private fun isComposing(text: CharSequence?): Boolean {
@@ -201,6 +181,8 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
         chart.apply {
             data = RadarData(set)
+
+            setExtraOffsets(24f, 28f, 24f, 28f)
 
             // 배경/웹(거미줄) 스타일
             setBackgroundColor(Color.TRANSPARENT)
