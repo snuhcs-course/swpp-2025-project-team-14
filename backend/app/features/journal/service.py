@@ -131,6 +131,17 @@ class JournalService:
             cursor=cursor,
         )
 
+    def get_journals_by_keyword(
+        self,
+        user_id: int,
+        keyword: str,
+        limit: int = 10,
+        cursor: int | None = None,
+    ) -> list[Journal]:
+        return self.journal_repository.get_journals_by_keyword(
+            user_id=user_id, keyword=keyword, limit=limit, cursor=cursor
+        )
+
     # image upload via S3 presigned URL
     async def create_image_presigned_url(
         self, journal_id: int, payload: ImageUploadRequest
