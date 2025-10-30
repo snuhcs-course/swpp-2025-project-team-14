@@ -1,6 +1,7 @@
 package com.example.mindlog.features.journal.presentation.write
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -77,24 +78,14 @@ class JournalWriteActivity : AppCompatActivity() {
                         binding.btnCancelOrBack.isEnabled = true
                         val errorMessage = result.message ?: "알 수 없는 오류가 발생했습니다."
 
-                        // ✨ [핵심 수정] 토스트 대신 '감사한 일' 칸에 에러 메시지 표시
-                        // 현재 화면이 contentWriteFragment일 때만 실행
-                        val currentFragment = supportFragmentManager.findFragmentById(R.id.write_fragment_container)
-                        if (currentFragment is ContentWriteFragment) {
-                            // 프래그먼트의 뷰에서 '감사한 일' EditText를 찾음
-                            val gratitudeEditText = currentFragment.view?.findViewById<EditText>(R.id.et_gratitude)
-                            gratitudeEditText?.setText(errorMessage)
-                            Toast.makeText(this@JournalWriteActivity, "에러 발생! 상세 내용은 '감사한 일' 칸을 확인하세요.", Toast.LENGTH_LONG).show()
-                        } else {
-                            // 만약 다른 화면이라면 기존처럼 토스트 사용
-                            Toast.makeText(this@JournalWriteActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                        }
+                        // ✨ [핵심 수정] '감사한 일' 칸에 에러를 쓰는 대신, Log.e로 에러를 기록하고 사용자에게는 간단한 토스트만 보여줍니다.
+                        Log.e("JournalWriteError", "일기 저장 실패: $errorMessage")
+                        Toast.makeText(this@JournalWriteActivity, "저장에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
-
     private fun handleBackButton() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()

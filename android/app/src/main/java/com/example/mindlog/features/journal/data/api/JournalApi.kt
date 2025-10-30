@@ -85,4 +85,10 @@ interface JournalApi {
         @Query("limit") limit: Int,
         @Query("cursor") cursor: Int?
     ): JournalListResponse
+
+    @Streaming
+    @POST("journal/image/generate")
+    suspend fun generateAiImage(
+        @Body request: GenerateImageRequest
+    ): GenerateImageResponse
 }

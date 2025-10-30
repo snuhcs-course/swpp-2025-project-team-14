@@ -4,6 +4,7 @@ import ImageUploadCompleteRequest
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.journal.data.dto.*
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
@@ -52,11 +53,13 @@ class JournalRepositoryImpl @Inject constructor(
         journalApi.deleteJournal(journalId = journalId)
     }
 
-    override suspend fun uploadJournalImage(journalId: Int, imageUri: Uri) {
+    override suspend fun uploadJournalImage(
+        journalId: Int,
+        imageBytes: ByteArray,
+        contentType: String,
+        fileName: String
+    ) {
         try {
-            val (fileName, contentType) = getFileInfoFromUri(imageUri)
-                ?: throw IllegalArgumentException("유효하지 않은 파일 Uri입니다.")
-
             // 1. Presigned URL 생성 요청
             val presignedUrlResponse = journalApi.generatePresignedUrl(
                 journalId = journalId,
@@ -64,24 +67,19 @@ class JournalRepositoryImpl @Inject constructor(
             )
 
             // 2. S3로 파일 업로드
-            context.contentResolver.openInputStream(imageUri)?.use { inputStream ->
-                val fileBytes = inputStream.readBytes()
+            val requestBody = imageBytes.toRequestBody(
+                contentType.toMediaTypeOrNull(), 0, imageBytes.size
+            )
 
-                // ✨ [핵심 수정] ByteArray를 안정적인 RequestBody로 변환
-                val requestBody = fileBytes.toRequestBody(
-                    contentType.toMediaTypeOrNull(), 0, fileBytes.size
-                )
+            val uploadResponse = journalApi.uploadImageToS3(
+                url = presignedUrlResponse.presignedUrl,
+                fileBody = requestBody,
+                contentType = contentType
+            )
 
-                val uploadResponse = journalApi.uploadImageToS3(
-                    url = presignedUrlResponse.presignedUrl,
-                    fileBody = requestBody, // ✨ 변환된 RequestBody 전달
-                    contentType = contentType
-                )
-
-                if (!uploadResponse.isSuccessful) {
-                    val errorBody = uploadResponse.errorBody()?.string()
-                    throw RuntimeException("S3 업로드 실패. Status: ${uploadResponse.code()}, Body: $errorBody")
-                }
+            if (!uploadResponse.isSuccessful) {
+                val errorBody = uploadResponse.errorBody()?.string()
+                throw RuntimeException("S3 업로드 실패. Status: ${uploadResponse.code()}, Body: $errorBody")
             }
 
             // 3. 업로드 완료 보고
@@ -89,9 +87,8 @@ class JournalRepositoryImpl @Inject constructor(
                 journalId = journalId,
                 request = ImageUploadCompleteRequest(s3Key = presignedUrlResponse.s3Key)
             )
-        } catch (e: HttpException) { // ✨ 이제 'e'는 retrofit2.HttpException 타입입니다.
+        } catch (e: HttpException) {
             val errorBody = e.response()?.errorBody()?.string()
-            // ✨ e.code() 와 e.response() 에 정상적으로 접근 가능합니다.
             throw RuntimeException("API 요청 실패. Status: ${e.code()}, 에러: $errorBody", e)
         } catch (e: Exception) {
             throw RuntimeException("이미지 업로드 중 알 수 없는 오류 발생: ${e.message}", e)
@@ -129,5 +126,11 @@ class JournalRepositoryImpl @Inject constructor(
                 null
             }
         }
+    }
+
+    override suspend fun generateAiImage(style: String, content: String): String {
+        val request = GenerateImageRequest(style = style, content = content)
+        val response = journalApi.generateAiImage(request)
+        return response.imageBase64
     }
 }

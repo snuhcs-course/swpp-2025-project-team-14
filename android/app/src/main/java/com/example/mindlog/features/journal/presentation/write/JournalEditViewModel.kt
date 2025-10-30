@@ -1,16 +1,22 @@
 package com.example.mindlog.features.journal.presentation.write
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result // 수정된 Result.kt를 사용
+import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.journal.domain.usecase.DeleteJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.GetJournalByIdUseCase
 import com.example.mindlog.features.journal.domain.usecase.UpdateJournalUseCase
+import com.example.mindlog.features.journal.domain.usecase.UploadJournalImageUseCase // ✨ [추가]
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,41 +25,42 @@ import javax.inject.Inject
 class JournalEditViewModel @Inject constructor(
     private val getJournalByIdUseCase: GetJournalByIdUseCase,
     private val updateJournalUseCase: UpdateJournalUseCase,
-    private val deleteJournalUseCase: DeleteJournalUseCase
+    private val deleteJournalUseCase: DeleteJournalUseCase,
+    private val uploadJournalImageUseCase: UploadJournalImageUseCase, // ✨ [핵심 수정] Repository 대신 UseCase 주입
+    @ApplicationContext private val context: Context // ✨ [추가] Context 주입
 ) : ViewModel() {
 
-    // UI 상태: 로딩, 성공, 실패 등
     private val _journalState = MutableLiveData<Result<JournalItemResponse>>()
     val journalState: LiveData<Result<JournalItemResponse>> = _journalState
-
-    // 수정/삭제 결과 이벤트
     private val _editResult = MutableSharedFlow<Result<String>>()
     val editResult = _editResult.asSharedFlow()
 
-    // UI 데이터 바인딩용
     val title = MutableLiveData<String>()
     val content = MutableLiveData<String>()
     val gratitude = MutableLiveData<String>()
-    private var journalId: Int? = null
 
-    // 원본 데이터 저장용
+    val selectedImageUri = MutableStateFlow<Uri?>(null)
+    val existingImageUrl = MutableStateFlow<String?>(null)
+
+    private var journalId: Int? = null
     private var originalJournal: JournalItemResponse? = null
 
     fun loadJournalDetails(id: Int) {
         journalId = id
-        if (_journalState.value is Result.Success) return // 이미 로딩했다면 다시 로드하지 않음
+        if (_journalState.value is Result.Success) return
 
         viewModelScope.launch {
             try {
                 val journal = getJournalByIdUseCase(id)
-                originalJournal = journal // 원본 데이터 저장
-                // 성공 시 UI 데이터 업데이트
+                originalJournal = journal
                 title.value = journal.title
                 content.value = journal.content
                 gratitude.value = journal.gratitude
+                if (!journal.imageS3Keys.isNullOrBlank()) {
+                    existingImageUrl.value = "${com.example.mindlog.BuildConfig.S3_BUCKET_URL}/${journal.imageS3Keys}"
+                }
                 _journalState.value = Result.Success(journal)
             } catch (e: Exception) {
-                // 👇 [수정] 현재 Result.Error 클래스에 맞게 수정
                 _journalState.value = Result.Error(message = e.message ?: "일기를 불러오는데 실패했습니다.")
             }
         }
@@ -65,10 +72,10 @@ class JournalEditViewModel @Inject constructor(
         val newTitle = title.value ?: ""
         val newContent = content.value ?: ""
         val newGratitude = gratitude.value ?: ""
+        val newImageUri = selectedImageUri.value
 
         if (newTitle.isBlank() || newContent.isBlank() || newGratitude.isBlank()) {
             viewModelScope.launch {
-                // 👇 [수정]
                 _editResult.emit(Result.Error(message = "제목, 내용, 감사한 일을 모두 입력해주세요."))
             }
             return
@@ -76,6 +83,7 @@ class JournalEditViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
+                // 1. 텍스트 내용 먼저 수정
                 updateJournalUseCase(
                     journalId = id,
                     originalJournal = originalData,
@@ -83,9 +91,26 @@ class JournalEditViewModel @Inject constructor(
                     newContent = newContent,
                     newGratitude = newGratitude
                 )
+
+                // ✨ [핵심 수정] 새로 선택된 이미지가 있다면 UseCase를 통해 업로드
+                if (newImageUri != null) {
+                    context.contentResolver.openInputStream(newImageUri)?.use { inputStream ->
+                        val bytes = inputStream.readBytes()
+                        val type = context.contentResolver.getType(newImageUri) ?: "image/jpeg"
+                        val name = "gallery_image_${System.currentTimeMillis()}.jpg"
+
+                        uploadJournalImageUseCase( // Repository 대신 UseCase 호출
+                            journalId = id,
+                            imageBytes = bytes,
+                            contentType = type,
+                            fileName = name
+                        )
+                    }
+                }
+
                 _editResult.emit(Result.Success("수정 완료"))
             } catch (e: Exception) {
-                // 👇 [수정]
+                Log.e("JournalEditError", "수정 실패", e)
                 _editResult.emit(Result.Error(message = e.message ?: "수정에 실패했습니다."))
             }
         }
@@ -93,15 +118,18 @@ class JournalEditViewModel @Inject constructor(
 
     fun deleteJournal() {
         val id = journalId ?: return
-
         viewModelScope.launch {
             try {
                 deleteJournalUseCase(id)
                 _editResult.emit(Result.Success("삭제 완료"))
             } catch (e: Exception) {
-                // 👇 [수정]
                 _editResult.emit(Result.Error(message = e.message ?: "삭제에 실패했습니다."))
             }
         }
+    }
+
+    fun clearSelectedImage() {
+        selectedImageUri.value = null
+        existingImageUrl.value = null
     }
 }

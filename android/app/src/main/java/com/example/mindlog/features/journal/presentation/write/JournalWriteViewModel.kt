@@ -1,23 +1,34 @@
 package com.example.mindlog.features.journal.presentation.write
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
+import android.util.Log
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import com.example.mindlog.features.journal.domain.usecase.CreateJournalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.ByteArrayOutputStream
 
 @HiltViewModel
 class JournalWriteViewModel @Inject constructor(
     private val createJournalUseCase: CreateJournalUseCase,
-    private val journalRepository: JournalRepository
+    private val journalRepository: JournalRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val initialEmotionScores = mapOf(
@@ -40,15 +51,54 @@ class JournalWriteViewModel @Inject constructor(
 
     val selectedImageUri = MutableStateFlow<Uri?>(null)
 
+    val generatedImageBitmap = MutableStateFlow<Bitmap?>(null)
+    val isLoading = MutableStateFlow(false)
+    val aiGenerationError = MutableSharedFlow<String>()
+
     private val _saveResult = MutableSharedFlow<Result<Unit>>()
     val saveResult = _saveResult.asSharedFlow()
+
+    fun generateAiImage(style: String) {
+        val textContent = content.value.ifBlank { title.value }
+        if (textContent.isBlank()) {
+            viewModelScope.launch {
+                aiGenerationError.emit("이미지를 생성하려면 내용이나 제목을 먼저 입력해주세요.")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                // 1. Repository를 통해 Base64 이미지 문자열 요청
+                val base64Image = journalRepository.generateAiImage(style, textContent)
+
+                // 2. Base64 문자열을 Bitmap으로 디코딩
+                val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
+                val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+                // 3. 생성된 Bitmap을 StateFlow에 할당하여 UI에 전달
+                generatedImageBitmap.value = decodedBitmap
+
+                // 갤러리에서 선택한 이미지가 있었다면 초기화
+                selectedImageUri.value = null
+
+            } catch (e: Exception) {
+                aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+            } finally {
+                isLoading.value = false
+            }
+        }
+    }
 
     fun saveJournal() {
         val currentTitle = title.value
         val currentContent = content.value
         val currentEmotions = emotionScores.value
         val currentGratitude = gratitude.value
-        val imageUri = selectedImageUri.value
+
+        val galleryImageUri = selectedImageUri.value
+        val aiGeneratedBitmap = generatedImageBitmap.value
 
         if (currentTitle.isBlank() || currentContent.isBlank() || currentGratitude.isBlank()) {
             viewModelScope.launch {
@@ -59,22 +109,54 @@ class JournalWriteViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
+                // 1. 텍스트 일기 먼저 생성
                 val journalResponse = createJournalUseCase(
                     title = currentTitle,
                     content = currentContent,
                     emotions = currentEmotions,
                     gratitude = currentGratitude
                 )
+                val journalId = journalResponse.id
 
-                if (imageUri != null) {
+                // ✨ [핵심 수정] 업로드할 이미지 데이터(ByteArray)와 정보(MIME, 이름)를 결정합니다.
+                val imageData: Triple<ByteArray, String, String>? = when {
+                    // 갤러리 이미지 처리
+                    galleryImageUri != null -> {
+                        context.contentResolver.openInputStream(galleryImageUri)?.use { inputStream ->
+                            val bytes = inputStream.readBytes()
+                            val type = context.contentResolver.getType(galleryImageUri) ?: "image/jpeg"
+                            val name = "gallery_image_${System.currentTimeMillis()}.jpg"
+                            Triple(bytes, type, name)
+                        }
+                    }
+                    // AI 생성 이미지 처리
+                    aiGeneratedBitmap != null -> {
+                        val stream = ByteArrayOutputStream()
+                        aiGeneratedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+                        val bytes = stream.toByteArray()
+                        val type = "image/jpeg"
+                        val name = "ai_image_${System.currentTimeMillis()}.jpg"
+                        Triple(bytes, type, name)
+                    }
+                    else -> null
+                }
+
+                // 2. 업로드할 이미지 데이터가 있다면 업로드 실행
+                if (imageData != null) {
+                    val (bytes, contentType, fileName) = imageData
                     journalRepository.uploadJournalImage(
-                        journalId = journalResponse.id,
-                        imageUri = imageUri
+                        journalId = journalId,
+                        imageBytes = bytes,
+                        contentType = contentType,
+                        fileName = fileName
                     )
                 }
 
+                // 3. 성공 알림
                 _saveResult.emit(Result.Success(Unit))
+
             } catch (e: Exception) {
+                Log.e("JournalSaveError", "저장 실패", e) // ✨ 에러 로그 추가
                 _saveResult.emit(Result.Error(message = e.message ?: "알 수 없는 오류가 발생했습니다."))
             }
         }
