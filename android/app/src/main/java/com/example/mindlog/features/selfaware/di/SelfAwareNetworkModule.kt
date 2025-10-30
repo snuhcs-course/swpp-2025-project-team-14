@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object SelfAwareApiModule {
+object SelfAwareNetworkModule {
     @Provides @Singleton
     fun provideSelfAwareApi(retrofit: Retrofit): SelfAwareApi =
         retrofit.create(SelfAwareApi::class.java)
