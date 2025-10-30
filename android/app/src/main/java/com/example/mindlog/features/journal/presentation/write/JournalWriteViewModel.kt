@@ -1,8 +1,10 @@
 package com.example.mindlog.features.journal.presentation.write
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
+import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import com.example.mindlog.features.journal.domain.usecase.CreateJournalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,10 +16,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class JournalWriteViewModel @Inject constructor(
-    private val createJournalUseCase: CreateJournalUseCase
+    private val createJournalUseCase: CreateJournalUseCase,
+    private val journalRepository: JournalRepository
 ) : ViewModel() {
 
-    // --- 👇 [핵심] emotionScores의 초기값을 여기서 설정합니다. ---
     private val initialEmotionScores = mapOf(
         "happy" to 0,
         "sad" to 0,
@@ -31,11 +33,12 @@ class JournalWriteViewModel @Inject constructor(
         "energetic" to 0
     )
 
-    // 1. emotionScores의 초기값으로 위에서 정의한 initialEmotionScores를 사용합니다.
     val emotionScores = MutableStateFlow(initialEmotionScores)
     val title = MutableStateFlow("")
     val content = MutableStateFlow("")
     val gratitude = MutableStateFlow("")
+
+    val selectedImageUri = MutableStateFlow<Uri?>(null)
 
     private val _saveResult = MutableSharedFlow<Result<Unit>>()
     val saveResult = _saveResult.asSharedFlow()
@@ -45,6 +48,7 @@ class JournalWriteViewModel @Inject constructor(
         val currentContent = content.value
         val currentEmotions = emotionScores.value
         val currentGratitude = gratitude.value
+        val imageUri = selectedImageUri.value
 
         if (currentTitle.isBlank() || currentContent.isBlank() || currentGratitude.isBlank()) {
             viewModelScope.launch {
@@ -55,15 +59,23 @@ class JournalWriteViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                createJournalUseCase(
+                val journalResponse = createJournalUseCase(
                     title = currentTitle,
                     content = currentContent,
                     emotions = currentEmotions,
                     gratitude = currentGratitude
                 )
+
+                if (imageUri != null) {
+                    journalRepository.uploadJournalImage(
+                        journalId = journalResponse.id,
+                        imageUri = imageUri
+                    )
+                }
+
                 _saveResult.emit(Result.Success(Unit))
             } catch (e: Exception) {
-                _saveResult.emit(Result.Error(message = e.message))
+                _saveResult.emit(Result.Error(message = e.message ?: "알 수 없는 오류가 발생했습니다."))
             }
         }
     }

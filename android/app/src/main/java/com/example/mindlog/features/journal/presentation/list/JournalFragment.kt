@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.widget.addTextChangedListener
@@ -50,7 +51,11 @@ class JournalFragment : Fragment() {
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
+    }
 
+    override fun onResume() {
+        super.onResume()
+        // 목록을 새로고침합니다.
         viewModel.loadJournals()
     }
 
@@ -217,7 +222,9 @@ class JournalFragment : Fragment() {
             // 로딩 처리
         }
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            // 에러 처리
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+            }
         }
     }
 

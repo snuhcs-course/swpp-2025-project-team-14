@@ -20,14 +20,17 @@ android {
         testInstrumentationRunner = "com.example.mindlog.HiltTestRunner"
 
         buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
+        buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
     }
 
     buildTypes {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
+            buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
         }
         release {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
+            buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -105,6 +108,9 @@ dependencies {
     // Room in-memory Test (쓰는 경우만)
     androidTestImplementation("androidx.room:room-testing:2.6.1")
     testImplementation(kotlin("test"))
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
 
 kapt {
