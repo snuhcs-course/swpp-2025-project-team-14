@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy // ✨ [추가]
 import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.databinding.ItemJournalCardBinding
+import com.example.mindlog.features.journal.presentation.detail.JournalDetailActivity
 import com.example.mindlog.features.journal.presentation.write.JournalEditActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -42,8 +43,8 @@ class JournalAdapter : ListAdapter<JournalEntry, JournalAdapter.ViewHolder>(Jour
 
             itemView.setOnClickListener {
                 val context = itemView.context
-                val intent = Intent(context, JournalEditActivity::class.java).apply {
-                    putExtra(JournalEditActivity.EXTRA_JOURNAL_ID, journal.id)
+                val intent = Intent(context, JournalDetailActivity::class.java).apply {
+                    putExtra(JournalDetailActivity.EXTRA_JOURNAL_ID, journal.id)
                 }
                 context.startActivity(intent)
             }

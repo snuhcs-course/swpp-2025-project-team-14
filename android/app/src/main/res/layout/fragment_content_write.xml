@@ -200,28 +200,5 @@
                 app:icon="@drawable/ic_sparkle"
                 app:iconTint="@color/text_secondary" />
         </LinearLayout>
-
-        <!-- ✨ [핵심 추가] 로딩 오버레이 -->
-        <FrameLayout
-            android:id="@+id/loading_overlay"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="#80000000"
-            android:visibility="gone"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:visibility="visible">
-
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-
-        </FrameLayout>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

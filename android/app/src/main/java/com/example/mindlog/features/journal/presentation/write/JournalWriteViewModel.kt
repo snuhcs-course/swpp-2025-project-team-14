@@ -52,7 +52,7 @@ class JournalWriteViewModel @Inject constructor(
     val generatedImageBitmap = MutableStateFlow<Bitmap?>(null)
     val isLoading = MutableStateFlow(false)
     val aiGenerationError = MutableSharedFlow<String>()
-
+    val noImage = MutableSharedFlow<Boolean>()
     private val _saveResult = MutableSharedFlow<Result<Unit>>()
     val saveResult = _saveResult.asSharedFlow()
 
@@ -165,6 +165,14 @@ class JournalWriteViewModel @Inject constructor(
                 Log.e("JournalSaveError", "저장 실패", e) // ✨ 에러 로그 추가
                 _saveResult.emit(Result.Error(message = e.message ?: "알 수 없는 오류가 발생했습니다."))
             }
+        }
+    }
+
+    fun clearSelectedImage() {
+        selectedImageUri.value = null
+        generatedImageBitmap.value = null
+        viewModelScope.launch {
+            noImage.emit(true)
         }
     }
 

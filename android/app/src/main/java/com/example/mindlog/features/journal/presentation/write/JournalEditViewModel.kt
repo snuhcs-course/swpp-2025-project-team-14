@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
+import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
 import com.example.mindlog.features.journal.domain.usecase.DeleteJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
 import com.example.mindlog.features.journal.domain.usecase.GetJournalByIdUseCase
@@ -51,14 +52,19 @@ class JournalEditViewModel @Inject constructor(
     val generatedImageBitmap = MutableStateFlow<Bitmap?>(null)
     val isLoading = MutableStateFlow(false)
     val aiGenerationError = MutableSharedFlow<String>()
+    val noImage = MutableSharedFlow<Boolean>()
 
-    private var journalId: Int? = null
+    // ✨ [핵심 수정] LiveData<Int>를 일반 Int? 타입으로 변경
+    var journalId: Int? = null
+        private set // 외부에서는 값을 변경할 수 없도록 설정
+
     private var originalJournal: JournalItemResponse? = null
 
-    fun loadJournalDetails(id: Int) {
-        journalId = id
-        if (_journalState.value is Result.Success) return
+    fun loadJournalDetails(id: Int, forceRefresh: Boolean = false) {
+        // 이미 로드된 ID와 같고, 강제 새로고침이 아니라면 중복 로드 방지
+        if (journalId == id && !forceRefresh) return
 
+        journalId = id
         viewModelScope.launch {
             try {
                 val journal = getJournalByIdUseCase(id)
@@ -68,6 +74,8 @@ class JournalEditViewModel @Inject constructor(
                 gratitude.value = journal.gratitude
                 if (!journal.imageS3Keys.isNullOrBlank()) {
                     existingImageUrl.value = "${com.example.mindlog.BuildConfig.S3_BUCKET_URL}/${journal.imageS3Keys}"
+                } else {
+                    existingImageUrl.value = null // 이미지가 없는 경우 null로 설정
                 }
                 _journalState.value = Result.Success(journal)
             } catch (e: Exception) {
@@ -76,7 +84,7 @@ class JournalEditViewModel @Inject constructor(
         }
     }
 
-    // ✨ [핵심 추가] 갤러리 이미지 선택 시 호출될 함수
+    // 갤러리 이미지 선택 시 호출될 함수
     fun setGalleryImageUri(uri: Uri?) {
         if (uri != null) {
             selectedImageUri.value = uri
@@ -131,15 +139,27 @@ class JournalEditViewModel @Inject constructor(
             return
         }
 
+        val isTextChanged = originalData.title != newTitle ||
+                originalData.content != newContent ||
+                originalData.gratitude != newGratitude
+        val isImageChanged = newImageUri != null || aiGeneratedBitmap != null || (originalData.imageS3Keys != null && existingImageUrl.value == null)
+
+        if (!isTextChanged && !isImageChanged) {
+            viewModelScope.launch { _editResult.emit(Result.Success("수정 완료")) }
+            return
+        }
+
         viewModelScope.launch {
             try {
-                updateJournalUseCase(
-                    journalId = id,
-                    originalJournal = originalData,
-                    newTitle = newTitle,
-                    newContent = newContent,
-                    newGratitude = newGratitude
-                )
+                if (isTextChanged) {
+                    updateJournalUseCase(
+                        journalId = id,
+                        originalJournal = originalData,
+                        newTitle = newTitle,
+                        newContent = newContent,
+                        newGratitude = newGratitude
+                    )
+                }
 
                 val imageData: Triple<ByteArray, String, String>? = when {
                     newImageUri != null -> {
@@ -168,7 +188,6 @@ class JournalEditViewModel @Inject constructor(
                         fileName = fileName
                     )
                 }
-
                 _editResult.emit(Result.Success("수정 완료"))
             } catch (e: Exception) {
                 Log.e("JournalEditError", "수정 실패", e)
@@ -193,5 +212,8 @@ class JournalEditViewModel @Inject constructor(
         selectedImageUri.value = null
         existingImageUrl.value = null
         generatedImageBitmap.value = null
+        viewModelScope.launch {
+            noImage.emit(true)
+        }
     }
 }
