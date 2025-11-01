@@ -70,6 +70,7 @@ class JournalEditViewModel @Inject constructor(
         journalId = id
         viewModelScope.launch {
             try {
+                // 1. GET /journal/{id} 호출
                 val journal = getJournalByIdUseCase(id)
                 originalJournal = journal
                 title.value = journal.title
@@ -80,10 +81,15 @@ class JournalEditViewModel @Inject constructor(
                 } else {
                     existingImageUrl.value = null
                 }
+
+                // ✨ [핵심 로직 1] GET 응답의 keywords를 LiveData에 바로 할당
+                keywords.value = journal.keywords ?: emptyList()
                 _journalState.value = Result.Success(journal)
 
-                // ✨ [핵심 추가] 일기 로드 성공 시 키워드 추출 API 호출
-                extractJournalKeywords(id)
+                // ✨ [핵심 로직 2] keywords가 비어있다면, 분석을 요청한다.
+                if (journal.keywords.isNullOrEmpty()) {
+                    extractJournalKeywords(id)
+                }
 
             } catch (e: Exception) {
                 _journalState.value = Result.Error(message = e.message ?: "일기를 불러오는데 실패했습니다.")
@@ -94,17 +100,19 @@ class JournalEditViewModel @Inject constructor(
     // 키워드 추출 로직을 담당하는 별도 함수
     private fun extractJournalKeywords(id: Int) {
         viewModelScope.launch {
-            // ✨ [디버깅 1] API 호출 직전에 토스트를 띄워 함수가 실행되는지 확인
+            Log.d("JournalEditViewModel", "키워드가 없어 분석을 요청합니다. (ID: $id)")
             try {
-                // UseCase를 사용하여 키워드 목록을 가져옴
-                val keywordList = extractKeywordsUseCase(id)
-                // 가져온 결과를 LiveData에 할당
-                keywords.value = keywordList
+                // 3. POST /analyze 요청 (DB에 키워드 저장)
+                extractKeywordsUseCase(id)
+
+                // 4. 분석 요청 성공 후, 키워드가 포함된 최신 데이터를 다시 불러오기 위해 loadJournalDetails 호출
+                Log.d("JournalEditViewModel", "키워드 분석 완료. 데이터를 새로고침합니다.")
+                loadJournalDetails(id, forceRefresh = true)
+
             } catch (e: Exception) {
-                // ✨ [디버깅 2] 에러 발생 시, 사용자에게 명확한 에러 메시지를 토스트로 표시
                 val errorMessage = "키워드 분석 실패: ${e.message}"
                 Log.e("JournalEditViewModel", errorMessage, e)
-                keywords.value = emptyList() // 실패 시 빈 리스트로 설정
+                // 실패 시 특별한 처리는 하지 않음 (다음 상세페이지 진입 시 다시 시도)
             }
         }
     }

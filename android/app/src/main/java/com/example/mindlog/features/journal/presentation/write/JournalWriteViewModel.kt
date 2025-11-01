@@ -113,6 +113,7 @@ class JournalWriteViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            var journalId: Int? = null // journalId를 try 블록 밖에서 선언
             try {
                 val emotionsToSend = currentEmotions.filter { it.value > 0 }
                 // 1. 텍스트 일기 먼저 생성
@@ -122,11 +123,9 @@ class JournalWriteViewModel @Inject constructor(
                     emotions = emotionsToSend,
                     gratitude = currentGratitude
                 )
-                val journalId = journalResponse.id
+                journalId = journalResponse.id // 생성된 일기 ID 저장
 
-                // ✨ [핵심 수정] 업로드할 이미지 데이터(ByteArray)와 정보(MIME, 이름)를 결정합니다.
                 val imageData: Triple<ByteArray, String, String>? = when {
-                    // 갤러리 이미지 처리
                     galleryImageUri != null -> {
                         context.contentResolver.openInputStream(galleryImageUri)?.use { inputStream ->
                             val bytes = inputStream.readBytes()
@@ -135,7 +134,6 @@ class JournalWriteViewModel @Inject constructor(
                             Triple(bytes, type, name)
                         }
                     }
-                    // AI 생성 이미지 처리
                     aiGeneratedBitmap != null -> {
                         val stream = ByteArrayOutputStream()
                         aiGeneratedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
@@ -162,8 +160,22 @@ class JournalWriteViewModel @Inject constructor(
                 _saveResult.emit(Result.Success(Unit))
 
             } catch (e: Exception) {
-                Log.e("JournalSaveError", "저장 실패", e) // ✨ 에러 로그 추가
+                Log.e("JournalSaveError", "저장 실패", e)
                 _saveResult.emit(Result.Error(message = e.message ?: "알 수 없는 오류가 발생했습니다."))
+                return@launch // 저장 실패 시 키워드 분석을 시도하지 않고 종료
+            }
+
+            // ✨ [핵심 수정] 일기 저장 성공 후, 키워드 분석 요청
+            journalId?.let { id ->
+                try {
+                    Log.d("JournalWriteViewModel", "일기 작성 완료. 키워드 분석을 시작합니다. (ID: $id)")
+                    // UseCase를 직접 사용하기 위해 Repository를 통해 호출
+                    journalRepository.extractKeywords(id)
+                    Log.d("JournalWriteViewModel", "키워드 분석 요청 성공. (ID: $id)")
+                } catch (e: Exception) {
+                    // 키워드 분석이 실패하더라도 이미 일기 저장은 성공했으므로, 에러만 로그로 남기고 무시.
+                    Log.e("JournalWriteViewModel", "키워드 분석 요청 실패 (ID: $id)", e)
+                }
             }
         }
     }

@@ -25,5 +25,8 @@ data class JournalItemResponse(
     val imageS3Keys: String?,
 
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
+
+    @SerializedName("keywords")
+    val keywords: List<KeywordResponse>?
 )
