@@ -16,5 +16,21 @@
         <item name="android:button">@null</item> <!-- 기본 체크박스 모양 제거 -->
     </style>
 
+    <!-- ✨ [핵심 수정] AI 스타일 선택지를 위한 커스텀 스타일 -->
+    <style name="AiStyleSelectableCell" parent="Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_ai_style_selector</item>
+        <!-- ✨ [핵심] 기본 동그라미 버튼을 완전히 제거합니다. -->
+        <item name="android:button">@null</item>
+        <!-- ✨ [핵심] 텍스트를 셀의 중앙으로 정렬합니다. -->
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
 
 </resources>

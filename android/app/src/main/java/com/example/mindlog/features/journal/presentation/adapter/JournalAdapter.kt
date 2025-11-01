@@ -17,8 +17,7 @@ import java.util.Locale
 
 class JournalAdapter : ListAdapter<JournalEntry, JournalAdapter.ViewHolder>(JournalDiffCallback) {
 
-    private val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 E요일 HH:mm", Locale.getDefault())
-
+    private val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 E요일", Locale.getDefault())
     inner class ViewHolder(private val binding: ItemJournalCardBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(journal: JournalEntry) {
             binding.tvTitle.text = journal.title

@@ -88,7 +88,7 @@ interface JournalApi {
 
     @Streaming
     @POST("journal/image/generate")
-    suspend fun generateAiImage(
+    suspend fun generateImage(
         @Body request: GenerateImageRequest
     ): GenerateImageResponse
 }

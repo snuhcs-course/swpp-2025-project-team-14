@@ -6,12 +6,12 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import com.example.mindlog.features.journal.domain.usecase.CreateJournalUseCase
+import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,15 +19,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.io.ByteArrayOutputStream
 
 @HiltViewModel
 class JournalWriteViewModel @Inject constructor(
     private val createJournalUseCase: CreateJournalUseCase,
     private val journalRepository: JournalRepository,
+    private val generateImageUseCase: GenerateImageUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -58,7 +56,14 @@ class JournalWriteViewModel @Inject constructor(
     private val _saveResult = MutableSharedFlow<Result<Unit>>()
     val saveResult = _saveResult.asSharedFlow()
 
-    fun generateAiImage(style: String) {
+    fun setGalleryImageUri(uri: Uri?) {
+        if (uri != null) {
+            selectedImageUri.value = uri
+            generatedImageBitmap.value = null // AI 이미지 초기화
+        }
+    }
+
+    fun generateImage(style: String) {
         val textContent = content.value.ifBlank { title.value }
         if (textContent.isBlank()) {
             viewModelScope.launch {
@@ -70,8 +75,8 @@ class JournalWriteViewModel @Inject constructor(
         viewModelScope.launch {
             isLoading.value = true
             try {
-                // 1. Repository를 통해 Base64 이미지 문자열 요청
-                val base64Image = journalRepository.generateAiImage(style, textContent)
+                // 1. UseCase를 통해 Base64 이미지 문자열 요청
+                val base64Image = generateImageUseCase(style, textContent)
 
                 // 2. Base64 문자열을 Bitmap으로 디코딩
                 val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
@@ -80,7 +85,7 @@ class JournalWriteViewModel @Inject constructor(
                 // 3. 생성된 Bitmap을 StateFlow에 할당하여 UI에 전달
                 generatedImageBitmap.value = decodedBitmap
 
-                // 갤러리에서 선택한 이미지가 있었다면 초기화
+                // 4. 갤러리에서 선택한 이미지가 있었다면 초기화하여 AI 이미지만 선택된 상태로 만듦
                 selectedImageUri.value = null
 
             } catch (e: Exception) {
@@ -109,11 +114,12 @@ class JournalWriteViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
+                val emotionsToSend = currentEmotions.filter { it.value > 0 }
                 // 1. 텍스트 일기 먼저 생성
                 val journalResponse = createJournalUseCase(
                     title = currentTitle,
                     content = currentContent,
-                    emotions = currentEmotions,
+                    emotions = emotionsToSend,
                     gratitude = currentGratitude
                 )
                 val journalId = journalResponse.id

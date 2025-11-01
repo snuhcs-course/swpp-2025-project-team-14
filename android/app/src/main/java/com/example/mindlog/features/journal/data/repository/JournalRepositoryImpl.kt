@@ -128,9 +128,9 @@ class JournalRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun generateAiImage(style: String, content: String): String {
+    override suspend fun generateImage(style: String, content: String): String {
         val request = GenerateImageRequest(style = style, content = content)
-        val response = journalApi.generateAiImage(request)
+        val response = journalApi.generateImage(request)
         return response.imageBase64
     }
 }

@@ -62,5 +62,5 @@ interface JournalRepository {
      * @param content 이미지 생성에 사용할 텍스트
      * @return Base64로 인코딩된 이미지 문자열
      */
-    suspend fun generateAiImage(style: String, content: String): String
+    suspend fun generateImage(style: String, content: String): String
 }
