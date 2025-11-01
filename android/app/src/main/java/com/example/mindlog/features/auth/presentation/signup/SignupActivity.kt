@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.mindlog.core.common.SystemUiHelper
 import com.example.mindlog.databinding.ActivitySignupBinding
 import com.example.mindlog.core.network.NetworkModule
 import com.example.mindlog.features.auth.data.api.AuthApi
@@ -31,6 +32,8 @@ class SignupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         binding.etUsername.setOnFocusChangeListener { _, hasFocus ->
             binding.etUsername.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
@@ -83,6 +86,13 @@ class SignupActivity : AppCompatActivity() {
 
         viewModel.errorMessage.observe(this) { msg ->
             msg?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
         }
     }
 }

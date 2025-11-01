@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.mindlog.core.common.SystemUiHelper
 import com.example.mindlog.core.network.NetworkModule
 import com.example.mindlog.databinding.ActivityMainBinding
 import com.example.mindlog.features.auth.data.api.AuthApi
@@ -17,6 +18,7 @@ import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.features.home.presentation.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         lifecycleScope.launch {
             checkAutoLogin()
@@ -75,8 +79,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToJournal() {
-        // startActivity(Intent(this, JournalActivity::class.java))
-        // finish()
-        Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, HomeActivity::class.java))
+        finish()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
+        }
     }
 }
