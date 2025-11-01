@@ -20,6 +20,7 @@ import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.mindlog.R
+import com.example.mindlog.core.common.SystemUiHelper
 
 
 @AndroidEntryPoint
@@ -32,6 +33,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         binding.btnLogin.setOnClickListener {
             val id = binding.etLoginId.text.toString()
@@ -97,5 +100,12 @@ class LoginActivity : AppCompatActivity() {
         viewModel.errorMessage.observe(this, Observer { message ->
             message?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
         })
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
+        }
     }
 }

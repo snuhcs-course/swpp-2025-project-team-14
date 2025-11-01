@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.R
 import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.common.SystemUiHelper
 import com.example.mindlog.databinding.ActivityJournalEditBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,6 +29,8 @@ class JournalEditActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityJournalEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         val journalId = intent.getIntExtra(EXTRA_JOURNAL_ID, -1)
         if (journalId == -1) {
@@ -110,5 +113,12 @@ class JournalEditActivity : AppCompatActivity() {
                 viewModel.deleteJournal()
             }
             .show()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
+        }
     }
 }
