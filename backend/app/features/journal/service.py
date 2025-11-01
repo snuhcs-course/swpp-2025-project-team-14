@@ -89,10 +89,9 @@ class JournalService:
         journal_id: int,
         title: str | None = None,
         content: str | None = None,
-        summary: str | None = None,
         gratitude: str | None = None,
     ) -> None:
-        if not any([title, content, summary, gratitude]):
+        if not any([title, content, gratitude]):
             raise JournalUpdateError()
         journal_to_update = self.journal_repository.get_journal_by_id(journal_id)
         if journal_to_update is None:
@@ -101,7 +100,6 @@ class JournalService:
             journal=journal_to_update,
             title=title,
             content=content,
-            summary=summary,
             gratitude=gratitude,
         )
 
@@ -129,6 +127,17 @@ class JournalService:
             end_date=end_date,
             limit=limit,
             cursor=cursor,
+        )
+
+    def get_journals_by_keyword(
+        self,
+        user_id: int,
+        keyword: str,
+        limit: int = 10,
+        cursor: int | None = None,
+    ) -> list[Journal]:
+        return self.journal_repository.get_journals_by_keyword(
+            user_id=user_id, keyword=keyword, limit=limit, cursor=cursor
         )
 
     # image upload via S3 presigned URL

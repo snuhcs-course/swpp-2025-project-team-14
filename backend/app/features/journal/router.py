@@ -106,6 +106,26 @@ def search_journals(
 
 
 @router.get(
+    "/search-keyword",
+    response_model=JournalCursorResponse,
+    status_code=status.HTTP_200_OK,
+    summary="키워드 기반 일기 검색",
+    description="키워드 입력 시 해당 키워드를 가진 저널 엔트리 리스트를 반환합니다.",
+)
+def search_journals_by_keyword(
+    journal_service: Annotated[JournalService, Depends()],
+    keyword: str = Query(..., description="검색할 키워드"),
+    limit: int = Query(default=10, le=50),
+    cursor: int | None = Query(None, description="마지막으로 본 Journal의 ID"),
+    user: User = Depends(get_current_user),
+) -> JournalCursorResponse:
+    if not keyword.strip():
+        raise JournalBadRequestError("keyword must not be blank")
+    journals = journal_service.get_journals_by_keyword(user.id, keyword, limit, cursor)
+    return JournalCursorResponse.from_journals(journals, limit)
+
+
+@router.get(
     "/{journal_id}",
     response_model=JournalResponse,
     status_code=status.HTTP_200_OK,
