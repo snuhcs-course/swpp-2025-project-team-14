@@ -6,14 +6,16 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
-import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
+import com.example.mindlog.features.journal.data.dto.KeywordResponse
 import com.example.mindlog.features.journal.domain.usecase.DeleteJournalUseCase
+import com.example.mindlog.features.journal.domain.usecase.ExtractKeywordsUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
 import com.example.mindlog.features.journal.domain.usecase.GetJournalByIdUseCase
 import com.example.mindlog.features.journal.domain.usecase.UpdateJournalUseCase
@@ -34,6 +36,7 @@ class JournalEditViewModel @Inject constructor(
     private val deleteJournalUseCase: DeleteJournalUseCase,
     private val uploadJournalImageUseCase: UploadJournalImageUseCase,
     private val generateImageUseCase: GenerateImageUseCase,
+    private val extractKeywordsUseCase: ExtractKeywordsUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -46,6 +49,8 @@ class JournalEditViewModel @Inject constructor(
     val content = MutableLiveData<String>()
     val gratitude = MutableLiveData<String>()
 
+    val keywords = MutableLiveData<List<KeywordResponse>>()
+
     val selectedImageUri = MutableStateFlow<Uri?>(null)
     val existingImageUrl = MutableStateFlow<String?>(null)
 
@@ -54,14 +59,12 @@ class JournalEditViewModel @Inject constructor(
     val aiGenerationError = MutableSharedFlow<String>()
     val noImage = MutableSharedFlow<Boolean>()
 
-    // ✨ [핵심 수정] LiveData<Int>를 일반 Int? 타입으로 변경
     var journalId: Int? = null
-        private set // 외부에서는 값을 변경할 수 없도록 설정
+        private set
 
     private var originalJournal: JournalItemResponse? = null
 
     fun loadJournalDetails(id: Int, forceRefresh: Boolean = false) {
-        // 이미 로드된 ID와 같고, 강제 새로고침이 아니라면 중복 로드 방지
         if (journalId == id && !forceRefresh) return
 
         journalId = id
@@ -75,14 +78,37 @@ class JournalEditViewModel @Inject constructor(
                 if (!journal.imageS3Keys.isNullOrBlank()) {
                     existingImageUrl.value = "${com.example.mindlog.BuildConfig.S3_BUCKET_URL}/${journal.imageS3Keys}"
                 } else {
-                    existingImageUrl.value = null // 이미지가 없는 경우 null로 설정
+                    existingImageUrl.value = null
                 }
                 _journalState.value = Result.Success(journal)
+
+                // ✨ [핵심 추가] 일기 로드 성공 시 키워드 추출 API 호출
+                extractJournalKeywords(id)
+
             } catch (e: Exception) {
                 _journalState.value = Result.Error(message = e.message ?: "일기를 불러오는데 실패했습니다.")
             }
         }
     }
+
+    // 키워드 추출 로직을 담당하는 별도 함수
+    private fun extractJournalKeywords(id: Int) {
+        viewModelScope.launch {
+            // ✨ [디버깅 1] API 호출 직전에 토스트를 띄워 함수가 실행되는지 확인
+            try {
+                // UseCase를 사용하여 키워드 목록을 가져옴
+                val keywordList = extractKeywordsUseCase(id)
+                // 가져온 결과를 LiveData에 할당
+                keywords.value = keywordList
+            } catch (e: Exception) {
+                // ✨ [디버깅 2] 에러 발생 시, 사용자에게 명확한 에러 메시지를 토스트로 표시
+                val errorMessage = "키워드 분석 실패: ${e.message}"
+                Log.e("JournalEditViewModel", errorMessage, e)
+                keywords.value = emptyList() // 실패 시 빈 리스트로 설정
+            }
+        }
+    }
+
 
     // 갤러리 이미지 선택 시 호출될 함수
     fun setGalleryImageUri(uri: Uri?) {
@@ -110,8 +136,6 @@ class JournalEditViewModel @Inject constructor(
                 val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
                 generatedImageBitmap.value = decodedBitmap
-
-                // AI 이미지 생성 성공 시, 다른 이미지 소스 초기화
                 selectedImageUri.value = null
                 existingImageUrl.value = null
 

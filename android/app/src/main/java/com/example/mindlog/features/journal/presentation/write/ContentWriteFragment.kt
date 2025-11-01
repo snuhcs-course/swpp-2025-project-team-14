@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
@@ -223,15 +222,28 @@ class ContentWriteFragment : Fragment() {
             binding.ivPreview.setImageDrawable(null)
         }
 
-        // 모드별 추가 UI 제어
-        if (activity is JournalWriteActivity || activity is JournalEditActivity) {
-            binding.bottomActionButtons.isVisible = !hasImage
-            binding.layoutAddImage.isClickable = !hasImage
-        } else if (activity is JournalDetailActivity) {
-            binding.bottomActionButtons.isVisible = false
-            binding.layoutAddImage.isClickable = false
+        // ✨ [핵심 수정] 모드별 추가 UI 제어 로직 변경
+        when (activity) {
+            is JournalWriteActivity -> {
+                // '작성' 모드에서도 항상 버튼이 보이도록 변경
+                binding.bottomActionButtons.isVisible = true
+                binding.layoutAddImage.isClickable = !hasImage
+            }
+
+            is JournalEditActivity -> {
+                // '수정' 모드에서도 이미지가 있든 없든 항상 버튼이 보임
+                binding.bottomActionButtons.isVisible = true
+                binding.layoutAddImage.isClickable = !hasImage
+            }
+
+            is JournalDetailActivity -> {
+                // '상세' 모드에서는 버튼이 항상 보이지 않음
+                binding.bottomActionButtons.isVisible = false
+                binding.layoutAddImage.isClickable = false
+            }
         }
     }
+
 
     private fun handleLoading(isLoading: Boolean) {
         if (activity !is JournalDetailActivity) {
@@ -282,6 +294,7 @@ class ContentWriteFragment : Fragment() {
             }
             .show()
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

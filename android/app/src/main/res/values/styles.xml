@@ -32,5 +32,20 @@
         <item name="android:textSize">16sp</item>
     </style>
 
+    <!-- ✨ [핵심 추가] 키워드 칩을 위한 스타일 -->
+    <style name="Widget.Mindlog.KeywordChip" parent="Widget.MaterialComponents.Chip.Action">
+        <!-- 배경 색상 -->
+        <item name="chipBackgroundColor">@color/surface</item>
+        <!-- 텍스트 색상 -->
+        <item name="android:textColor">@color/text_secondary</item>
+        <!-- 텍스트 크기 -->
+        <item name="android:textSize">14sp</item>
+        <!-- 클릭 시 물결 효과 색상 -->
+        <item name="rippleColor">@color/text_primary</item>
+        <!-- X 아이콘 비활성화 -->
+        <item name="closeIconVisible">false</item>
+        <!-- 체크 아이콘 비활성화 -->
+        <item name="checkedIconVisible">false</item>
+    </style>
 
 </resources>

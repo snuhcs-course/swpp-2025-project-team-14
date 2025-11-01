@@ -4,6 +4,7 @@ import android.net.Uri
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.journal.data.dto.JournalListResponse
 import com.example.mindlog.features.journal.data.dto.JournalResponse
+import com.example.mindlog.features.journal.data.dto.KeywordListResponse
 import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
 
 interface JournalRepository {
@@ -63,4 +64,10 @@ interface JournalRepository {
      * @return Base64로 인코딩된 이미지 문자열
      */
     suspend fun generateImage(style: String, content: String): String
+
+    /**
+     * 특정 일기의 키워드를 추출합니다.
+     */
+    suspend fun extractKeywords(journalId: Int): KeywordListResponse
 }
+

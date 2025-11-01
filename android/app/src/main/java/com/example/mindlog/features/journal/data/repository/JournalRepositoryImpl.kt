@@ -133,4 +133,9 @@ class JournalRepositoryImpl @Inject constructor(
         val response = journalApi.generateImage(request)
         return response.imageBase64
     }
+
+    override suspend fun extractKeywords(journalId: Int): KeywordListResponse {
+        return journalApi.extractKeywords(journalId = journalId)
+    }
 }
+

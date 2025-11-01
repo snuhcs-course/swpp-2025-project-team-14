@@ -91,4 +91,12 @@ interface JournalApi {
     suspend fun generateImage(
         @Body request: GenerateImageRequest
     ): GenerateImageResponse
+
+    /**
+     * 특정 일기의 키워드 분석을 요청합니다.
+     */
+    @POST("journal/{journal_id}/analyze")
+    suspend fun extractKeywords(
+        @Path("journal_id") journalId: Int
+    ): KeywordListResponse
 }
