@@ -4,6 +4,7 @@ from fastapi import Depends
 from datetime import datetime, timezone, date
 import random
 import json
+import re
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
@@ -26,6 +27,7 @@ from app.features.selfaware.repository import QuestionRepository, AnswerReposito
 from app.features.selfaware.value_map import analyze_personality
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
 
+from app.features.selfaware.personality_insight.score import questions, choices, prompt, NeoPiAnswers
 
 class QuestionService:
     def __init__(
@@ -297,6 +299,35 @@ class ValueScoreService:
 
         return value_scores
     
+    def extract_neo_pi_from_answer(self, user_id:int):
+        llm = ChatOpenAI(model="gpt-5-nano").with_structured_output(NeoPiAnswers)
+
+        answers = self.answer_repository.get_by_user(user_id)
+
+        if not answers:
+            raise Exception("answer has not written")
+        
+        answers_text = [answer.text for answer in answers]
+
+        neo_pi_questions = questions
+        neo_pi_choices   = choices
+        neo_pi_prompt    = prompt
+
+        neo_pi_chain = neo_pi_prompt | llm | StrOutputParser()
+        
+        responses = [neo_pi_chain.invoke({
+            "choices": neo_pi_choices,
+            "questions": neo_pi_questions[20*i:20*(i+1)],
+            "conversation": answers_text,
+        }) for i in range(6)]
+
+        for i in range(6):        
+            if responses[i] != 20:
+                raise
+        total_response = responses[0] + responses[1] + responses[2] + responses[3] + responses[4] + responses[5]
+
+        return total_response
+        
     
 class ValueMapService:
     def __init__(
