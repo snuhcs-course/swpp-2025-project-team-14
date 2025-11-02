@@ -17,23 +17,21 @@ import collections
 import bottle
 
 
-def evaluate_api(request):
-    """API endpoint."""
+def evaluate(Q, Sex, Age, flag = True):
+    items = 31  # shortipipneo
 
-    # Extract identifying variables
-    data = request.forms.get
-    Sex = data('Sex')
-    Age = int(data('Age'))
-    Nick = data('Nick')
-    Country = data('Country')
+    # Check sex and age
+    if Sex != "Male" and Sex != "Female":
+        raise Exception("""You did not indicate your sex at the beginning of the
+    inventory. Your answers cannot be normed properly unless you indicate
+    whether you are male or female. Please return to the inventory and indicate
+    your sex.""")
 
-    # Get the item responses
-    items = 121  # shortipipneo
-    Q = [0] * (items)
-
-    for i in range(1, items):
-        variable = "Q%d" % i
-        Q[i] = data(variable, 0)
+    if Age < 10:
+        raise Exception("""You did not indicate how old you are at the beginning of the
+    inventory, or you typed in an age that is too young. Your answers cannot be
+    normed properly unless type in a valid age. Please return to the inventory
+    and change your response.""")
 
     Q = list(map(int, Q))
 
@@ -160,11 +158,11 @@ def evaluate_api(request):
     SA = (10 * (A - norm[4]) / norm[9]) + 50
     SC = (10 * (C - norm[5]) / norm[10]) + 50
 
-    SNF = [0] * items
-    SEF = [0] * items
-    SOF = [0] * items
-    SAF = [0] * items
-    SCF = [0] * items
+    SNF = [0.0] * items
+    SEF = [0.0] * items
+    SOF = [0.0] * items
+    SAF = [0.0] * items
+    SCF = [0.0] * items
 
     for i in range(1, 7):
         SNF[i] = 50 + (10 * (NF[i] - norm[i + 10]) / norm[i + 16])
@@ -215,9 +213,8 @@ def evaluate_api(request):
     SAFP = [0] * items
     SCFP = [0] * items
 
-    flev = [0] * items
+    flev = [""] * items
     for i in range(1, 7):
-        flev[i] = SNF[i]
         if SNF[i] < 45:
             flev[i] = "low"
 
@@ -237,7 +234,6 @@ def evaluate_api(request):
             SNFP[i] = 99
 
     for i in range(1, 7):
-        flev[i + 6] = SEF[i]
         if SEF[i] < 45:
             flev[i + 6] = "low"
 
@@ -256,7 +252,6 @@ def evaluate_api(request):
             SEFP[i] = 99
 
     for i in range(1, 7):
-        flev[i + 12] = SOF[i]
         if SOF[i] < 45:
             flev[i + 12] = "low"
 
@@ -275,7 +270,6 @@ def evaluate_api(request):
             SOFP[i] = 99
 
     for i in range(1, 7):
-        flev[i + 18] = SAF[i]
         if SAF[i] < 45:
             flev[i + 18] = "low"
 
@@ -294,7 +288,6 @@ def evaluate_api(request):
             SAFP[i] = 99
 
     for i in range(1, 7):
-        flev[i + 24] = SCF[i]
         if SCF[i] < 45:
             flev[i + 24] = "low"
         if SCF[i] >= 45 and SCF[i] <= 55:
@@ -313,9 +306,8 @@ def evaluate_api(request):
     LO = 45
     HI = 55
 
-    if "results_api" not in request.url:  # hack
-        return SEP, SEFP, LO, HI, SE, SAP, SAFP, SA, SC, SCP, SCFP, flev, SOP, \
-                SOFP, SO, Nick, Country, SNP, SNFP, Category, SN, Sex, Age, Q
+    if flag:  # hack
+        return SEP, SEFP, SAP, SAFP, SCP, SCFP, SOP, SOFP, SNP, SNFP
     else:  # treat as an api call.
         m = {}
 
@@ -344,44 +336,4 @@ def evaluate_api(request):
         for i in range(1, len(labels)):
             m[labels[i]] = SOFP[i]
 
-        # od = collections.OrderedDict(sorted(m.items()))
-        return json.dumps(m)
-
-
-def evaluate(request, db=None):
-
-    """Personality evaluation logic."""
-
-    SEP, SEFP, LO, HI, SE, SAP, SAFP, SA, SC, SCP, SCFP, flev, SOP, SOFP, SO, \
-            Nick, Country, SNP, SNFP, Category, SN, Sex, Age, Q = evaluate_api(request)
-
-    # Check sex and age
-    if Sex != "Male" and Sex != "Female":
-        return """You did not indicate your sex at the beginning of the
-    inventory. Your answers cannot be normed properly unless you indicate
-    whether you are male or female. Please return to the inventory and indicate
-    your sex."""
-
-    if Age < 10:
-        return """You did not indicate how old you are at the beginning of the
-    inventory, or you typed in an age that is too young. Your answers cannot be
-    normed properly unless type in a valid age. Please return to the inventory
-    and change your response."""
-
-    # Save Data
-    if db:
-        responses = " ".join([str(i) for i in Q[1:121]])
-
-        db.execute('insert into RESULTS values(?, ?, ?, ?, ?, ?)',
-                   (datetime.datetime.now(), Sex, Age, Nick, Country,
-                    responses))
-        db.commit()
-
-    return bottle.template(
-        'results', SEP=SEP, SEFP=SEFP,
-        LO=45, HI=55, SE=SE, SAP=SAP, SAFP=SAFP, SA=SA,
-        SC=SC, SCP=SCP, SCFP=SCFP, flev=flev,
-        SOP=SOP, SOFP=SOFP,
-        SO=SO, Nick=Nick, Country=Country,
-        SNP=SNP, SNFP=SNFP, Category=Category,
-        SN=SN)
+        return json.dumps(m, indent=4)

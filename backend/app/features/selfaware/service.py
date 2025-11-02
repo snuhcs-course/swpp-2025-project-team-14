@@ -29,6 +29,10 @@ from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse
 
 from app.features.selfaware.personality_insight.score import questions, choices, prompt, NeoPiAnswers
 
+from app.features.selfaware.personality_insight.evaluator import evaluate
+
+from app.features.selfaware.personality_insight.data.en.prompts import big_5_prompt, extraversion_explanations
+
 class QuestionService:
     def __init__(
         self,
@@ -328,7 +332,17 @@ class ValueScoreService:
 
         return total_response
         
+    def evaluate_big_5_score(self, user_id, age, sex):
+        neo_pi = self.extract_neo_pi_from_answer(user_id)
+        return evaluate(neo_pi, sex, age)
     
+    def get_comment_from_big_5_score(self, user_id, age, sex):
+        score_json = self.evaluate_big_5_score(user_id, age, sex)
+        llm = ChatOpenAI(model="gpt-5-nano")
+        big_5_chain = big_5_prompt | llm
+        response = big_5_chain.invoke({"big_5_explanation": extraversion_explanations, "big_5_score": score_json})
+        return response
+
 class ValueMapService:
     def __init__(
         self,
