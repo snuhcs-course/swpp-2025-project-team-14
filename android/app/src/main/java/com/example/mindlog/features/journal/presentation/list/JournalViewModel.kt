@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date // ✨ java.util.Date를 사용해야 합니다.
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -84,12 +84,12 @@ class JournalViewModel @Inject constructor(
                 val newEntries = response.items.map { item ->
                     val imageUrl = try {
                         item.imageS3Keys?.let { s3Key ->
-                            if (s3Key.isNotBlank()) {
-                                "${BuildConfig.S3_BUCKET_URL}/$s3Key"
-                            } else {
-                                null
-                            }
+                        if (s3Key.isNotBlank()) {
+                            "${BuildConfig.S3_BUCKET_URL}/$s3Key"
+                        } else {
+                            null
                         }
+                    }
                     } catch (e: Exception) {
                         Log.e("JournalViewModel", "Image URL generation failed for item ${item.id}", e)
                         null
@@ -102,12 +102,22 @@ class JournalViewModel @Inject constructor(
                         Date()
                     }
 
+                    val keywords = item.keywords?.map { dto ->
+                        com.example.mindlog.core.model.Keyword(
+                            keyword = dto.keyword,
+                            emotion = dto.emotion,
+                            summary = dto.summary,
+                            weight = dto.weight
+                        )
+                    } ?: emptyList()
+
                     JournalEntry(
                         id = item.id,
                         title = item.title,
                         content = item.content,
                         createdAt = createdAt,
-                        imageUrl = imageUrl
+                        imageUrl = imageUrl,
+                        keywords = keywords
                     )
                 }
 
@@ -129,7 +139,6 @@ class JournalViewModel @Inject constructor(
         }
     }
 
-    // ✨ [핵심 수정] 함수를 클래스 레벨로 이동
     fun isSearching(): Boolean {
         return !searchQuery.value.isNullOrBlank() || startDate.value != null
     }

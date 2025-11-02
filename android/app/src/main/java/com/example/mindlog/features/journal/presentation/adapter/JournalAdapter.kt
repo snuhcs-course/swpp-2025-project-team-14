@@ -4,11 +4,13 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.layout.layout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy // ✨ [추가]
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.mindlog.R
 import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.databinding.ItemJournalCardBinding
 import com.example.mindlog.features.journal.presentation.detail.JournalDetailActivity
@@ -28,17 +30,34 @@ class JournalAdapter : ListAdapter<JournalEntry, JournalAdapter.ViewHolder>(Jour
             if (journal.imageUrl != null) {
                 binding.ivThumbnail.visibility = View.VISIBLE
 
-                // ✨ [핵심 수정] 캐시 전략을 추가하여 네트워크에서 새로 받아오도록 합니다.
                 Glide.with(itemView.context)
                     .asBitmap()
                     .load(journal.imageUrl)
-                    // 👇 이 두 줄을 추가하여 캐시를 무시하고 새로 다운로드 받도록 강제합니다.
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .into(binding.ivThumbnail)
 
             } else {
                 binding.ivThumbnail.visibility = View.GONE
+            }
+
+            val flexbox = binding.flexboxKeywords
+            if (journal.keywords.isNotEmpty()) {
+                flexbox.visibility = View.VISIBLE
+                flexbox.removeAllViews()
+
+                journal.keywords.forEach { keyword ->
+                    // ✨ [수정] Chip을 TextView로 변경하고 캐스팅 제거
+                    val keywordView = LayoutInflater.from(itemView.context)
+                        .inflate(R.layout.item_keyword_chip, flexbox, false) as android.widget.TextView
+
+                    keywordView.text = "#${keyword.keyword}"
+                    // isClickable 설정은 이제 필요 없음
+
+                    flexbox.addView(keywordView)
+                }
+            } else {
+                flexbox.visibility = View.GONE
             }
 
             itemView.setOnClickListener {

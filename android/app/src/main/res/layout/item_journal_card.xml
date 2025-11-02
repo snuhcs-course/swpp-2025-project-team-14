@@ -64,7 +64,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/iv_thumbnail"
-        tools:text="본문 내용이 여기에 표시됩니다. 세 줄까지 보이고 그 이상은 말줄임표로 처리되어야 합니다. 이미지가 없을 경우를 대비해 제목 바로 아래에 붙도록 제약이 설정되어 있습니다. 긴 텍스트를 테스트하기 위한 문장입니다." />
+        tools:text="본문 내용이 여기에 표시됩니다..." />
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/flexbox_keywords"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        app:flexWrap="wrap"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_body_preview"
+        tools:visibility="visible"/>
 
     <TextView
         android:id="@+id/chip_emotion"
@@ -80,7 +92,7 @@
         android:textColor="@color/text_secondary"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_body_preview"
+        app:layout_constraintTop_toBottomOf="@id/flexbox_keywords"
         tools:text="기쁨"
         tools:visibility="visible" />
 

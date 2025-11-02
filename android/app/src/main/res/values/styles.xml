@@ -46,6 +46,9 @@
         <item name="closeIconVisible">false</item>
         <!-- 체크 아이콘 비활성화 -->
         <item name="checkedIconVisible">false</item>
+        <item name="chipMinHeight">24dp</item> <!-- 칩의 최소 높이를 줄임 -->
+        <item name="android:paddingTop">0dp</item> <!-- 내부 상단 패딩 제거 -->
+        <item name="android:paddingBottom">0dp</item> <!-- 내부 하단 패딩 제거 -->
+        <item name="chipSpacingVertical">0dp</item> <!-- 텍스트와 아이콘 사이의 수직 간격 제거 -->
     </style>
-
 </resources>

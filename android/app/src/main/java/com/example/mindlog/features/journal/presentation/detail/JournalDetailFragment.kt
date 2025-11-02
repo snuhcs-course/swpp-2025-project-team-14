@@ -12,8 +12,8 @@ import com.bumptech.glide.Glide
 import com.example.mindlog.BuildConfig
 import com.example.mindlog.R
 import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.model.Keyword
 import com.example.mindlog.databinding.FragmentJournalDetailBinding
-import com.example.mindlog.features.journal.data.dto.KeywordResponse
 import com.example.mindlog.features.journal.presentation.write.JournalEditViewModel
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,28 +83,28 @@ class JournalDetailFragment : Fragment() {
         }
     }
 
-    private fun updateKeywordsUI(keywords: List<KeywordResponse>) {
+    private fun updateKeywordsUI(keywords: List<Keyword>) {
         val hasKeywords = keywords.isNotEmpty()
         binding.labelKeywords.isVisible = hasKeywords
         binding.flexboxKeywords.isVisible = hasKeywords
         binding.flexboxKeywords.removeAllViews()
 
         if (hasKeywords) {
-            keywords.forEach { keywordResponse ->
-                val keywordChip = createKeywordChip(keywordResponse)
+            keywords.forEach { keyword -> // 변수명을 keyword로 변경
+                val keywordChip = createKeywordChip(keyword) // 변경된 변수 전달
                 binding.flexboxKeywords.addView(keywordChip)
             }
         }
     }
 
-    private fun createKeywordChip(keywordResponse: KeywordResponse): Chip {
-        val chip = layoutInflater.inflate(R.layout.item_keyword_chip, binding.flexboxKeywords, false) as Chip
-        chip.text = "#${keywordResponse.keyword}"
-        chip.setOnClickListener {
+    private fun createKeywordChip(keyword: Keyword): View {
+        val keywordView = layoutInflater.inflate(R.layout.item_keyword_chip, binding.flexboxKeywords, false) as android.widget.TextView
+        keywordView.text = "#${keyword.keyword}" // UI 모델의 필드 사용
+        keywordView.setOnClickListener {
             // TODO: 추후 키워드 검색 기능 구현
-            Toast.makeText(requireContext(), "'${keywordResponse.keyword}' 키워드로 검색합니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "'${keyword.keyword}' 키워드로 검색합니다.", Toast.LENGTH_SHORT).show()
         }
-        return chip
+        return keywordView
     }
 
     override fun onDestroyView() {

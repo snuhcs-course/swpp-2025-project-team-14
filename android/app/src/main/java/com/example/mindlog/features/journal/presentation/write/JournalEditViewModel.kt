@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
-import com.example.mindlog.features.journal.data.dto.KeywordResponse
+import com.example.mindlog.core.model.Keyword
 import com.example.mindlog.features.journal.domain.usecase.DeleteJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.ExtractKeywordsUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
@@ -49,8 +49,7 @@ class JournalEditViewModel @Inject constructor(
     val content = MutableLiveData<String>()
     val gratitude = MutableLiveData<String>()
 
-    val keywords = MutableLiveData<List<KeywordResponse>>()
-
+    val keywords = MutableLiveData<List<Keyword>>()
     val selectedImageUri = MutableStateFlow<Uri?>(null)
     val existingImageUrl = MutableStateFlow<String?>(null)
 
@@ -82,11 +81,18 @@ class JournalEditViewModel @Inject constructor(
                     existingImageUrl.value = null
                 }
 
-                // ✨ [핵심 로직 1] GET 응답의 keywords를 LiveData에 바로 할당
-                keywords.value = journal.keywords ?: emptyList()
+                val uiKeywords = journal.keywords?.map { dto ->
+                    Keyword(
+                        keyword = dto.keyword,
+                        emotion = dto.emotion,
+                        summary = dto.summary,
+                        weight = dto.weight
+                    )
+                } ?: emptyList()
+                keywords.value = uiKeywords // 변환된 리스트를 할당
+
                 _journalState.value = Result.Success(journal)
 
-                // ✨ [핵심 로직 2] keywords가 비어있다면, 분석을 요청한다.
                 if (journal.keywords.isNullOrEmpty()) {
                     extractJournalKeywords(id)
                 }
@@ -186,7 +192,9 @@ class JournalEditViewModel @Inject constructor(
                 if (isTextChanged) {
                     updateJournalUseCase(
                         journalId = id,
-                        originalJournal = originalData,
+                        originalTitle = originalData.title,
+                        originalContent = originalData.content,
+                        originalGratitude = originalData.gratitude,
                         newTitle = newTitle,
                         newContent = newContent,
                         newGratitude = newGratitude

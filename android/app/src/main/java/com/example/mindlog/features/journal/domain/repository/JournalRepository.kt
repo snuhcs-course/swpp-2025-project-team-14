@@ -1,11 +1,10 @@
 package com.example.mindlog.features.journal.domain.repository
 
-import android.net.Uri
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
-import com.example.mindlog.features.journal.data.dto.JournalListResponse
 import com.example.mindlog.features.journal.data.dto.JournalResponse
 import com.example.mindlog.features.journal.data.dto.KeywordListResponse
 import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
+import com.example.mindlog.features.journal.data.dto.JournalListResponse
 
 interface JournalRepository {
 

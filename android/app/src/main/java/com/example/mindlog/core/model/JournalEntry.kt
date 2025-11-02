@@ -7,5 +7,6 @@ data class JournalEntry(
     val title: String,
     val content: String,
     val createdAt: Date,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val keywords: List<Keyword>
 )
