@@ -12,9 +12,6 @@ import javax.inject.Singleton
 @TestInstallIn(components = [SingletonComponent::class], replaces = [SelfAwareBindModule::class])
 abstract class TestSelfAwareBindModule {
 
-    @Binds
-    @Singleton
-    abstract fun bindSelfAwareRepository(
-        impl: TestSelfAwareRepository
-    ): SelfAwareRepository
+    @Binds @Singleton
+    abstract fun bindSelfAwareRepository(impl: TestSelfAwareRepository): SelfAwareRepository
 }

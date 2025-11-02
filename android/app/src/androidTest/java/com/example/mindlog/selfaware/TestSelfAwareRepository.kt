@@ -6,11 +6,11 @@ import com.example.mindlog.features.selfaware.domain.model.*
 import com.example.mindlog.features.selfaware.domain.repository.SelfAwareRepository
 import kotlinx.coroutines.delay
 import java.time.LocalDate
+import javax.inject.Inject
 
-class TestSelfAwareRepository(
-    private val delayMs: Long = 0L,    // 필요하면 살짝 지연도 가능
-    private val withQuestion: Boolean = true, // 폴링 없이 바로 질문을 줄지 여부
-) : SelfAwareRepository {
+class TestSelfAwareRepository @Inject constructor() : SelfAwareRepository {
+    private val delayMs: Long = 0L    // 필요하면 살짝 지연도 가능
+    private val withQuestion: Boolean = true // 폴링 없이 바로 질문을 줄지 여부
 
     override suspend fun getTodayQA(date: LocalDate): Result<QAItem> {
         if (delayMs > 0) delay(delayMs)
