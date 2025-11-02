@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mindlog.R
+import com.example.mindlog.core.common.SystemUiHelper
 import com.example.mindlog.databinding.ActivityHomeBinding
 import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,6 +22,8 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         val navHost =
             supportFragmentManager.findFragmentById(R.id.homeNavHost) as NavHostFragment
@@ -39,6 +42,13 @@ class HomeActivity : AppCompatActivity() {
         binding.fabWrite.setOnClickListener {
             val intent = Intent(this, JournalWriteActivity::class.java)
             startActivity(intent)
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
         }
     }
 }

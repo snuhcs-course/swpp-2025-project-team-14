@@ -1,6 +1,9 @@
 package com.example.mindlog.features.journal.presentation.write
 
 import android.app.Activity
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -9,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.R
 import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.common.SystemUiHelper
 import com.example.mindlog.databinding.ActivityJournalEditBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,6 +23,7 @@ class JournalEditActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityJournalEditBinding
     private val viewModel: JournalEditViewModel by viewModels()
+    private var loadingDialog: Dialog? = null
 
     companion object {
         const val EXTRA_JOURNAL_ID = "EXTRA_JOURNAL_ID"
@@ -28,6 +33,8 @@ class JournalEditActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityJournalEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         val journalId = intent.getIntExtra(EXTRA_JOURNAL_ID, -1)
         if (journalId == -1) {
@@ -40,6 +47,7 @@ class JournalEditActivity : AppCompatActivity() {
         setupFragment()
         setupClickListeners()
         observeViewModel()
+        setupLoadingDialog()
 
         viewModel.loadJournalDetails(journalId)
     }
@@ -64,6 +72,14 @@ class JournalEditActivity : AppCompatActivity() {
 
         binding.btnEditDelete.setOnClickListener {
             showDeleteConfirmDialog()
+        }
+    }
+
+    private fun setupLoadingDialog() {
+        loadingDialog = Dialog(this).apply {
+            setContentView(R.layout.dialog_loading)
+            setCancelable(false) // 뒤로가기 버튼으로 닫히지 않게 설정
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
 
@@ -99,6 +115,16 @@ class JournalEditActivity : AppCompatActivity() {
                 }
             }
         }
+
+        lifecycleScope.launch {
+            viewModel.isLoading.collect { isLoading ->
+                if (isLoading) {
+                    loadingDialog?.show()
+                } else {
+                    loadingDialog?.dismiss()
+                }
+            }
+        }
     }
 
     private fun showDeleteConfirmDialog() {
@@ -110,5 +136,18 @@ class JournalEditActivity : AppCompatActivity() {
                 viewModel.deleteJournal()
             }
             .show()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
+        }
+    }
+
+    override fun onDestroy() {
+        loadingDialog?.dismiss()
+        loadingDialog = null
+        super.onDestroy()
     }
 }

@@ -6,16 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F8F6F0"
-    android:layout_marginTop="30dp"
-    tools:context=".features.journal.presentation.write.ContentWriteFragment">
+    android:background="@color/bg"
+    tools:context=".features.journal.presentation.detail.JournalDetailFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="24dp">
 
-        <!-- 제목, 날짜, 이미지 등 상단 부분 (변경 없음) -->
+        <!-- 제목 -->
         <TextView
             android:id="@+id/label_title"
             android:layout_width="wrap_content"
@@ -26,20 +25,19 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
 
-        <EditText
-            android:id="@+id/et_title"
+        <!-- ✨ EditText -> TextView -->
+        <TextView
+            android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@null"
-            android:hint="제목을 입력하세요"
-            android:inputType="text"
-            android:maxLines="1"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
             app:layout_constraintTop_toBottomOf="@id/label_title"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="오늘의 일기 제목" />
 
         <View
             android:id="@+id/divider_title"
@@ -47,10 +45,9 @@
             android:layout_height="1dp"
             android:background="@color/text_secondary"
             android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/et_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
-
 
         <TextView
             android:id="@+id/tv_date"
@@ -63,36 +60,19 @@
             app:layout_constraintTop_toBottomOf="@id/divider_title"
             app:layout_constraintStart_toStartOf="parent"/>
 
-        <FrameLayout
-            android:id="@+id/layout_add_image"
+        <!-- ✨ ImageView만 있는 단순한 형태로 변경 -->
+        <ImageView
+            android:id="@+id/iv_image"
             android:layout_width="0dp"
             android:layout_height="180dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/bg_image_border_double"
-            android:padding="1dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/tv_date"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/tv_add_image_placeholder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="사진을 추가해 보세요"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp" />
-
-            <ImageView
-                android:id="@+id/iv_preview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                tools:srcCompat="@tools:sample/backgrounds/scenic" />
-
-        </FrameLayout>
-
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@tools:sample/backgrounds/scenic"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/label_content"
@@ -102,25 +82,24 @@
             android:text="오늘의 하루"
             android:textColor="@color/text_secondary"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/layout_add_image"
+            app:layout_constraintTop_toBottomOf="@id/iv_image"
             app:layout_constraintStart_toStartOf="parent"/>
 
-        <EditText
-            android:id="@+id/et_content"
+        <!-- ✨ EditText -> TextView -->
+        <TextView
+            android:id="@+id/tv_content"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@null"
             android:gravity="top"
-            android:hint="오늘의 이야기를 들려주세요."
-            android:inputType="textMultiLine"
             android:lineSpacingExtra="12dp"
-            android:minHeight="120dp"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             app:layout_constraintTop_toBottomOf="@id/label_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="오늘의 내용입니다." />
 
         <TextView
             android:id="@+id/label_gratitude"
@@ -130,23 +109,22 @@
             android:text="감사한 일"
             android:textColor="@color/text_secondary"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/et_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_content"
             app:layout_constraintStart_toStartOf="parent"/>
 
-        <EditText
-            android:id="@+id/et_gratitude"
+        <!-- ✨ EditText -> TextView -->
+        <TextView
+            android:id="@+id/tv_gratitude"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@null"
-            android:hint="오늘 감사했던 일을 떠올려 보세요."
-            android:inputType="text"
-            android:maxLines="1"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             app:layout_constraintTop_toBottomOf="@id/label_gratitude"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="오늘 감사했던 일입니다." />
 
         <View
             android:id="@+id/divider_gratitude"
@@ -154,51 +132,37 @@
             android:layout_height="1dp"
             android:layout_marginTop="8dp"
             android:background="@color/text_secondary"
-            app:layout_constraintTop_toBottomOf="@id/et_gratitude"
+            app:layout_constraintTop_toBottomOf="@id/tv_gratitude"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <LinearLayout
-            android:id="@+id/bottom_action_buttons"
-            android:layout_width="0dp"
+        <!-- 키워드 레이블 -->
+        <TextView
+            android:id="@+id/label_keywords"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:background="@drawable/bg_dotted_border"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            app:layout_constraintTop_toBottomOf="@id/divider_gratitude"
+            android:text="키워드"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/divider_gratitude"
+            tools:visibility="visible" />
 
-            <Button
-                android:id="@+id/btn_add_photo"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="사진 추가"
-                android:textColor="@color/text_secondary"
-                app:icon="@drawable/ic_image"
-                app:iconTint="@color/text_secondary" />
+        <!-- 키워드 칩을 담을 FlexboxLayout -->
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/flexbox_keywords"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:flexWrap="wrap"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/label_keywords"
+            tools:visibility="visible" />
 
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:background="@color/text_secondary" />
-
-            <Button
-                android:id="@+id/btn_generate_ai_photo"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="AI 사진 생성"
-                android:textColor="@color/text_secondary"
-                app:icon="@drawable/ic_sparkle"
-                app:iconTint="@color/text_secondary" />
-        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

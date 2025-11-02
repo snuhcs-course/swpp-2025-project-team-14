@@ -78,30 +78,34 @@ class EmotionSelectFragment : Fragment() {
         rowBinding.tvEmotionRight.text = rightText
         rowBinding.tvEmotionRight.setTextColor(rightColor)
 
-        // 색상 설정
+        // 색상 설정 (기존과 동일)
         rowBinding.rbLeft.backgroundTintList = ColorStateList.valueOf(leftColor)
         rowBinding.rbCenter.backgroundTintList = ColorStateList.valueOf(centerGrayColor)
         rowBinding.rbRight.backgroundTintList = ColorStateList.valueOf(rightColor)
         rowBinding.rbMidLeft.backgroundTintList = ColorStateList.valueOf(interpolateColor(leftColor, centerGrayColor, 0.5f))
         rowBinding.rbMidRight.backgroundTintList = ColorStateList.valueOf(interpolateColor(centerGrayColor, rightColor, 0.5f))
 
-        // 3. 라디오 그룹에 리스너 설정하여 ViewModel 업데이트
+        // ✨ [핵심 수정] 라디오 그룹 리스너 로직 변경
         rowBinding.radioGroupEmotion.setOnCheckedChangeListener { _, checkedId ->
+            // 왼쪽 감정 점수를 4-0점으로 매핑
             val scoreLeft = when (checkedId) {
-                R.id.rb_left -> 2
-                R.id.rb_mid_left -> 1
-                else -> 0
-            }
-            val scoreRight = when (checkedId) {
-                R.id.rb_right -> 2
+                R.id.rb_left -> 4
+                R.id.rb_mid_left -> 3
+                R.id.rb_center -> 2
                 R.id.rb_mid_right -> 1
-                else -> 0
+                R.id.rb_right -> 0
+                else -> 2
             }
+
+            // 오른쪽 감정 점수는 항상 (4 - 왼쪽 점수)
+            val scoreRight = 4 - scoreLeft
+
             // ViewModel의 함수를 호출하여 감정 점수 업데이트
             viewModel.updateEmotionScore(leftApiName, scoreLeft)
             viewModel.updateEmotionScore(rightApiName, scoreRight)
         }
     }
+
 
 
     private fun interpolateColor(color1: Int, color2: Int, ratio: Float): Int {

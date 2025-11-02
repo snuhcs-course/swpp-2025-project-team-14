@@ -1,13 +1,17 @@
 package com.example.mindlog.features.journal.presentation.write
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.setText
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.R
 import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.common.SystemUiHelper
 import com.example.mindlog.databinding.ActivityJournalWriteBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -27,6 +31,8 @@ class JournalWriteActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityJournalWriteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SystemUiHelper.hideSystemUI(this)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
@@ -63,24 +69,26 @@ class JournalWriteActivity : AppCompatActivity() {
     // 3. ViewModel의 saveResult 이벤트를 구독하고 결과에 따라 UI 처리
 
     private fun observeViewModel() {
-        lifecycleScope.launch {viewModel.saveResult.collect { result ->
-            // 👇 Loading 브랜치를 삭제하고, Success와 Error만 남깁니다.
-            when (result) {
-                is Result.Success -> {
-                    Toast.makeText(this@JournalWriteActivity, "일기가 저장되었습니다.", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-                is Result.Error -> {
-                    binding.btnNextOrSave.isEnabled = true
-                    binding.btnCancelOrBack.isEnabled = true
-                    val errorMessage = result.message ?: "알 수 없는 오류가 발생했습니다."
-                    Toast.makeText(this@JournalWriteActivity, errorMessage, Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            viewModel.saveResult.collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        Toast.makeText(this@JournalWriteActivity, "일기가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                    is Result.Error -> {
+                        binding.btnNextOrSave.isEnabled = true
+                        binding.btnCancelOrBack.isEnabled = true
+                        val errorMessage = result.message ?: "알 수 없는 오류가 발생했습니다."
+
+                        // ✨ [핵심 수정] '감사한 일' 칸에 에러를 쓰는 대신, Log.e로 에러를 기록하고 사용자에게는 간단한 토스트만 보여줍니다.
+                        Log.e("JournalWriteError", "일기 저장 실패: $errorMessage")
+                        Toast.makeText(this@JournalWriteActivity, "저장에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }
-        }
     }
-
     private fun handleBackButton() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()
@@ -107,5 +115,12 @@ class JournalWriteActivity : AppCompatActivity() {
     private fun updateButtonsForContentWrite() {
         binding.btnCancelOrBack.text = "뒤로"
         binding.btnNextOrSave.text = "작성"
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            SystemUiHelper.hideSystemUI(this)
+        }
     }
 }

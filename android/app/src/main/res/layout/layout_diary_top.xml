@@ -179,25 +179,4 @@
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.helper.widget.Flow
-        android:id="@+id/week_calendar_flow"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:constraint_referenced_ids="day1,day2,day3,day4,day5,day6,day7"
-        app:flow_horizontalStyle="spread_inside"
-        app:flow_wrapMode="chain"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@id/date_range_bar_container"/>
-
-    <include layout="@layout/item_week_day" android:id="@+id/day1" />
-    <include layout="@layout/item_week_day" android:id="@+id/day2" />
-    <include layout="@layout/item_week_day" android:id="@+id/day3" />
-    <include layout="@layout/item_week_day" android:id="@+id/day4" />
-    <include layout="@layout/item_week_day" android:id="@+id/day5" />
-    <include layout="@layout/item_week_day" android:id="@+id/day6" />
-    <include layout="@layout/item_week_day" android:id="@+id/day7" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

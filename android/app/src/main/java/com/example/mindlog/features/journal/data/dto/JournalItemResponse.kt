@@ -21,8 +21,12 @@ data class JournalItemResponse(
     @SerializedName("gratitude")
     val gratitude: String,
 
-    // ... image_s3_keys, summary 등 다른 필드들도 필요 시 여기에 추가할 수 있습니다.
+    @SerializedName("image_s3_keys")
+    val imageS3Keys: String?,
 
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
+
+    @SerializedName("keywords")
+    val keywords: List<KeywordResponse>?
 )

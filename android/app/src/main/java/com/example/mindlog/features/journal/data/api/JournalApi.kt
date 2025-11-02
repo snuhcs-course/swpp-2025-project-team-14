@@ -2,6 +2,7 @@ package com.example.mindlog.features.journal.data.api
 
 import ImageUploadCompleteRequest
 import com.example.mindlog.features.journal.data.dto.*
+import okhttp3.RequestBody
 import retrofit2.Response // 2. Retrofit Response import
 import retrofit2.http.*
 
@@ -59,10 +60,11 @@ interface JournalApi {
      * @param fileBody 이미지 파일의 RequestBody
      * @param contentType 이미지의 Content-Type (e.g., "image/jpeg")
      */
+    @Headers("No-Auth: true")
     @PUT
     suspend fun uploadImageToS3(
         @Url url: String,
-        @Body fileBody: ByteArray,
+        @Body fileBody: RequestBody,
         @Header("Content-Type") contentType: String
     ): Response<Unit>
 
@@ -83,4 +85,18 @@ interface JournalApi {
         @Query("limit") limit: Int,
         @Query("cursor") cursor: Int?
     ): JournalListResponse
+
+    @Streaming
+    @POST("journal/image/generate")
+    suspend fun generateImage(
+        @Body request: GenerateImageRequest
+    ): GenerateImageResponse
+
+    /**
+     * 특정 일기의 키워드 분석을 요청합니다.
+     */
+    @POST("journal/{journal_id}/analyze")
+    suspend fun extractKeywords(
+        @Path("journal_id") journalId: Int
+    ): KeywordListResponse
 }

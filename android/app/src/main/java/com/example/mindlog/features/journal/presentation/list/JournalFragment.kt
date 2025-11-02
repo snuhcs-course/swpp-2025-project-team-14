@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.widget.addTextChangedListener
@@ -50,7 +51,11 @@ class JournalFragment : Fragment() {
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
+    }
 
+    override fun onResume() {
+        super.onResume()
+        // 목록을 새로고침합니다.
         viewModel.loadJournals()
     }
 
@@ -132,7 +137,7 @@ class JournalFragment : Fragment() {
             val endDate = Date(selection.second)
 
             val apiFormat = SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN)
-            val chipFormat = SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.KOREAN)
+            val chipFormat = SimpleDateFormat("yyyy년 MM월 dd일 E요일", Locale.KOREAN)
 
             viewModel.setDateRange(apiFormat.format(startDate), apiFormat.format(endDate))
 
@@ -155,36 +160,10 @@ class JournalFragment : Fragment() {
     @SuppressLint("UseCompatLoadingForDrawables")
     private fun setupWeeklyCalendar() {
         val calendar = Calendar.getInstance()
-        val todayDateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.KOREAN)
+        val todayDateFormat = SimpleDateFormat("yyyy년 MM월 dd일 E요일", Locale.KOREAN)
         binding.topBarLayout.tvToday.text = todayDateFormat.format(calendar.time)
-
-        val dayViews = listOf(
-            binding.topBarLayout.day1, binding.topBarLayout.day2, binding.topBarLayout.day3,
-            binding.topBarLayout.day4, binding.topBarLayout.day5, binding.topBarLayout.day6,
-            binding.topBarLayout.day7
-        )
-
-        calendar.add(Calendar.DATE, -6)
-
-        val dayFormat = SimpleDateFormat("d", Locale.KOREAN)
-        val dowFormat = SimpleDateFormat("E", Locale.KOREAN)
-
-        dayViews.forEachIndexed { index, dayBinding ->
-            val date = calendar.time
-            dayBinding.tvDay.text = dayFormat.format(date)
-            dayBinding.tvDow.text = dowFormat.format(date)
-
-            if (index == dayViews.size - 1) {
-                dayBinding.weekItemRoot.background = requireContext().getDrawable(R.drawable.bg_week_chip_selected)
-                dayBinding.tvDay.setTextColor(requireContext().getColor(R.color.white))
-            } else {
-                dayBinding.weekItemRoot.background = requireContext().getDrawable(R.drawable.bg_week_chip)
-                dayBinding.tvDay.setTextColor(requireContext().getColor(R.color.text_primary))
-            }
-
-            calendar.add(Calendar.DATE, 1)
-        }
     }
+
 
     private fun setupRecyclerView() {
         journalAdapter = JournalAdapter()
@@ -217,7 +196,9 @@ class JournalFragment : Fragment() {
             // 로딩 처리
         }
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            // 에러 처리
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
