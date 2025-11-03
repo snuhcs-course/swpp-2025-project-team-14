@@ -39,197 +39,104 @@
         app:layout_constraintTop_toBottomOf="@id/dividerTop" >
 
         <LinearLayout
-            android:id="@+id/layoutSequentialWriting"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="15dp">
-
-                <com.google.android.material.card.MaterialCardView
-                    style="@style/CardViewStyle"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="50"
-                    android:layout_marginRight="7.5dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="7.5dp" >
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="연속 작성일"
-                            android:textColor="#636779"
-                            android:textSize="13sp" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvSequetialDays"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="12일"
-                            android:textColor="#2D3142"
-                            android:textStyle="bold"
-                            android:textSize="18sp"/>
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    style="@style/CardViewStyle"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="50"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="7.5dp" >
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="7.5dp">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="최대 연속 작성일"
-                            android:textColor="#636779"
-                            android:textSize="13sp" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvMostSequetialDays"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="12일"
-                            android:textColor="#2D3142"
-                            android:textStyle="bold"
-                            android:textSize="18sp"/>
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
-
-            <!-- 1) 요약 카드 -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CardViewStyle"
-                android:id="@+id/cardSummary"
+                android:id="@+id/cardPeriod"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp">
+                android:layout_marginBottom="15dp"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="15dp">
 
+                    <!-- 기간 라벨 + 날짜 Pill -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvPeriodLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            android:text="기간"
+                            android:textColor="#636779"
+                            android:textSize="14sp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvPeriodRange"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintRight_toRightOf="parent"
+                            android:backgroundTint="#EDE7DE"
+                            android:gravity="center"
+                            android:minWidth="220dp"
+                            android:paddingHorizontal="16dp"
+                            android:text="2025.09.01–2025.09.30"
+                            android:textColor="#2D3142"
+                            android:textSize="14sp"
+                            android:background="@drawable/textview_rounded_bg"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- 기간 프리셋 버튼: 주간 / 월간 / 사용자 지정 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
                         android:gravity="center"
-                        android:weightSum="3">
+                        android:orientation="horizontal">
 
-                        <LinearLayout
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnWeekly"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="8dp"
                             android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                            android:text="주간"
+                            android:textColor="#2D3142"
+                            app:cornerRadius="14dp"
+                            app:backgroundTint="#EDE7DE" />
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="전체기록"
-                                android:textColor="#636779"
-                                android:textSize="13sp" />
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:id="@+id/tvStreakDays"
-                                android:layout_marginTop="5dp"
-                                android:background="@drawable/textview_rounded_bg"
-                                android:paddingVertical="5dp"
-                                android:paddingHorizontal="10dp"
-                                android:text="12회"
-                                android:textColor="#2D3142"
-                                android:textStyle="bold"
-                                android:textSize="18sp"/>
-                        </LinearLayout>
-
-                        <LinearLayout
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnMonthly"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginHorizontal="8dp"
                             android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                            android:text="월간"
+                            android:textColor="#2D3142"
+                            app:cornerRadius="14dp"
+                            app:backgroundTint="#EDE7DE" />
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="감정 기록"
-                                android:textColor="#636779"
-                                android:textSize="13sp"/>
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:id="@+id/tvLongestStreak"
-                                android:layout_marginTop="5dp"
-                                android:background="@drawable/textview_rounded_bg"
-                                android:paddingVertical="5dp"
-                                android:paddingHorizontal="10dp"
-                                android:text="56회"
-                                android:textColor="#2D3142"
-                                android:textStyle="bold"
-                                android:textSize="18sp"/>
-                        </LinearLayout>
-
-                        <LinearLayout
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCustom"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="8dp"
                             android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="일기 작성"
-                                android:textColor="#636779"
-                                android:textSize="13sp" />
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/tvTotalEntries"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="5dp"
-                                android:background="@drawable/textview_rounded_bg"
-                                android:paddingVertical="5dp"
-                                android:paddingHorizontal="10dp"
-                                android:text="128회"
-                                android:textColor="#2D3142"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
+                            android:text="사용자 지정"
+                            android:textSize="12sp"
+                            android:textColor="#2D3142"
+                            app:cornerRadius="14dp"
+                            app:backgroundTint="#EDE7DE" />
                     </LinearLayout>
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvSince"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="15dp"
-                        android:text="일기 작성 시작일로부터 342일 지났어요"
-                        android:textColor="#636779"
-                        android:textSize="13sp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -256,14 +163,10 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvEmotionRatio"
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/chartEmotionRatio"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:overScrollMode="never"
-                        android:nestedScrollingEnabled="false" />
-
+                        android:layout_height="220dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -298,6 +201,159 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 감정 칩 (카드 밖, 아래 줄) -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupEmotions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="15dp"
+                app:layout_constraintTop_toBottomOf="@+id/cardPeriod"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:singleLine="true"
+                app:singleSelection="true"
+                app:selectionRequired="false"
+                app:chipSpacingHorizontal="15dp"
+                app:checkedChip="@id/chipHappy">
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chipHappy"
+                    android:checkable="true"
+                    android:text="행복"
+                    android:textAllCaps="false"
+                    android:textColor="#2D3142"
+                    app:chipMinHeight="36dp"
+                    app:chipCornerRadius="18dp"
+                    app:chipBackgroundColor="#EDE7DE"
+                    app:ensureMinTouchTargetSize="false" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chipSad"
+                    android:checkable="true"
+                    android:text="슬픔"
+                    android:textColor="#2D3142"
+                    android:textAllCaps="false"
+                    app:chipMinHeight="36dp"
+                    app:chipCornerRadius="18dp"
+                    app:chipBackgroundColor="#EDE7DE"
+                    app:ensureMinTouchTargetSize="false" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chipAngry"
+                    android:checkable="true"
+                    android:text="분노"
+                    android:textAllCaps="false"
+                    android:textColor="#2D3142"
+                    app:chipMinHeight="36dp"
+                    app:chipCornerRadius="18dp"
+                    app:chipBackgroundColor="#EDE7DE"
+                    app:ensureMinTouchTargetSize="false" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chipAnxious"
+                    android:checkable="true"
+                    android:text="불안"
+                    android:textAllCaps="false"
+                    android:textColor="#2D3142"
+                    app:chipMinHeight="36dp"
+                    app:chipCornerRadius="18dp"
+                    app:chipBackgroundColor="#EDE7DE"
+                    app:ensureMinTouchTargetSize="false" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chipCalm"
+                    android:checkable="true"
+                    android:text="평온"
+                    android:textAllCaps="false"
+                    android:textColor="#2D3142"
+                    app:chipMinHeight="36dp"
+                    app:chipCornerRadius="18dp"
+                    app:chipBackgroundColor="#EDE7DE"
+                    app:ensureMinTouchTargetSize="false" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CardViewStyle"
+                android:id="@+id/cardEmotionEvents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                app:layout_constraintTop_toBottomOf="@+id/chipGroupEmotions"
+                >
+
+                <LinearLayout
+                    android:id="@+id/cardEmotionEventsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="최근 행복했던 이유는?"
+                        android:textColor="#636779"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="10dp"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1. 가족과 첫 유럽 여행을 계획했다"
+                        android:textColor="#2D3142"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="5dp"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:text="2. 오랜만의 친구 모임으로 재충전했다"
+                        android:textColor="#2D3142"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3. 프로젝트 마감 목표를 달성했다"
+                        android:textColor="#2D3142"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="5dp"/>
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4. 주말 등산을 컨디션 회복"
+                        android:textColor="#2D3142"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="5dp"/>
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5. 동료에게서 좋은 피드백을 받았다"
+                        android:textColor="#2D3142"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="5dp"/>
+
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- 4) 워드클라우드 -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CardViewStyle"
@@ -320,13 +376,11 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
-<!--                    <ImageView-->
-<!--                        android:id="@+id/ivWordCloud"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="180dp"-->
-<!--                        android:scaleType="fitCenter"-->
-<!--                        android:src="@drawable/ic_wordcloud_sample"-->
-<!--                        android:contentDescription="@null" />-->
+                    <FrameLayout
+                        android:id="@+id/wordCloudView"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:layout_margin="15dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
