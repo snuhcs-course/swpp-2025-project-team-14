@@ -8,12 +8,14 @@ import com.example.mindlog.features.statistics.data.repository.FakeStatisticsRep
 import com.example.mindlog.features.statistics.domain.model.EmotionRatio
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,8 +26,13 @@ class StatisticsViewModel @Inject constructor(
 
     data class UiState(
         val isLoading: Boolean = false,
+        val startDate: LocalDate = LocalDate.now().minusMonths(1),
+        val endDate: LocalDate = LocalDate.now(),
         val emotionRatios: List<EmotionRatio> = emptyList(),   // 감정 비율
         val emotionTrends: List<EmotionTrend> = emptyList(),   // 감정 변화
+        val emotion: String = "행복",
+        val emotionEvents: List<String> = emptyList(),
+        val journalKeywords: List<String> = emptyList(),
         val error: String? = null
     )
 
@@ -35,16 +42,46 @@ class StatisticsViewModel @Inject constructor(
     fun load() = viewModelScope.launch(dispatcher.io) {
         _state.update { it.copy(isLoading = true) }
 
-        when (val result = repository.getStatistics()) {
-            is Result.Success -> _state.update {
-                it.copy(
-                    isLoading = false,
-                    emotionRatios = result.data.emotionRatios,
-                    emotionTrends = result.data.emotionTrends
-                )
-            }
+        val emotion = _state.value.emotion
+        val ratio = async { repository.getEmotionRatio() }
+        val trend = async { repository.getEmotionTrend() }
+        val events = async { repository.getEmotionEvents(emotion) }
+        val keywords = async { repository.getJournalKeywords() }
 
-            is Result.Error -> _state.update { it.copy(isLoading = false, error = result.message) }
+        val emotionRatioResult = ratio.await()
+        val emotionTrendResult = trend.await()
+        val eventResult = events.await()
+        val keywordsResult = keywords.await()
+
+        _state.update { state ->
+            state.copy(
+                isLoading = false,
+                emotionRatios = (emotionRatioResult as? Result.Success)?.data ?: emptyList(),
+                emotionTrends = (emotionTrendResult as? Result.Success)?.data ?: emptyList(),
+                emotionEvents = (eventResult as? Result.Success)?.data ?: emptyList(),
+                journalKeywords = (keywordsResult as? Result.Success)?.data ?: emptyList(),
+                error = listOfNotNull(
+                    (emotionRatioResult as? Result.Error)?.message,
+                    (emotionTrendResult as? Result.Error)?.message,
+                    (eventResult as? Result.Error)?.message,
+                    (keywordsResult as? Result.Error)?.message
+                ).firstOrNull()
+            )
+        }
+    }
+
+    fun setEmotion(emotion: String) = viewModelScope.launch(dispatcher.io) {
+        _state.update { it.copy(isLoading = true, emotion = emotion) }
+
+        val eventsResult = repository.getEmotionEvents(emotion)
+
+        _state.update { s ->
+            s.copy(
+                isLoading = false,
+                emotion = emotion,
+                emotionEvents = (eventsResult as? Result.Success)?.data ?: emptyList(),
+                error = (eventsResult as? Result.Error)?.message
+            )
         }
     }
 }

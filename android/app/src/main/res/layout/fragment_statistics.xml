@@ -249,20 +249,6 @@
                     style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/chipAngry"
-                    android:checkable="true"
-                    android:text="분노"
-                    android:textAllCaps="false"
-                    android:textColor="#2D3142"
-                    app:chipMinHeight="36dp"
-                    app:chipCornerRadius="18dp"
-                    app:chipBackgroundColor="#EDE7DE"
-                    app:ensureMinTouchTargetSize="false" />
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.Material3.Chip.Assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:id="@+id/chipAnxious"
                     android:checkable="true"
                     android:text="불안"
@@ -277,9 +263,23 @@
                     style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/chipCalm"
+                    android:id="@+id/chipLethargy"
                     android:checkable="true"
-                    android:text="평온"
+                    android:text="무기력"
+                    android:textAllCaps="false"
+                    android:textColor="#2D3142"
+                    app:chipMinHeight="36dp"
+                    app:chipCornerRadius="18dp"
+                    app:chipBackgroundColor="#EDE7DE"
+                    app:ensureMinTouchTargetSize="false" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chipExciting"
+                    android:checkable="true"
+                    android:text="흥미"
                     android:textAllCaps="false"
                     android:textColor="#2D3142"
                     app:chipMinHeight="36dp"
@@ -310,7 +310,7 @@
                         android:text="최근 행복했던 이유는?"
                         android:textColor="#636779"
                         android:textSize="13sp"
-                        android:layout_marginBottom="10dp"/>
+                        android:layout_marginBottom="15dp"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
@@ -318,12 +318,12 @@
                         android:text="1. 가족과 첫 유럽 여행을 계획했다"
                         android:textColor="#2D3142"
                         android:textSize="14sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:layout_marginBottom="7dp"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
+                        android:layout_marginBottom="7dp"
                         android:text="2. 오랜만의 친구 모임으로 재충전했다"
                         android:textColor="#2D3142"
                         android:textSize="14sp" />
@@ -334,21 +334,23 @@
                         android:text="3. 프로젝트 마감 목표를 달성했다"
                         android:textColor="#2D3142"
                         android:textSize="14sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:layout_marginBottom="7dp"/>
+
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="4. 주말 등산을 컨디션 회복"
                         android:textColor="#2D3142"
                         android:textSize="14sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:layout_marginBottom="7dp"/>
                     <com.google.android.material.textview.MaterialTextView
+
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="5. 동료에게서 좋은 피드백을 받았다"
                         android:textColor="#2D3142"
                         android:textSize="14sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:layout_marginBottom="7dp"/>
 
 
                 </LinearLayout>
@@ -359,7 +361,8 @@
                 style="@style/CardViewStyle"
                 android:id="@+id/cardWordCloud"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="120dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
