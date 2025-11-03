@@ -8,6 +8,7 @@ from app.features.journal.models import Journal, JournalImage, JournalKeyword
 class KeywordEmotionAssociationItem(BaseModel):
     keyword: str
     emotion: str
+    summary: str
     weight: float = Field(..., ge=0.0, le=1.0, description="association (0..1)")
 
     @staticmethod
@@ -17,6 +18,7 @@ class KeywordEmotionAssociationItem(BaseModel):
         return KeywordEmotionAssociationItem(
             keyword=journal_keyword.keyword,
             emotion=journal_keyword.emotion,
+            summary=journal_keyword.summary,
             weight=journal_keyword.weight,
         )
 
@@ -48,7 +50,6 @@ class JournalResponse(BaseModel):
     emotions: list[JournalEmotionResponse]
     keywords: list[KeywordEmotionAssociationItem]
     image_s3_keys: str | None = None
-    summary: str | None = None
     gratitude: str | None = None
     created_at: datetime
 
@@ -69,7 +70,6 @@ class JournalResponse(BaseModel):
                 for keyword in journal.keywords
             ],
             image_s3_keys=journal.image.s3_key if journal.image else None,
-            summary=journal.summary,
             gratitude=journal.gratitude,
             created_at=journal.created_at,
         )
