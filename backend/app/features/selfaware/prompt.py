@@ -4,13 +4,11 @@ from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 
 CATEGORIES = [
-    ("Growth & Self-Actualization", "성장과 자기실현"),
-    ("Relationships & Connection",  "관계와 연결"),
-    ("Security & Stability",        "안정과 안전"),
-    ("Freedom & Independence",      "자유와 자율"),
-    ("Achievement & Influence",     "성취와 영향력"),
-    ("Enjoyment & Fulfillment",     "즐거움과 만족"),
-    ("Ethics & Transcendence",      "윤리와 초월"),
+    ("Neuroticism", "불안정성"),
+    ("Extraversion", "외향성"),
+    ("Openness to Experience", "개방성"),
+    ("Agreeableness", "수용성"),
+    ("Conscientiousness", "성실성"),
 ]
 CAT_EN = [en for en, _ in CATEGORIES]
 CAT_KO = {en: ko for en, ko in CATEGORIES}
@@ -48,13 +46,11 @@ category_prompt = ChatPromptTemplate.from_template(
     """다음 일기 요약을 분석하여:
     1. 주요 감정과 그 이유를 분석해주세요
     2. 다음 가치 카테고리 중 일기 내용과 가장 관련이 깊은 1-2개를 선택해주세요:
-       - 성장과 자기실현 (Growth & Self-Actualization)
-       - 관계와 연결 (Relationships & Connection) 
-       - 안정과 안전 (Security & Stability)
-       - 자유와 자율 (Freedom & Independence)
-       - 성취와 영향력 (Achievement & Influence)
-       - 즐거움과 만족 (Enjoyment & Fulfillment)
-       - 윤리와 초월 (Ethics & Transcendence)
+       - 불안정성 (Neuroticism)
+       - 외향성 (Extraversion)
+       - 개방성 (Openness to Experience)
+       - 수용성 (Agreeableness)
+       - 성실성 (Conscientiousness)
 
     일기 요약:
     {summary}
@@ -141,8 +137,7 @@ class ValueScoreStructure(BaseModel):
         description=(
             "Choose **one** category that best represents the value expressed "
             "in the user's response. Available options: "
-            "[Growth & Self-Actualization, Relationships & Connection, Security & Stability, "
-            "Freedom & Independence, Achievement & Influence, Enjoyment & Fulfillment, Ethics & Transcendence]."
+            "[Neuroticism, Extraversion, Openness to Experience, Agreeableness, Conscientiousness]."
         )
     )
     confidence: float = Field(
@@ -209,15 +204,12 @@ class ValueMapAnalysisStructure(BaseModel):
 value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
 당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
 
-다음은 한 사람의 7가지 가치관 분야별 점수(intensity)입니다:
-
-- 성장과 자기실현 (Growth & Self-Actualization): {score_0}
-- 관계와 연결 (Relationships & Connection): {score_1}
-- 안정과 안전 (Security & Stability): {score_2}
-- 자유와 자율 (Freedom & Independence): {score_3}
-- 성취와 영향력 (Achievement & Influence): {score_4}
-- 즐거움과 만족 (Enjoyment & Fulfillment): {score_5}
-- 윤리와 초월 (Ethics & Transcendence): {score_6}
+다음은 한 사람의 5가지 가치관 분야별 점수(intensity)입니다:
+- 불안정성 (Neuroticism): {score_0}
+- 외향성 (Extraversion): {score_1}
+- 개방성 (Openness to Experience): {score_2}
+- 수용성 (Agreeableness): {score_3}
+- 성실성 (Conscientiousness): {score_4}
 
 이 정보를 바탕으로:
 1. `comment`: 위 사람의 가치관과 성향을 자연스럽게 요약한 **한 문장짜리 코멘트**를 작성하세요.
@@ -262,7 +254,7 @@ value_score_prompt = ChatPromptTemplate.from_template(
     - Detect up to 6 concrete 'values' (e.g., Family, Freedom, Achievement, Health, Authenticity).
     - For each value, return:
     - value_name (english canonical if possible)
-    - category_key (one of: 'Growth & Self-Actualization','Relationships & Connection','Security & Stability','Freedom & Independence','Achievement & Influence','Enjoyment & Fulfillment','Ethics & Transcendence')
+    - category_key (one of: 'Neuroticism', 'Extraversion', 'Openness to Experience', 'Agreeableness', 'Conscientiousness')
     - confidence [0..1]
     - intensity [0..1] (how strongly the value was expressed)
     - polarity in [-1, 0, +1]

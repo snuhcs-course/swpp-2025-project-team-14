@@ -371,8 +371,6 @@ class ValueMapService:
              "score_1": value_map.score_1,
              "score_2": value_map.score_2,
              "score_3": value_map.score_3,
-             "score_4": value_map.score_4,
-             "score_5": value_map.score_5,
-             "score_6": value_map.score_6,})
+             "score_4": value_map.score_4,})
         assert type(response) == ValueMapAnalysisStructure
         return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response.personality_insight, comment = response.comment)
