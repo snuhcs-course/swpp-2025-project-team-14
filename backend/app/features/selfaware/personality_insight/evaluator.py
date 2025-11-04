@@ -14,9 +14,6 @@ import json
 import datetime
 import collections
 
-import bottle
-
-
 def evaluate(Q, Sex, Age, flag = True):
     items = 31  # shortipipneo
 
