@@ -1,12 +1,13 @@
 from datetime import date, datetime
 from typing import Annotated
 import asyncio
-
+from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
 from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
 from app.features.user.models import User
+from app.features.selfaware.models import Question
 from app.features.selfaware.service import (
     QuestionService,
     AnswerService,
@@ -109,8 +110,12 @@ def create_or_get_today_question(
     존재하지 않으면 새로운 질문을 생성하여 저장한 후 반환합니다.
     """
     question = question_service.get_questions_by_date(user.id, date)
-    if not question: 
-        question = question_service.generate_question(user.id)
+    if not question:
+        try: 
+            question = question_service.generate_question(user.id)
+        except IntegrityError:
+            question = question_service.get_questions_by_date(user.id, date)
+        assert type(question) == Question
         return QAResponse(question=QuestionResponse.from_question(question))
     else:
         answer = answer_service.get_answer_by_question(question.id)

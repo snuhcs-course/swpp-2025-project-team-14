@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON, Float
+from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON, Float, Date, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -15,6 +15,9 @@ def utcnow() -> datetime:
 
 class Question(Base):
     __tablename__ = "questions"
+    __table_args__ = (
+        UniqueConstraint("user_id", "date", name="uq_user_date"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
@@ -22,6 +25,8 @@ class Question(Base):
     question_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # single_category | multi_category | personalized_category
     text: Mapped[str] = mapped_column(Text, nullable=False)
     
+    date: Mapped[date] = mapped_column(Date, default=lambda: utcnow().date(), nullable=False)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     user: Mapped[User] = relationship(back_populates="questions")
@@ -95,16 +100,13 @@ class ValueMap(Base):
     score_2: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     score_3: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     score_4: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
-    score_5: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
-    score_6: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
 
     count_0: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     count_1: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     count_2: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     count_3: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
     count_4: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
-    count_5: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
-    count_6: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
+
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
