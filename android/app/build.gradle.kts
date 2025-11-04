@@ -27,6 +27,7 @@ android {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
             buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
+            // buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/v1/\"")
         }
         release {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
@@ -45,6 +46,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -65,10 +67,18 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.7.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+    // Dependency for visualization
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.patrykandpatrick.vico:views:1.14.0")
+    implementation("com.patrykandpatrick.vico:compose:1.14.0")
+    implementation("androidx.webkit:webkit:1.10.0")
 
     // Retrofit (Gson 컨버터 포함)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Hilt (버전 통일: 2.52 권장)
     implementation("com.google.dagger:hilt-android:2.52")
