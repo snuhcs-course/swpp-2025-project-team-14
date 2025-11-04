@@ -35,8 +35,10 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private var answerWatcher: TextWatcher? = null
     private var suppressAnswerTextChange = false
     private var forceOverlay: Boolean = false
+    private var radarInitDone = false
     private var lastRadarCats: List<String>? = null
     private var lastRadarScores: List<Float>? = null
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
@@ -68,6 +70,10 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.state.collect { s ->
+                    // Show spinner if loading question, submitting, or loading value map (if present)
+                    val isLoading = s.isLoading
+                    binding.progressValueMap.isVisible = isLoading
+
                     val shouldShowOverlay = forceOverlay || s.isSubmitting || s.isAnsweredToday
                     binding.completionOverlay.isVisible = shouldShowOverlay
                     binding.groupQuestion.isVisible = !shouldShowOverlay
@@ -100,12 +106,12 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                     }
 
                     // 카테고리/점수 안전 매핑 + 빈 차트 방어
-                    val categories = s.valueCategories
-                    val scores = s.categoryScores.map { (it.score ?: 0).toFloat() }
+                    val categories = s.valueMap.map { it.categoryKo }
+                    val scores = s.valueMap.map { (it.score ?: 0).toFloat() }
                     val chartEmpty = (binding.radar.data == null || binding.radar.data.dataSetCount == 0)
                     val needRender = chartEmpty || lastRadarCats != categories || lastRadarScores != scores
 
-                    val visible = s.categoryScores.isNotEmpty()
+                    val visible = s.valueMap.isNotEmpty()
                     if (needRender) {
                         renderRadar(binding.radar, categories, scores)
                         lastRadarCats = categories.toList()
@@ -127,13 +133,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                         chip.text = value
                         chip.isVisible = value.isNotBlank()
                     }
-
-                    binding.tvPersonalityInsight.text =
-                        if (s.personalityInsight.isNotBlank()) s.personalityInsight
-                        else "성격 및 가치 분석 결과를 불러오는 중이에요..."
-                    binding.tvComment.text =
-                        if (s.comment.isNotBlank()) s.comment
-                        else "AI 코멘트를 불러오는 중이에요..."
                 }
             }
         }
@@ -165,48 +164,45 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             chart.clear(); return
         }
 
-        val entries = scores.map { RadarEntry(it ) }
-
+        // 1) 데이터 생성
+        val entries = scores.map { RadarEntry(it) }
         val set = RadarDataSet(entries, "").apply {
-            // 외각선 설정
             color = Color.parseColor("#64B5F6")
             lineWidth = 2f
             setDrawValues(false)
             setDrawHighlightIndicators(false)
-            // 내부 설정
             setDrawFilled(true)
             fillColor = Color.parseColor("#64B5F6")
-            fillAlpha = 85                                 // 살짝 투명
+            fillAlpha = 85
         }
 
+        // 2) 이전 상태 정리 후 데이터 교체
+        chart.clear()
+        chart.data = RadarData(set)
+        chart.setExtraOffsets(24f, 28f, 24f, 28f)
+
+        // 3) 스타일/축 설정 (기존 그대로)
         chart.apply {
-            data = RadarData(set)
-
-            setExtraOffsets(24f, 28f, 24f, 28f)
-
-            // 배경/웹(거미줄) 스타일
             setBackgroundColor(Color.TRANSPARENT)
             setDrawMarkers(false)
             description.isEnabled = false
             legend.isEnabled = false
 
-            webColor = Color.parseColor("#E3E5EC")        // 바깥선
-            webColorInner = Color.parseColor("#A5A5A5")   // 안쪽선
+            webColor = Color.parseColor("#E3E5EC")
+            webColorInner = Color.parseColor("#A5A5A5")
             webLineWidth = 1.2f
             webLineWidthInner = 1f
             webAlpha = 180
 
-            // X축 = 카테고리 라벨
             xAxis.apply {
                 valueFormatter = IndexAxisValueFormatter(categories)
-                textColor = Color.parseColor("#636779")   // 라벨 색
+                textColor = Color.parseColor("#636779")
                 textSize = 12f
                 yOffset = 12f
                 xOffset = 4f
                 position = XAxis.XAxisPosition.TOP
             }
 
-            // Y축 = 값(숫자) 라벨은 숨김
             yAxis.apply {
                 axisMinimum = 0f
                 axisMaximum = 100f
@@ -214,11 +210,18 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                 setDrawLabels(false)
             }
 
-            // 터치/애니메이션
             setTouchEnabled(false)
-            animateXY(500, 500)
+        }
 
-            invalidate()
+        // 4) 첫 렌더는 애니메이션 없이 정확히 그린 뒤, 다음 프레임에 애니메이션
+        chart.notifyDataSetChanged()
+        chart.invalidate()
+
+        if (!radarInitDone) {
+            radarInitDone = true
+            chart.post { chart.animateXY(500, 500) }   // 레이아웃 이후 애니메이션
+        } else {
+            chart.animateXY(500, 500)
         }
     }
 

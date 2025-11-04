@@ -192,6 +192,18 @@
                         android:textColor="#636779"
                         android:textSize="14sp" />
 
+                    <!-- cardValueMap 안의 groupValueMapLoading에 추가 -->
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/progressValueMap"
+                        style="@style/Widget.Material3.CircularProgressIndicator"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        app:indicatorSize="48dp"
+                        app:trackThickness="4dp"
+                        app:indicatorColor="#64B5F6"
+                        android:visibility="gone"/>
+
                     <com.github.mikephil.charting.charts.RadarChart
                         android:id="@+id/radar"
                         android:layout_width="match_parent"
@@ -209,46 +221,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 카드 3 : 성격 및 성향 분석 -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardPersonalityInsight"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                app:cardBackgroundColor="#F3F1EB"
-                app:cardUseCompatPadding="false"
-                app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardValueMap"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvPersonalityInsightTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="성격 및 성향 분석"
-                        android:textColor="#636779"
-                        android:textSize="14sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvPersonalityInsight"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="당신의 성격과 성향에 대한 분석 결과가 표시됩니다."
-                        android:textColor="#2D3142"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="2dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
             <!-- 카드 4 : 핵심 가치 키워드 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTopValueScores"
@@ -259,7 +231,7 @@
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
                 app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardPersonalityInsight"
+                app:layout_constraintTop_toBottomOf="@id/cardValueMap"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
@@ -352,11 +324,10 @@
                     </com.google.android.material.chip.ChipGroup>
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvComment"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="당신의 가치에 대한 AI 코멘트가 표시됩니다."
+                        android:text="사용자님이 중시하는 가치들은 위와 같아요."
                         android:textColor="#636779"
                         android:textSize="14sp" />
                 </LinearLayout>

@@ -45,16 +45,12 @@ class SelfAwareViewModel @Inject constructor(
         val questionText: String? = null,
         val answerText: String = "",
 
-        val valueCategories: List<String> = listOf("성장", "관계", "안정", "자유", "성취", "재미", "윤리"),
-        val categoryScores: List<CategoryScore> = emptyList(),
+        val valueMap: List<CategoryScore> = emptyList(),
         val topValueScores: List<ValueScore> = emptyList(),
-        val personalityInsight: String = "",
-        val comment: String = "",
 
-        // 로딩/에러
         val isLoadingQuestion: Boolean = true,
         val isSubmitting: Boolean = false,
-        val isLoading: Boolean = false,
+        val isLoading: Boolean = true,
 
         val error: String? = null
     )
@@ -76,25 +72,20 @@ class SelfAwareViewModel @Inject constructor(
             coroutineScope {
                 val valueMap = async { getValueMapUseCase(Unit) }
                 val topValues = async { getTopValueScoresUseCase(Unit) }
-                val insight = async { getPersonalityInsightUseCase(Unit) }
                 val todayQA = async { getTodayQAUseCase(date) }
 
                 // 결과 병합
                 val valueMapRes = valueMap.await()
                 val topRes = topValues.await()
-                val insightRes = insight.await()
                 val todayQARes = todayQA.await()
 
                 val updated = _state.value.copy(
-                    categoryScores = (valueMapRes as? Result.Success)?.data?.categoryScores ?: emptyList(),
+                    valueMap = (valueMapRes as? Result.Success)?.data?.categoryScores ?: emptyList(),
                     topValueScores = (topRes as? Result.Success)?.data?.valueScores ?: emptyList(),
-                    personalityInsight = (insightRes as? Result.Success)?.data?.personalityInsight.orEmpty(),
-                    comment = (insightRes as? Result.Success)?.data?.comment.orEmpty(),
                     isLoading = false,
                     error = listOfNotNull(
                         (valueMapRes as? Result.Error)?.message,
                         (topRes as? Result.Error)?.message,
-                        (insightRes as? Result.Error)?.message
                     ).firstOrNull()
                 )
 
