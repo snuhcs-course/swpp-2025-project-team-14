@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.core.model.Keyword
+import com.example.mindlog.features.journal.data.dto.EmotionResponse
 import com.example.mindlog.features.journal.domain.usecase.DeleteJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.ExtractKeywordsUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
@@ -50,6 +51,7 @@ class JournalEditViewModel @Inject constructor(
     val gratitude = MutableLiveData<String>()
 
     val keywords = MutableLiveData<List<Keyword>>()
+    val emotions = MutableLiveData<List<EmotionResponse>>()
     val selectedImageUri = MutableStateFlow<Uri?>(null)
     val existingImageUrl = MutableStateFlow<String?>(null)
 
@@ -80,6 +82,7 @@ class JournalEditViewModel @Inject constructor(
                 } else {
                     existingImageUrl.value = null
                 }
+                emotions.value = journal.emotions
 
                 val uiKeywords = journal.keywords?.map { dto ->
                     Keyword(

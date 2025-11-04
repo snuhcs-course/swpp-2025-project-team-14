@@ -136,16 +136,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- 키워드 레이블 -->
-        <TextView
-            android:id="@+id/label_keywords"
-            android:layout_width="wrap_content"
+        <!-- ✨ [핵심 추가] 감정을 표시할 FlexboxLayout -->
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/flexbox_emotions"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="키워드"
-            android:textColor="@color/text_secondary"
-            android:textSize="16sp"
+            app:flexWrap="wrap"
             android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_gratitude"
             tools:visibility="visible" />
@@ -156,11 +155,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:flexWrap="wrap"
             android:visibility="gone"
+            app:flexWrap="wrap"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/label_keywords"
+            app:layout_constraintTop_toBottomOf="@id/flexbox_emotions"
             tools:visibility="visible" />
 
 
