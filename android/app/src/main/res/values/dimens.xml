@@ -24,4 +24,5 @@
     <dimen name="week_item_height">48dp</dimen>
     <dimen name="week_item_hpad">8dp</dimen>
     <dimen name="week_item_vpad">6dp</dimen>
+    <dimen name="screen_padding_top">24dp</dimen>
 </resources>
