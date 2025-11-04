@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mindlog"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -73,7 +73,10 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.patrykandpatrick.vico:views:1.14.0")
     implementation("com.patrykandpatrick.vico:compose:1.14.0")
-    implementation("androidx.webkit:webkit:1.10.0")
+    implementation("com.github.jolenechong:androidWordCloud:1.0.0") {
+        exclude(group="com.sun.xml.bind", module="jaxb-core")
+        exclude(group="com.sun.xml.bind", module="jaxb-impl")
+    }
 
     // Retrofit (Gson 컨버터 포함)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

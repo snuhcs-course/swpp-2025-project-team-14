@@ -1,23 +1,34 @@
 package com.example.mindlog.features.analysis.presentation
 
+import android.graphics.Color
+import android.graphics.Rect
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mindlog.R
+import com.example.mindlog.databinding.FragmentAnalysisBinding
+import com.google.android.material.textview.MaterialTextView
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
-class AnalysisFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return TextView(requireContext()).apply {
-            text = "Analysis 화면 (준비 중)"
-            textSize = 18f
-            textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-            setPadding(0, 400, 0, 0)
-        }
+@AndroidEntryPoint
+class AnalysisFragment : Fragment(R.layout.fragment_analysis) {
+
+    private var _binding: FragmentAnalysisBinding? = null
+    private val binding get() = _binding!!
+    private val viewModel: AnalysisViewModel by viewModels()
+    private lateinit var valueScoreAdapter: ValueScoreAdapter
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentAnalysisBinding.bind(view)
     }
 }
