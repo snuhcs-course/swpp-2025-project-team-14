@@ -235,15 +235,13 @@ class ValueScoreService:
         assert type(response) == MultiValueScoreStructure
         detected_values = response.detected_values
         
-        print("detected_values:", detected_values)
+        # print("detected_values:", detected_values)
 
         # 혹은 value_map을 user가 등록되었을 때, craete해도 좋을 듯 합니다
         value_map = self.value_map_repository.get_by_user(user_id)
         if not value_map:
             print("value_map created")
             self.value_map_repository.create_value_map(user_id=user_id)
-        
-        print(value_map)
 
         for v in detected_values:
             value_score = self.value_score_repository.create_value_score(
@@ -329,10 +327,10 @@ class ValueMapService:
         }) for i in range(6)]
 
         for i in range(6):        
-            if responses[i] != 20:
+            if len(responses[i]) != 20:
                 raise
         total_response = responses[0] + responses[1] + responses[2] + responses[3] + responses[4] + responses[5]
-
+        print("valid big 5 score generated")
         return total_response
         
     def evaluate_big_5_score(self, user_id, age, sex):
@@ -371,6 +369,11 @@ class ValueMapService:
              "score_4": value_map.score_4,})
         assert type(response) == ValueMapAnalysisStructure
 
-        # personality_insight = self.get_comment_from_big_5_score(user_id, 23, "Male")
+        try:
+            personality_insight = self.get_comment_from_big_5_score(user_id, 23, "Male")
+            print("personality_insight successfully generated from big 5")
+        except:
+            personality_insight = response.personality_insight
+            print("personality_insight generated from prompting")
 
-        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = response.personality_insight, comment = response.comment)
+        return self.value_map_repository.generate_comment(user_id = user_id, personality_insight = personality_insight, comment = response.comment)
