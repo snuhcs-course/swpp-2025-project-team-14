@@ -24,11 +24,14 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis) {
     private var _binding: FragmentAnalysisBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AnalysisViewModel by viewModels()
-    private lateinit var valueScoreAdapter: ValueScoreAdapter
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAnalysisBinding.bind(view)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
