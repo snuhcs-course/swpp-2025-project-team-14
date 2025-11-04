@@ -1,14 +1,7 @@
 from __future__ import annotations
 from typing import Annotated, List, Optional, Literal, Dict, Any, Tuple
-from fastapi import Depends
 from datetime import datetime, timezone, date
 import random
-import json
-import re
-
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
-
 from app.core.config import settings
 from dotenv import load_dotenv
 load_dotenv()
@@ -16,7 +9,6 @@ load_dotenv()
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
-from langchain.schema.runnable import RunnableMap
 
 from app.features.journal.models import Journal
 from app.features.journal.repository import JournalRepository
@@ -24,7 +16,6 @@ from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
 from app.features.selfaware.prompt import category_prompt, personalized_prompt, single_category_prompt, multi_category_prompt, value_score_structured_prompt, value_map_combined_structured_prompt, get_opposite_value_prompt
 from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnalysisStructure, OppositeValueStructure, JournalSummary
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
-from app.features.selfaware.value_map import analyze_personality
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
 
 from app.features.selfaware.personality_insight.score import questions, choices, prompt, NeoPiAnswers
