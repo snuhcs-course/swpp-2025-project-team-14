@@ -35,4 +35,5 @@ def get_value_map_service(db: Session = Depends(get_db_session)) -> ValueMapServ
     return ValueMapService(
         value_map_repository=ValueMapRepository(db),
         value_score_repository=ValueScoreRepository(db),
+        answer_repository=AnswerRepository(db),
     )
