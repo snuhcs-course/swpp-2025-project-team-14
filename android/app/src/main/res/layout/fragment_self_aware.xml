@@ -249,79 +249,98 @@
                         android:textColor="#636779"
                         android:textSize="14sp" />
 
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupValues"
+                    <LinearLayout
+                        android:id="@+id/chipGroupValuesContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        app:singleLine="true"
-                        app:chipSpacingHorizontal="10dp">
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipValueFirst"
-                            style="@style/Widget.Material3.Chip.Assist"
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupValuesRow1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="성장"
-                            android:textAllCaps="false"
-                            android:textColor="#2D3142"
-                            app:chipMinHeight="36dp"
-                            app:chipCornerRadius="18dp"
-                            app:chipBackgroundColor="@color/chip_bg_neutral"
-                            app:ensureMinTouchTargetSize="false"/>
+                            android:layout_gravity="center_horizontal"
+                            app:singleLine="true"
+                            app:chipSpacingHorizontal="15dp">
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipValueSecond"
-                            style="@style/Widget.Material3.Chip.Assist"
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipValueFirst"
+                                style="@style/Widget.Material3.Chip.Assist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="성장"
+                                android:textAllCaps="false"
+                                android:textColor="#2D3142"
+                                app:chipMinHeight="36dp"
+                                app:chipCornerRadius="18dp"
+                                app:chipBackgroundColor="@color/chip_bg_neutral"
+                                app:ensureMinTouchTargetSize="false" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipValueSecond"
+                                style="@style/Widget.Material3.Chip.Assist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="자유"
+                                android:textAllCaps="false"
+                                android:textColor="#2D3142"
+                                app:chipMinHeight="36dp"
+                                app:chipCornerRadius="18dp"
+                                app:chipBackgroundColor="@color/chip_bg_neutral"
+                                app:ensureMinTouchTargetSize="false" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipValueThird"
+                                style="@style/Widget.Material3.Chip.Assist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="관계"
+                                android:textAllCaps="false"
+                                android:textColor="#2D3142"
+                                app:chipMinHeight="36dp"
+                                app:chipCornerRadius="18dp"
+                                app:chipBackgroundColor="@color/chip_bg_neutral"
+                                app:ensureMinTouchTargetSize="false" />
+                        </com.google.android.material.chip.ChipGroup>
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupValuesRow2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="자유"
-                            android:textAllCaps="false"
-                            android:textColor="#2D3142"
-                            app:chipMinHeight="36dp"
-                            app:chipCornerRadius="18dp"
-                            app:chipBackgroundColor="@color/chip_bg_neutral"
-                            app:ensureMinTouchTargetSize="false"/>
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginTop="8dp"
+                            app:singleLine="true"
+                            app:chipSpacingHorizontal="15dp">
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipValueThird"
-                            style="@style/Widget.Material3.Chip.Assist"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="관계"
-                            android:textAllCaps="false"
-                            android:textColor="#2D3142"
-                            app:chipMinHeight="36dp"
-                            app:chipCornerRadius="18dp"
-                            app:chipBackgroundColor="@color/chip_bg_neutral"
-                            app:ensureMinTouchTargetSize="false"/>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipValueFourth"
+                                style="@style/Widget.Material3.Chip.Assist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="도전"
+                                android:textAllCaps="false"
+                                android:textColor="#2D3142"
+                                app:chipMinHeight="36dp"
+                                app:chipCornerRadius="18dp"
+                                app:chipBackgroundColor="@color/chip_bg_neutral"
+                                app:ensureMinTouchTargetSize="false" />
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipValueFourth"
-                            style="@style/Widget.Material3.Chip.Assist"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="도전"
-                            android:textAllCaps="false"
-                            android:textColor="#2D3142"
-                            app:chipMinHeight="36dp"
-                            app:chipCornerRadius="18dp"
-                            app:chipBackgroundColor="@color/chip_bg_neutral"
-                            app:ensureMinTouchTargetSize="false"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipValueFifth"
-                            style="@style/Widget.Material3.Chip.Assist"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="가족"
-                            android:textAllCaps="false"
-                            android:textColor="#2D3142"
-                            app:chipMinHeight="36dp"
-                            app:chipCornerRadius="18dp"
-                            app:chipBackgroundColor="@color/chip_bg_neutral"
-                            app:ensureMinTouchTargetSize="false"/>
-                    </com.google.android.material.chip.ChipGroup>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipValueFifth"
+                                style="@style/Widget.Material3.Chip.Assist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="가족"
+                                android:textAllCaps="false"
+                                android:textColor="#2D3142"
+                                app:chipMinHeight="36dp"
+                                app:chipCornerRadius="18dp"
+                                app:chipBackgroundColor="@color/chip_bg_neutral"
+                                app:ensureMinTouchTargetSize="false" />
+                        </com.google.android.material.chip.ChipGroup>
+                    </LinearLayout>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="match_parent"

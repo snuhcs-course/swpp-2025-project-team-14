@@ -214,7 +214,7 @@
                 app:singleLine="true"
                 app:singleSelection="true"
                 app:selectionRequired="false"
-                app:chipSpacingHorizontal="15dp"
+                app:chipSpacingHorizontal="10dp"
                 app:checkedChip="@id/chipHappy">
 
                 <com.google.android.material.chip.Chip
