@@ -23,6 +23,16 @@ android {
         buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
     }
 
+    // 🔹 추가: Signing configuration
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "my-release-key.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
@@ -33,6 +43,7 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
             buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release") // 🔹 추가
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
