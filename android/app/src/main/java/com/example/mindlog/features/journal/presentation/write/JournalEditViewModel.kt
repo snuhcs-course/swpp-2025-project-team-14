@@ -132,7 +132,6 @@ class JournalEditViewModel @Inject constructor(
         if (uri != null) {
             selectedImageUri.value = uri
             generatedImageBitmap.value = null // AI 이미지 초기화
-            existingImageUrl.value = null   // 기존 서버 이미지 초기화
         }
     }
 
@@ -154,7 +153,6 @@ class JournalEditViewModel @Inject constructor(
 
                 generatedImageBitmap.value = decodedBitmap
                 selectedImageUri.value = null
-                existingImageUrl.value = null
 
             } catch (e: Exception) {
                 aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
