@@ -21,18 +21,18 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    # ✅ 1️⃣ keystore 복원 (경로를 android/app 안으로)
+    # ✅ keystore는 android/app 안에 복원 (working-directory 고려)
     - name: Decode keystore
       run: |
-        mkdir -p android/app
-        echo "$KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
+        mkdir -p app
+        echo "$KEYSTORE_BASE64" | base64 --decode > app/my-release-key.jks
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
     - name: Grant execute permission to gradlew
       run: chmod +x gradlew
 
-    # ✅ 2️⃣ signed 빌드 수행
+    # ✅ signed APK 빌드
     - name: Build signed APK
       run: ./gradlew assembleRelease
       env:
@@ -41,7 +41,7 @@ jobs:
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-    # ✅ 3️⃣ 결과 확인 및 업로드
+    # ✅ 결과 확인 및 업로드
     - name: Show release folder contents
       run: ls -R app/build/outputs/apk || echo "No APK directory found"
 
