@@ -22,7 +22,7 @@ QuestionType = Literal[
 
 
 class CategoryExtractionResponse(BaseModel):
-    analysis: str = Field(description="일기의 주요 감정과 그 이유에 대한 분석")
+    analysis: str = Field(description="일기의 주요 감정과 그 이유에 대한 분석을 하나의 string 형태")
     categories: list[tuple[str, str]] = Field(description="관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태")
 
 class QuestionGenerationResponse(BaseModel):
@@ -136,6 +136,7 @@ class ValueScoreStructure(BaseModel):
             "Self-Efficacy, Orderliness, Dutifulness, Achievement-Striving, Self-Discipline, Cautiousness,"
             "Anxiety, Anger, Depression, Self-Consciousness, Immoderation, Vulnerability,"
             "Imagination, Artistic Interests, Emotionality, Adventurousness, Intellect, Liberalism]."
+            "Choose one in the options, translate it into **korean**."
         )
     )
     category_key: str = Field(
@@ -174,7 +175,7 @@ You are an assistant that analyzes diary entries to identify the user's underlyi
 Given the following question and answer, extract up to six personal values expressed in the user's response.
 
 Guidelines:
-- Write all output in **Korean**, except the value and category which should be in **English canonical form** (e.g., Neuroticism, Extraversion, Openness to Experience, Agreeableness, Conscientiousness).
+- Write all output in **Korean**, except category which should be in **English canonical form** (e.g., Neuroticism, Extraversion, Openness to Experience, Agreeableness, Conscientiousness).
 - Select the **single category** that best matches the main theme or motivation.
 - Assess your confidence and emotional intensity on a 0.0-1.0 scale.
 - Assign polarity as -1 for negative, 0 for neutral, +1 for positive sentiment.
@@ -225,8 +226,9 @@ value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
                                                                         
 이 정보를 바탕으로:
 1. `comment`: 위 사람의 가치관과 성향을 자연스럽게 요약한 **한 문장짜리 코멘트**를 작성하세요.
-2. `personality_insight`: 위 점수의 전반적 패턴을 해석하여, **2~3문장 분량의 심리적 통찰**을 작성하세요.
+2. `personality_insight`: 위 점수의 전반적 패턴을 해석하여, **3~4문장 분량의 심리적 통찰**을 작성하세요.
 3. 모든 출력은 한국어로 하세요.
+4. 모든 출력의 주어는 '당신'으로 통일하고, 사용자의 가치관을 친절히 설명해주듯이 답하세요.
 
 결과는 ValueMapAnalysisStructure에 맞게 구조화하세요.
 """)
