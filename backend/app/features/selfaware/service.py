@@ -318,7 +318,7 @@ class ValueMapService:
         neo_pi_choices   = choices
         neo_pi_prompt    = prompt
 
-        neo_pi_chain = neo_pi_prompt | llm | StrOutputParser()
+        neo_pi_chain = neo_pi_prompt | llm
         
         responses = [neo_pi_chain.invoke({
             "choices": neo_pi_choices,
@@ -326,10 +326,27 @@ class ValueMapService:
             "conversation": answers_text,
         }) for i in range(6)]
 
-        for i in range(6):        
-            if len(responses[i]) != 20:
-                raise
-        total_response = responses[0] + responses[1] + responses[2] + responses[3] + responses[4] + responses[5]
+        assert type(responses[0]) == NeoPiAnswers
+        assert type(responses[1]) == NeoPiAnswers
+        assert type(responses[2]) == NeoPiAnswers
+        assert type(responses[3]) == NeoPiAnswers
+        assert type(responses[4]) == NeoPiAnswers
+        assert type(responses[5]) == NeoPiAnswers
+
+        if len(responses[0].answers) != 20:
+            raise
+        if len(responses[1].answers) != 20:
+            raise   
+        if len(responses[2].answers) != 20:
+            raise   
+        if len(responses[3].answers) != 20:
+            raise   
+        if len(responses[4].answers) != 20:
+            raise   
+        if len(responses[5].answers) != 20:
+            raise       
+            
+        total_response = responses[0].answers + responses[1].answers + responses[2].answers + responses[3].answers + responses[4].answers + responses[5].answers
         print("valid big 5 score generated")
         return total_response
         
