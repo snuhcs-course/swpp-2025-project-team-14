@@ -356,6 +356,7 @@ class ValueMapService:
     
     def get_comment_from_big_5_score(self, user_id, age, sex):
         score_json = self.evaluate_big_5_score(user_id, age, sex)
+        print(score_json)
         parser = StrOutputParser()
         llm = ChatOpenAI(model="gpt-5-nano")
         big_5_chain = big_5_prompt | llm | parser

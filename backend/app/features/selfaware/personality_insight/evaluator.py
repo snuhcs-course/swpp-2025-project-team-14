@@ -14,7 +14,7 @@ import json
 import datetime
 import collections
 
-def evaluate(Q, Sex, Age, flag = True):
+def evaluate(Q, Sex, Age, flag = False):
     items = 31  # shortipipneo
 
     # Check sex and age
