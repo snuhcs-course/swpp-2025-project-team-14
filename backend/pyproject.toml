@@ -24,6 +24,7 @@ boto3 = "^1.40.51"
 langchain = "^0.3.27"
 openai = "^2.4.0"
 langchain-openai = "^0.3.35"
+tzdata = "^2025.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"

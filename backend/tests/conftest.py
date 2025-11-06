@@ -2,6 +2,7 @@ from collections.abc import Generator
 from typing import Any
 
 import pytest
+from passlib.context import CryptContext
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.testclient import TestClient
@@ -52,3 +53,40 @@ def client(db_session: Session):
         yield c
     # 오버라이드 원상복구
     del app.dependency_overrides[get_db_session]
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+@pytest.fixture(scope="function")
+def test_user(db_session: Session) -> User:
+    """
+    공용 테스트 사용자를 생성하고 DB에 저장하는 fixture
+    """
+    # test_me_success에 있던 사용자 생성 로직
+    user = User(
+        login_id="test_user",
+        hashed_password=pwd_context.hash("ValidPass123!"),
+        username="Test-User",
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture(scope="function")
+def auth_headers(client: TestClient, test_user: User) -> dict[str, str]:
+    """
+    공용 사용자로 로그인하고 인증 헤더(토큰)를 반환하는 fixture
+    """
+    login_data = {
+        "login_id": test_user.login_id,
+        "password": "ValidPass123!",  # test_user 생성 시 사용한 비밀번호
+    }
+    login_response = client.post("/api/v1/auth/login", json=login_data)
+    login_response_json = login_response.json()
+    access_token = login_response_json["data"]["access"]
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    return headers
