@@ -110,7 +110,7 @@ class JournalEditActivity : AppCompatActivity() {
                         finish()
                     }
                     is Result.Error -> {
-                        Toast.makeText(this@JournalEditActivity, result.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@JournalEditActivity, result.message, Toast.LENGTH_LONG).show()
                     }
                 }
             }

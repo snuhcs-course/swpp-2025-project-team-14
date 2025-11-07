@@ -82,11 +82,19 @@ class JournalWriteViewModel @Inject constructor(
         val galleryImageUri = selectedImageUri.value
         val aiGeneratedBitmap = generatedImageBitmap.value
 
-        if (currentTitle.isBlank() || currentContent.isBlank() || currentGratitude.isBlank()) {
-            viewModelScope.launch {
-                _saveResult.emit(Result.Error(message = "제목, 내용, 감사한 일을 모두 입력해주세요."))
+        when {
+            currentTitle.isBlank() -> {
+                viewModelScope.launch {
+                    _saveResult.emit(Result.Error(message = "제목을 입력해주세요."))
+                }
+                return
             }
-            return
+            currentContent.isBlank() -> {
+                viewModelScope.launch {
+                    _saveResult.emit(Result.Error(message = "오늘의 하루를 입력해주세요."))
+                }
+                return
+            }
         }
 
         viewModelScope.launch {

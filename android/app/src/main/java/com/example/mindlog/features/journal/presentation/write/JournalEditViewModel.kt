@@ -171,11 +171,19 @@ class JournalEditViewModel @Inject constructor(
         val newImageUri = selectedImageUri.value
         val aiGeneratedBitmap = generatedImageBitmap.value
 
-        if (newTitle.isBlank() || newContent.isBlank() || newGratitude.isBlank()) {
-            viewModelScope.launch {
-                _editResult.emit(Result.Error(message = "제목, 내용, 감사한 일을 모두 입력해주세요."))
+        when {
+            newTitle.isBlank() -> {
+                viewModelScope.launch {
+                    _editResult.emit(Result.Error(message = "제목을 입력해주세요."))
+                }
+                return
             }
-            return
+            newContent.isBlank() -> {
+                viewModelScope.launch {
+                    _editResult.emit(Result.Error(message = "오늘의 하루를 입력해주세요."))
+                }
+                return
+            }
         }
 
         val isTextChanged = originalData.title != newTitle ||
