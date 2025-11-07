@@ -108,6 +108,8 @@ class JournalRepository:
         if cursor is not None:
             query = query.filter(Journal.id < cursor)
 
+        query = query.order_by(Journal.id.desc())
+
         return query.limit(limit).all()
 
     def add_keywords_emotion_associations(
