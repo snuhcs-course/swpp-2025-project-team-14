@@ -346,7 +346,7 @@ class ValueMapService:
         if len(responses[5].answers) != 20:
             raise       
             
-        total_response = responses[0].answers + responses[1].answers + responses[2].answers + responses[3].answers + responses[4].answers + responses[5].answers
+        total_response = [0] + responses[0].answers + responses[1].answers + responses[2].answers + responses[3].answers + responses[4].answers + responses[5].answers
         print("valid big 5 score generated")
         return total_response
         
