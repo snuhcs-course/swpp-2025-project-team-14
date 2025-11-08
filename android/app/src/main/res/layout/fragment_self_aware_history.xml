@@ -57,7 +57,7 @@
             android:layout_marginEnd="8dp"
             android:text="기간 설정"
             android:textColor="#2D3142"
-            app:icon="@drawable/ic_calender"
+            app:icon="@drawable/ic_calendar"
             app:iconGravity="textStart"
             app:iconPadding="6dp"
             app:cornerRadius="12dp"
