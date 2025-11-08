@@ -34,7 +34,6 @@ class SelfAwareViewModel @Inject constructor(
     private val submitAnswerUseCase: SubmitAnswerUseCase,
     private val getValueMapUseCase: GetValueMapUseCase,
     private val getTopValueScoresUseCase: GetTopValueScoresUseCase,
-    private val getPersonalityInsightUseCase: GetPersonalityInsightUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
