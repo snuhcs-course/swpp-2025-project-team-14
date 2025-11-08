@@ -83,26 +83,15 @@ class TestSelfAwareRepository @Inject constructor() : SelfAwareRepository {
         return Result.Success(
             ValueMap(
                 categoryScores = listOf(
-                    CategoryScore("Growth","성장", 72),
-                    CategoryScore("Relationships","관계", 65),
-                    CategoryScore("Stability","안정", 58),
-                    CategoryScore("Freedom","자유", 61),
-                    CategoryScore("Achievement","성취", 70),
-                    CategoryScore("Fun","재미", 55),
-                    CategoryScore("Ethics","윤리", 68),
+                    CategoryScore("Neuroticism", "불안정성", 80),
+                    CategoryScore("Extroversion", "외향성", 60),
+                    CategoryScore("Openness","개방성", 50),
+                    CategoryScore("Agreeableness","수용성", 70),
+                    CategoryScore("Conscientiousness","성실성", 55),
                 ),
                 updatedAt = LocalDate.now()
             )
         )
     }
 
-    override suspend fun getPersonalityInsight(): Result<PersonalityInsight> {
-        return Result.Success(
-            PersonalityInsight(
-                personalityInsight = "호기심과 성취동기가 강해요.",
-                comment = "작은 성공을 빠르게 반복할 때 동기가 오래 유지됩니다.",
-                updatedAt = LocalDate.now()
-            )
-        )
-    }
 }
