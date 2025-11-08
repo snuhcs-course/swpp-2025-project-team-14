@@ -59,12 +59,4 @@ class SelfAwareMapper @Inject constructor() {
             updatedAt = parseLocalDateTime(dto.updatedAt)
         )
     }
-
-    fun toPersonalityInsight(dto: PersonalityInsightResponse): PersonalityInsight {
-        return PersonalityInsight(
-            comment = dto.comment,
-            personalityInsight = dto.personalityInsight,
-            updatedAt = parseLocalDateTime(dto.updatedAt)
-        )
-    }
 }

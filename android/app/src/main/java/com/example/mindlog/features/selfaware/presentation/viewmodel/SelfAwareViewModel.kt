@@ -13,7 +13,6 @@ import com.example.mindlog.features.selfaware.domain.usecase.GetTodayQAUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.SubmitAnswerUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetValueMapUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTopValueScoresUseCase
-import com.example.mindlog.features.selfaware.domain.usecase.GetPersonalityInsightUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
