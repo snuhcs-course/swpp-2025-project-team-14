@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
-import com.example.mindlog.features.statistics.data.repository.FakeStatisticsRepository
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
+import com.example.mindlog.features.statistics.domain.model.JournalKeyword
+import com.example.mindlog.features.statistics.domain.model.JournalStatistics
+import com.example.mindlog.features.statistics.domain.usecase.GetEmotionRatesUseCase
+import com.example.mindlog.features.statistics.domain.usecase.GetJournalStatisticsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +22,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
-    private val repository: FakeStatisticsRepository,
+    private val getEmotionRatesUseCase: GetEmotionRatesUseCase,
+    private val getJournalStatistics: GetJournalStatisticsUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
@@ -27,60 +31,108 @@ class StatisticsViewModel @Inject constructor(
         val isLoading: Boolean = false,
         val startDate: LocalDate = LocalDate.now().minusMonths(1),
         val endDate: LocalDate = LocalDate.now(),
-        val emotionRatios: List<EmotionRate> = emptyList(),   // 감정 비율
-        val emotionTrends: List<EmotionTrend> = emptyList(),   // 감정 변화
-        val emotion: String = "행복",
+
+        val emotionRatios: List<EmotionRate> = emptyList(),
+
+        // 기간 통계 원본(파생 데이터의 근거)
+        val statistics: JournalStatistics? = null,
+        // 화면 표시용 파생 값들
+        val selectedEmotion: String? = null,
+        val emotionTrends: List<EmotionTrend> = emptyList(),
         val emotionEvents: List<String> = emptyList(),
-        val journalKeywords: List<String> = emptyList(),
+        val journalKeywords: List<JournalKeyword> = emptyList(),
+
         val error: String? = null
     )
 
     private val _state = MutableStateFlow(UiState())
-    val state: StateFlow<UiState> = _state.asStateFlow()
+    val state: StateFlow<UiState> = _state
 
+    /** 처음 진입/날짜 바뀔 때 호출 */
     fun load() = viewModelScope.launch(dispatcher.io) {
-        _state.update { it.copy(isLoading = true) }
+        _state.update { it.copy(isLoading = true, error = null) }
 
-        val emotion = _state.value.emotion
-        val ratio = async { repository.getEmotionRatio() }
-        val trend = async { repository.getEmotionTrend() }
-        val events = async { repository.getEmotionEvents(emotion) }
-        val keywords = async { repository.getJournalKeywords() }
+        val start = _state.value.startDate.toString()
+        val end = _state.value.endDate.toString()
 
-        val emotionRatioResult = ratio.await()
-        val emotionTrendResult = trend.await()
-        val eventResult = events.await()
-        val keywordsResult = keywords.await()
+        // 병렬 로드
+        val ratesDeferred = async { getEmotionRatesUseCase() }
+        val statsDeferred = async { getJournalStatistics(start, end) }
 
-        _state.update { state ->
-            state.copy(
+        val ratesRes = ratesDeferred.await()
+        val statsRes = statsDeferred.await()
+
+        // 에러 메시지 모으기
+        val firstError = listOfNotNull(
+            (ratesRes as? Result.Error)?.message,
+            (statsRes as? Result.Error)?.message
+        ).firstOrNull()
+
+        // 성공 데이터 추출
+        val ratios = (ratesRes as? Result.Success)?.data ?: emptyList()
+        val stats = (statsRes as? Result.Success)?.data
+
+        // 선택 감정 규칙: 1) 이전 선택 유지 → 2) 비율 1위 → 3) 트렌드 첫 감정 → 4) null
+        val prevSelected = _state.value.selectedEmotion
+        val topFromRatio = ratios.maxByOrNull { it.percentage }?.emotion
+        val firstFromTrends = stats?.EmotionTrends?.firstOrNull()?.emotion
+        val newSelected = prevSelected
+            ?: topFromRatio
+            ?: firstFromTrends
+
+        val (events, trends, keywords) = deriveForUI(stats, newSelected)
+
+        _state.update {
+            it.copy(
                 isLoading = false,
-                emotionRatios = (emotionRatioResult as? Result.Success)?.data ?: emptyList(),
-                emotionTrends = (emotionTrendResult as? Result.Success)?.data ?: emptyList(),
-                emotionEvents = (eventResult as? Result.Success)?.data ?: emptyList(),
-                journalKeywords = (keywordsResult as? Result.Success)?.data ?: emptyList(),
-                error = listOfNotNull(
-                    (emotionRatioResult as? Result.Error)?.message,
-                    (emotionTrendResult as? Result.Error)?.message,
-                    (eventResult as? Result.Error)?.message,
-                    (keywordsResult as? Result.Error)?.message
-                ).firstOrNull()
+                emotionRatios = ratios,
+                statistics = stats,
+                selectedEmotion = newSelected,
+                emotionEvents = events,
+                emotionTrends = trends,
+                journalKeywords = keywords,
+                error = firstError
             )
         }
     }
 
+    /** 감정 Chip 선택 시 호출 */
     fun setEmotion(emotion: String) = viewModelScope.launch(dispatcher.io) {
-        _state.update { it.copy(isLoading = true, emotion = emotion) }
+        val stats = _state.value.statistics
+        val (events, trends, keywords) = deriveForUI(stats, emotion)
 
-        val eventsResult = repository.getEmotionEvents(emotion)
-
-        _state.update { s ->
-            s.copy(
-                isLoading = false,
-                emotion = emotion,
-                emotionEvents = (eventsResult as? Result.Success)?.data ?: emptyList(),
-                error = (eventsResult as? Result.Error)?.message
+        _state.update {
+            it.copy(
+                selectedEmotion = emotion,
+                emotionEvents = events,
+                emotionTrends = trends,
+                journalKeywords = keywords,
+                error = null
             )
         }
+    }
+
+    /** 기간 바뀌면 상태만 바꾸고 load 재호출은 화면/호출측에서 */
+    fun setDateRange(start: LocalDate, end: LocalDate) {
+        _state.update { it.copy(startDate = start, endDate = end) }
+    }
+
+    private fun deriveForUI(
+        stats: JournalStatistics?,
+        selectedEmotion: String?
+    ): Triple<List<String>, List<EmotionTrend>, List<JournalKeyword>> {
+        if (stats == null) {
+            return Triple(emptyList(), emptyList(), emptyList())
+        }
+
+        // 감정 이벤트: 선택 감정에 해당하는 이벤트만
+        val events = if (selectedEmotion != null) {
+            stats.EmotionEvents.firstOrNull { it.emotion == selectedEmotion }?.events ?: emptyList()
+        } else emptyList()
+
+        val trends = stats.EmotionTrends
+        val keywords = stats.JournalKeywords
+
+        return Triple(events, trends, keywords)
     }
 }
