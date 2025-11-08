@@ -4,12 +4,16 @@ import com.example.mindlog.features.selfaware.di.SelfAwareBindModule
 import com.example.mindlog.features.selfaware.domain.repository.SelfAwareRepository
 import dagger.Binds
 import dagger.Module
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
 
-@Module
-@TestInstallIn(components = [SingletonComponent::class], replaces = [SelfAwareBindModule::class])
+@HiltAndroidTest
+@UninstallModules(
+    SelfAwareBindModule::class
+)
 abstract class TestSelfAwareBindModule {
 
     @Binds @Singleton
