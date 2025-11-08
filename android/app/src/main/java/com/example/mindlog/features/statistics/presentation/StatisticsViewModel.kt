@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.statistics.data.repository.FakeStatisticsRepository
-import com.example.mindlog.features.statistics.domain.model.EmotionRatio
+import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,7 +27,7 @@ class StatisticsViewModel @Inject constructor(
         val isLoading: Boolean = false,
         val startDate: LocalDate = LocalDate.now().minusMonths(1),
         val endDate: LocalDate = LocalDate.now(),
-        val emotionRatios: List<EmotionRatio> = emptyList(),   // 감정 비율
+        val emotionRatios: List<EmotionRate> = emptyList(),   // 감정 비율
         val emotionTrends: List<EmotionTrend> = emptyList(),   // 감정 변화
         val emotion: String = "행복",
         val emotionEvents: List<String> = emptyList(),

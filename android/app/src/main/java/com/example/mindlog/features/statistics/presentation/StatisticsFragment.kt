@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentStatisticsBinding
-import com.example.mindlog.features.statistics.domain.model.EmotionRatio
+import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -22,7 +22,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.chip.ChipGroup
 import com.jolenechong.wordcloud.WordCloud
 import dagger.hilt.android.AndroidEntryPoint
@@ -107,7 +106,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         invalidate()
     }
 
-    private fun renderEmotionRatio(raw: List<EmotionRatio>) {
+    private fun renderEmotionRatio(raw: List<EmotionRate>) {
         if (raw.isEmpty()) {
             binding.chartEmotionRatio.clear()
             binding.chartEmotionRatio.invalidate()
@@ -119,9 +118,9 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         val (small, rest) = raw.partition { it.ratio < threshold }
         val etcRatio = small.sumOf { it.ratio.toDouble() }.toFloat()
 
-        val merged = mutableListOf<EmotionRatio>().apply {
+        val merged = mutableListOf<EmotionRate>().apply {
             addAll(rest)
-            if (etcRatio > 0f) add(EmotionRatio("기타", etcRatio))
+            if (etcRatio > 0f) add(EmotionRate("기타", etcRatio))
         }
 
         // PieEntry 구성

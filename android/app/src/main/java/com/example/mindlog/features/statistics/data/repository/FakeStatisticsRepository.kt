@@ -1,25 +1,25 @@
 package com.example.mindlog.features.statistics.data.repository
 
 import com.example.mindlog.core.common.Result
-import com.example.mindlog.features.statistics.domain.model.EmotionRatio
+import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.example.mindlog.features.statistics.domain.respository.StatisticsRepository
 import javax.inject.Inject
 
 class FakeStatisticsRepository @Inject constructor() : StatisticsRepository {
 
-    override suspend fun getEmotionRatio(): Result<List<EmotionRatio>> {
+    override suspend fun getEmotionRatio(): Result<List<EmotionRate>> {
         val ratios = listOf(
-            EmotionRatio("행복", 0.18f),
-            EmotionRatio("슬픔", 0.10f),
-            EmotionRatio("자신감", 0.08f),
-            EmotionRatio("불안", 0.05f),
-            EmotionRatio("편안", 0.09f),
-            EmotionRatio("짜증", 0.11f),
-            EmotionRatio("흥미", 0.10f),
-            EmotionRatio("지루함", 0.11f),
-            EmotionRatio("활력", 0.09f),
-            EmotionRatio("무기력", 0.09f),
+            EmotionRate("행복", 0.18f),
+            EmotionRate("슬픔", 0.10f),
+            EmotionRate("자신감", 0.08f),
+            EmotionRate("불안", 0.05f),
+            EmotionRate("편안", 0.09f),
+            EmotionRate("짜증", 0.11f),
+            EmotionRate("흥미", 0.10f),
+            EmotionRate("지루함", 0.11f),
+            EmotionRate("활력", 0.09f),
+            EmotionRate("무기력", 0.09f),
         )
         return Result.Success(ratios)
     }
