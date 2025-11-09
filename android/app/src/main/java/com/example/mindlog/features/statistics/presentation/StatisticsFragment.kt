@@ -11,6 +11,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentStatisticsBinding
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
+import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.example.mindlog.features.statistics.domain.model.JournalKeyword
 import com.github.mikephil.charting.components.Legend
@@ -36,6 +37,20 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     private var wordCloud: WordCloud? = null
     private var suppressChipCallback = false
 
+    private fun toKo(emotion: Emotion?): String? = when (emotion) {
+        Emotion.HAPPY -> "행복"
+        Emotion.SAD -> "슬픔"
+        Emotion.ANXIOUS -> "불안"
+        Emotion.CALM -> "평안"
+        Emotion.ANNOYED -> "짜증"
+        Emotion.SATISFIED -> "만족"
+        Emotion.BORED -> "지루함"
+        Emotion.INTERESTED -> "흥미"
+        Emotion.LETHARGIC -> "무기력"
+        Emotion.ENERGETIC -> "활력"
+        null -> null
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentStatisticsBinding.bind(view)
 
@@ -48,11 +63,11 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             if (suppressChipCallback) return@setOnCheckedStateChangeListener
             val checkedId = checkedIds.firstOrNull() ?: return@setOnCheckedStateChangeListener
             val selectedEmotion = when (checkedId) {
-                R.id.chipHappy    -> "행복"
-                R.id.chipSad      -> "슬픔"
-                R.id.chipAnxious  -> "불안"
-                R.id.chipLethargy -> "무기력"
-                R.id.chipExciting -> "흥미"
+                R.id.chipHappy    -> Emotion.HAPPY
+                R.id.chipSad      -> Emotion.SAD
+                R.id.chipAnxious  -> Emotion.ANXIOUS
+                R.id.chipLethargy -> Emotion.LETHARGIC
+                R.id.chipExciting -> Emotion.INTERESTED
                 else -> null
             }
             selectedEmotion?.let(viewModel::setEmotion)
@@ -114,30 +129,22 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             return
         }
 
-        // 3% 미만 합쳐서 "기타"
         val threshold = 0.03f
         val (small, rest) = raw.partition { it.percentage < threshold }
         val etc = small.sumOf { it.percentage.toDouble() }.toFloat()
-        val merged = buildList {
-            addAll(rest)
-            if (etc > 0f) add(EmotionRate(emotion = "기타", count = 0, percentage = etc))
+
+        val entries = buildList {
+            addAll(rest.map { PieEntry(it.percentage * 100f, toKo(it.emotion) ?: it.emotion.name) })
+            if (etc > 0f) add(PieEntry(etc * 100f, "기타"))
         }
 
-        val entries = merged.map { PieEntry(it.percentage * 100f, it.emotion) }
-
         val palette = listOf(
-            Color.parseColor("#D36B6B"),
-            Color.parseColor("#FFD700"),
-            Color.parseColor("#00BFA5"),
-            Color.parseColor("#F06292"),
-            Color.parseColor("#9575CD"),
-            Color.parseColor("#FFB74D"),
-            Color.parseColor("#81C784"),
-            Color.parseColor("#7986CB"),
-            Color.parseColor("#FF7043"),
-            Color.parseColor("#4DD0E1"),
-            Color.parseColor("#AED581"),
-            Color.parseColor("#BA68C8"),
+            Color.parseColor("#D36B6B"), Color.parseColor("#FFD700"),
+            Color.parseColor("#00BFA5"), Color.parseColor("#F06292"),
+            Color.parseColor("#9575CD"), Color.parseColor("#FFB74D"),
+            Color.parseColor("#81C784"), Color.parseColor("#7986CB"),
+            Color.parseColor("#FF7043"), Color.parseColor("#4DD0E1"),
+            Color.parseColor("#AED581"), Color.parseColor("#BA68C8"),
             Color.parseColor("#FBC02D")
         )
         val colors = List(entries.size) { i -> palette[i % palette.size] }
@@ -147,11 +154,8 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             valueTextColor = Color.parseColor("#2D3142")
             valueTextSize = 12f
             sliceSpace = 2.5f
-
-            // 값/라벨 바깥으로
             yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
             xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
-
             valueLinePart1Length = 0.6f
             valueLinePart2Length = 0.5f
             valueLineWidth = 1.2f
@@ -162,8 +166,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         val pieData = PieData(dataSet).apply {
             setValueFormatter(object : com.github.mikephil.charting.formatter.ValueFormatter() {
                 override fun getPieLabel(value: Float, pe: PieEntry?): String {
-                    // setUsePercentValues(true) → value가 0~100
-                    if (value < 3f) return "" // 3% 미만 숨김
+                    if (value < 3f) return ""
                     val label = pe?.label ?: ""
                     return "$label ${String.format("%.0f%%", value)}"
                 }
@@ -177,13 +180,13 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     // ------------------------------
     // 감정 이벤트
     // ------------------------------
-    private fun renderEmotionEvents(events: List<String>, selectedEmotion: String?) {
+    private fun renderEmotionEvents(events: List<String>, selectedEmotion: Emotion?) {
         val container = binding.cardEmotionEventsContainer
         container.removeAllViews()
 
         val context = container.context
         val title = com.google.android.material.textview.MaterialTextView(context).apply {
-            val emo = selectedEmotion ?: "감정"
+            val emo = toKo(selectedEmotion) ?: "감정"
             text = "최근 ${emo}했던 이유는?"
             setTextColor(Color.parseColor("#636779"))
             textSize = 13f
@@ -248,7 +251,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
 
         val sets = data.mapIndexed { idx, trend ->
             val entries = trend.trend.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) }
-            LineDataSet(entries, trend.emotion).apply {
+            LineDataSet(entries, toKo(trend.emotion) ?: trend.emotion.name).apply {
                 color = colors[idx % colors.size]
                 lineWidth = 2f
                 setCircleColor(color)
@@ -265,13 +268,13 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     // ------------------------------
     // Chip 동기화 (State → UI)
     // ------------------------------
-    private fun syncChipSelectionFromState(selected: String?) {
+    private fun syncChipSelectionFromState(selected: Emotion?) {
         val id = when (selected) {
-            "행복" -> R.id.chipHappy
-            "슬픔" -> R.id.chipSad
-            "불안" -> R.id.chipAnxious
-            "무기력" -> R.id.chipLethargy
-            "흥미" -> R.id.chipExciting
+            Emotion.HAPPY -> R.id.chipHappy
+            Emotion.SAD -> R.id.chipSad
+            Emotion.ANXIOUS -> R.id.chipAnxious
+            Emotion.LETHARGIC -> R.id.chipLethargy
+            Emotion.INTERESTED -> R.id.chipExciting
             else -> null
         } ?: return
 

@@ -1,9 +1,11 @@
 package com.example.mindlog.features.statistics.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
+import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.example.mindlog.features.statistics.domain.model.JournalKeyword
@@ -14,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -37,7 +38,7 @@ class StatisticsViewModel @Inject constructor(
         // 기간 통계 원본(파생 데이터의 근거)
         val statistics: JournalStatistics? = null,
         // 화면 표시용 파생 값들
-        val selectedEmotion: String? = null,
+        val selectedEmotion: Emotion? = null,
         val emotionTrends: List<EmotionTrend> = emptyList(),
         val emotionEvents: List<String> = emptyList(),
         val journalKeywords: List<JournalKeyword> = emptyList(),
@@ -56,7 +57,7 @@ class StatisticsViewModel @Inject constructor(
         val end = _state.value.endDate.toString()
 
         // 병렬 로드
-        val ratesDeferred = async { getEmotionRatesUseCase() }
+        val ratesDeferred = async { getEmotionRatesUseCase(start, end) }
         val statsDeferred = async { getJournalStatistics(start, end) }
 
         val ratesRes = ratesDeferred.await()
@@ -74,9 +75,9 @@ class StatisticsViewModel @Inject constructor(
 
         // 선택 감정 규칙: 1) 이전 선택 유지 → 2) 비율 1위 → 3) 트렌드 첫 감정 → 4) null
         val prevSelected = _state.value.selectedEmotion
-        val topFromRatio = ratios.maxByOrNull { it.percentage }?.emotion
-        val firstFromTrends = stats?.EmotionTrends?.firstOrNull()?.emotion
-        val newSelected = prevSelected
+        val topFromRatio: Emotion? = ratios.maxByOrNull { it.percentage }?.emotion
+        val firstFromTrends: Emotion? = stats?.EmotionTrends?.firstOrNull()?.emotion
+        val newSelected: Emotion? = prevSelected
             ?: topFromRatio
             ?: firstFromTrends
 
@@ -97,7 +98,7 @@ class StatisticsViewModel @Inject constructor(
     }
 
     /** 감정 Chip 선택 시 호출 */
-    fun setEmotion(emotion: String) = viewModelScope.launch(dispatcher.io) {
+    fun setEmotion(emotion: Emotion) = viewModelScope.launch(dispatcher.io) {
         val stats = _state.value.statistics
         val (events, trends, keywords) = deriveForUI(stats, emotion)
 
@@ -119,7 +120,7 @@ class StatisticsViewModel @Inject constructor(
 
     private fun deriveForUI(
         stats: JournalStatistics?,
-        selectedEmotion: String?
+        selectedEmotion: Emotion?
     ): Triple<List<String>, List<EmotionTrend>, List<JournalKeyword>> {
         if (stats == null) {
             return Triple(emptyList(), emptyList(), emptyList())

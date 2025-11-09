@@ -4,7 +4,8 @@ import com.example.mindlog.features.statistics.domain.respository.StatisticsRepo
 import javax.inject.Inject
 
 class GetEmotionRatesUseCase @Inject constructor(private val repo: StatisticsRepository) {
-    suspend operator fun invoke() = repo.getEmotionRates()
+    suspend operator fun invoke(startDate: String, endDate: String) =
+        repo.getEmotionRates(startDate, endDate)
 }
 
 class GetJournalStatisticsUseCase @Inject constructor(private val repo: StatisticsRepository) {

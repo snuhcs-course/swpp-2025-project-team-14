@@ -78,6 +78,7 @@ dependencies {
     // Retrofit (Gson 컨버터 포함)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Hilt (버전 통일: 2.52 권장)
     implementation("com.google.dagger:hilt-android:2.52")

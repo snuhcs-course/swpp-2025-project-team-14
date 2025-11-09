@@ -1,6 +1,7 @@
 package com.example.mindlog.features.statistics.data.repository
 
 
+import android.util.Log
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.common.toResult
 import com.example.mindlog.core.dispatcher.DispatcherProvider
@@ -15,16 +16,21 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class StatisticsRepositoryImpl @Inject constructor(
-    private val journalApi: JournalApi,
     private val statisticsApi: StatisticsApi,
+    private val journalApi: JournalApi,
     private val mapper: StatisticsMapper,
     private val dispatcher: DispatcherProvider
 ): StatisticsRepository {
 
-    override suspend fun getEmotionRates(): Result<List<EmotionRate>> = withContext(dispatcher.io) {
+    override suspend fun getEmotionRates(startDate: String, endDate: String): Result<List<EmotionRate>> = withContext(dispatcher.io) {
         runCatching {
-            val dto = statisticsApi.getEmotionRates()
-            val emotionRates = dto.emotionRates.map(mapper::toEmotionRate)
+            Log.d("StatisticsRepositoryImpl", "getEmotionRates call")
+            val dto = statisticsApi.getEmotionRates(
+                startDate = startDate,
+                endDate = endDate
+            )
+            Log.d("StatisticsRepositoryImpl", "getEmotionRates: $dto")
+            val emotionRates = dto.statistics.map(mapper::toEmotionRate)
             emotionRates.toList()
         }.toResult()
     }
@@ -46,7 +52,6 @@ class StatisticsRepositoryImpl @Inject constructor(
                 journals += response.items
                 cursor = response.nextCursor
             } while (cursor != null)
-
             mapper.toJournalStatistics(journals)
         }.toResult()
     }

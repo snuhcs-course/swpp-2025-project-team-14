@@ -7,10 +7,10 @@ import com.google.gson.annotations.SerializedName
 
 data class EmotionRatesResponse(
     @SerializedName("total_count") val totalCount: Int,
-    @SerializedName("statistics") val emotionRates: List<EmotionRateResponse>
+    @SerializedName("statistics") val statistics: List<EmotionRateItem>
 )
 
-data class EmotionRateResponse(
+data class EmotionRateItem(
     @SerializedName("emotion") val emotion: String,
     @SerializedName("count") val count: Int,
     @SerializedName("percentage") val percentage: Float
