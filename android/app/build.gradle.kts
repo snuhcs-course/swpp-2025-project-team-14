@@ -45,6 +45,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -66,6 +67,12 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
+    // ✅ SavedState 추가 (Fragment / Nav 최신 버전 호환)
+    implementation("androidx.savedstate:savedstate-ktx:1.2.1")
+    androidTestImplementation("androidx.savedstate:savedstate-ktx:1.2.1")
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     // Dependency for visualization
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.patrykandpatrick.vico:views:1.14.0")
@@ -75,12 +82,12 @@ dependencies {
         exclude(group="com.sun.xml.bind", module="jaxb-impl")
     }
 
-    // Retrofit (Gson 컨버터 포함)
+    // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Hilt (버전 통일: 2.52 권장)
+    // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
     kapt("com.google.dagger:hilt-android-compiler:2.52")
 
@@ -103,8 +110,11 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.6.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.7.7")
+    androidTestImplementation("com.google.truth:truth:1.4.4")
 
-    // Hilt Testing (버전 통일)
+    // Hilt Testing
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.52")
 
