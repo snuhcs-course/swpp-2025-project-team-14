@@ -26,11 +26,11 @@ class Analysis(Base):
 
     neo_pi_score:  Mapped[Optional[List[int]]] = mapped_column(JSON, nullable=True) # 확인 필요
 
-    comprehensive_analysis: Mapped[str] = mapped_column(Text, nullable=True)
+    comprehensive_analysis: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     advice_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # 조언 이론 유형
 
-    personalized_advice: Mapped[str] = mapped_column(Text, nullable=True)
+    personalized_advice: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
