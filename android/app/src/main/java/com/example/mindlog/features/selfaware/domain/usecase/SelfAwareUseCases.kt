@@ -10,6 +10,18 @@ class GetTodayQAUseCase @Inject constructor(private val repo: SelfAwareRepositor
 class SubmitAnswerUseCase @Inject constructor(private val repo: SelfAwareRepository) {
     suspend operator fun invoke(questionId: Int, answer: String) = repo.submitAnswer(questionId, answer)
 }
-class GetHistoryUseCase @Inject constructor(private val repo: SelfAwareRepository) {
-    suspend operator fun invoke(cursor: Int, size: Int) = repo.getQAHistory(cursor, size)
+class GetQAHistoryUseCase @Inject constructor(private val repo: SelfAwareRepository) {
+    suspend operator fun invoke(limit: Int, cursor: Int?) = repo.getQAHistory(limit, cursor)
+}
+
+class GetTopValueScoresUseCase @Inject constructor(private val repo: SelfAwareRepository) {
+    suspend operator fun invoke(@Suppress("UNUSED_PARAMETER") unit: Unit = Unit) = repo.getTopValueScores()
+}
+
+class GetValueMapUseCase @Inject constructor(private val repo: SelfAwareRepository) {
+    suspend operator fun invoke(@Suppress("UNUSED_PARAMETER") unit: Unit = Unit) = repo.getValueMap()
+}
+
+class GetPersonalityInsightUseCase @Inject constructor(private val repo: SelfAwareRepository) {
+    suspend operator fun invoke(@Suppress("UNUSED_PARAMETER") unit: Unit = Unit) = repo.getPersonalityInsight()
 }

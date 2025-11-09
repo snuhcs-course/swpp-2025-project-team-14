@@ -1,11 +1,12 @@
 package com.example.mindlog.selfaware
 
+import app.cash.turbine.test
 import com.example.mindlog.core.common.Paged
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 import com.example.mindlog.features.selfaware.domain.model.Question
-import com.example.mindlog.features.selfaware.domain.usecase.GetHistoryUseCase
+import com.example.mindlog.features.selfaware.domain.usecase.GetQAHistoryUseCase
 import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareHistoryViewModel
 import com.example.mindlog.utils.MainDispatcherRule
 import com.example.mindlog.utils.TestDispatcherProvider
@@ -16,114 +17,147 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
-import java.time.Instant
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SelfAwareHistoryViewModelTest {
 
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
-    private lateinit var getHistoryUseCase: GetHistoryUseCase
-    private lateinit var viewModel: SelfAwareHistoryViewModel
+    private lateinit var getQAHistoryUseCase: GetQAHistoryUseCase
+    private lateinit var vm: SelfAwareHistoryViewModel
 
     @Before fun setup() {
         val testDispatcherProvider = TestDispatcherProvider(mainDispatcherRule.testDispatcher)
 
-        getHistoryUseCase = mock()
-        viewModel = SelfAwareHistoryViewModel(getHistoryUseCase, testDispatcherProvider)
+        getQAHistoryUseCase = mock()
+        vm = SelfAwareHistoryViewModel(getQAHistoryUseCase, testDispatcherProvider)
     }
 
     @Test
-    fun `refresh sets isEnd true when fewer than requested returned`() = runTest {
-        val page1 = Paged(items = listOf(q(1), q(2)), cursor = 1, size = 20)
-        whenever(getHistoryUseCase.invoke(cursor = eq(1), size = any()))
+    fun `refresh success updates items and nextCursor`() = runTest {
+        val page = Paged(items = listOf(testItem(1), testItem(2)), cursor = 2, size = 2)
+        whenever(getQAHistoryUseCase(limit = any(), cursor = anyOrNull()))
+            .thenReturn(Result.Success(page))
+
+        // when
+        vm.state.test {
+            val initial = awaitItem()
+            println(initial.items)
+            assertTrue(initial.items.isEmpty())
+
+            vm.refresh()
+            val loading = awaitItem()
+            assertTrue(loading.isRefreshing) // 구현에 따라 둘 중 하나
+
+            val done = awaitItem()
+            assertFalse(done.isRefreshing)
+            assertEquals(2, done.items.size)
+            assertEquals(2, done.nextCursor)
+            assertFalse(done.isEnd)
+
+            cancelAndConsumeRemainingEvents()
+        }
+
+        verify(getQAHistoryUseCase, times(1)).invoke(limit = any(), cursor = anyOrNull())
+        verifyNoMoreInteractions(getQAHistoryUseCase)
+    }
+
+    @Test
+    fun `refresh error sets error and stops loading`() = runTest {
+        whenever(getQAHistoryUseCase(limit = any(), cursor = anyOrNull()))
+            .thenReturn(Result.Error(500, "network error"))
+
+        vm.state.test {
+            awaitItem()
+            vm.refresh()
+
+            val loading = awaitItem()
+            assertTrue(loading.isRefreshing)
+
+            val errored = awaitItem()
+            assertFalse(errored.isRefreshing)
+            assertNotNull(errored.error)
+            assertTrue(errored.items.isEmpty())
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `loadNext success appends items and advances cursor`() = runTest {
+        // 첫 페이지
+        val page1 = Paged(items = (1..10).map { testItem(it) }, cursor = 11, size = 10)
+        whenever(getQAHistoryUseCase(limit = any(), cursor = anyOrNull()))
             .thenReturn(Result.Success(page1))
 
-        viewModel.refresh()
+        vm.refresh()
         advanceUntilIdle()
 
-        val s = viewModel.state.value
-        assertEquals(1, s.cursor)
-        assertEquals(2, s.items.size)
-        assertTrue(s.isEnd)
-        assertFalse(s.isLoading)
-    }
-
-    @Test
-    fun `refresh sets isEnd false when full page returned`() = runTest {
-        val full = (1..20).map { q(it) }
-        val page1 = Paged(items = full, cursor = 1, size = 20)
-        whenever(getHistoryUseCase.invoke(cursor = eq(1), size = any()))
-            .thenReturn(Result.Success(page1))
-
-        viewModel.refresh()
-        advanceUntilIdle()
-
-        val s = viewModel.state.value
-        assertEquals(20, s.items.size)
-        assertFalse(s.isEnd)
-    }
-
-    @Test
-    fun `loadNext appends more items and marks end when second page is short`() = runTest {
-        val pageSize = 20
-        val page1 = Paged(items = (1..pageSize).map { q(it) }, cursor = 1, size = pageSize)
-        val page2 = Paged(items = (21..25).map { q(it) }, cursor = 2, size = pageSize) // 5개만
-
-        whenever(getHistoryUseCase.invoke(cursor = eq(1), size = any()))
-            .thenReturn(Result.Success(page1))
-        whenever(getHistoryUseCase.invoke(cursor = eq(2), size = any()))
+        // 다음 페이지
+        val page2 = Paged(items = listOf(testItem(11)), cursor = null, size = 1)
+        whenever(getQAHistoryUseCase(limit = any(), cursor = anyOrNull()))
             .thenReturn(Result.Success(page2))
 
-        viewModel.refresh()
-        advanceUntilIdle()
+        vm.state.test {
+            // 현재 상태 소비
+            skipItems(1) // 현재 state 1개 스킵
 
-        viewModel.loadNext()
-        advanceUntilIdle()
+            vm.loadNext()
 
-        val s = viewModel.state.value
-        assertEquals(2, s.cursor)
-        assertEquals(25, s.items.size)
-        assertTrue(s.isEnd)
-        assertFalse(s.isLoading)
+            val loading = awaitItem()
+            assertTrue(loading.isLoading)
+
+            val done = awaitItem()
+            assertFalse(done.isLoading)
+            assertEquals(11, done.items.size) // 10 + 1
+            assertNull(done.nextCursor)
+            assertTrue(done.isEnd)
+
+            cancelAndConsumeRemainingEvents()
+        }
     }
 
     @Test
-    fun `refresh error populates error and stops loading`() = runTest {
-        whenever(getHistoryUseCase.invoke(cursor = eq(1), size = any()))
-            .thenReturn(Result.Error(message = "network_error"))
+    fun `loadNext no-op when already loading or end`() = runTest {
+        // 첫 페이지
+        val page = Paged(items = listOf(testItem(1)), cursor = null, size = 1)
+        whenever(getQAHistoryUseCase(limit = any(), cursor = anyOrNull()))
+            .thenReturn(Result.Success(page))
 
-        viewModel.refresh()
+        vm.refresh()
         advanceUntilIdle()
 
-        val s = viewModel.state.value
-        assertEquals("network_error", s.error)
-        assertFalse(s.isLoading)
-        assertTrue(s.items.isEmpty())
+        // 이미 isEnd = true 상태에서 loadNext 호출 → 호출되지 않아야 함
+        vm.loadNext()
+        verify(getQAHistoryUseCase, times(1)).invoke(limit = any(), cursor = anyOrNull())
+        verifyNoMoreInteractions(getQAHistoryUseCase)
     }
 
-
-    private fun q(id: Int) = QAItem(
+    private fun testItem(id: Int) = QAItem(
         question = Question(
             id = id,
             type = "Question Type",
             text = "Q$id",
-            categoriesEn = listOf("Growth & Self-Actualization", "Enjoyment & Fulfillment"),
-            categoriesKo = listOf("성장과 자기실현", "즐거움과 만족"),
-            createdAt = Instant.now(),
+            createdAt = LocalDate.now(),
         ),
         answer = Answer(
             id = id,
             questionId = id,
+            type = "",
             text = "A$id",
-            createdAt = Instant.now(),
-            updatedAt = Instant.now(),
-            valueScores = null
+            createdAt = LocalDate.now(),
+            updatedAt = LocalDate.now()
         )
     )
 }

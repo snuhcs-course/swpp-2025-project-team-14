@@ -36,30 +36,29 @@ class EmotionSelectFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // API의 emotion 이름과 UI의 텍스트, 점수를 매핑
-        setupEmotionRow(
-            binding.rowSadHappy,
+        setupEmotionRow(            binding.rowSadHappy,
             "슬픔", "sad", "행복", "happy",
-            R.color.emotion_sad_blue, R.color.emotion_happy_orange
+            R.color.emotion_sad, R.color.emotion_happy
         )
         setupEmotionRow(
             binding.rowAnxiousConfident,
             "불안", "anxious", "만족", "satisfied",
-            R.color.emotion_anxious_purple, R.color.emotion_confident_green
+            R.color.emotion_anxious, R.color.emotion_satisfied
         )
         setupEmotionRow(
             binding.rowAngryCalm,
             "짜증", "annoyed", "편안", "calm",
-            R.color.emotion_angry_red, R.color.emotion_calm_green
+            R.color.emotion_annoyed, R.color.emotion_calm
         )
         setupEmotionRow(
             binding.rowBoredExcited,
             "지루함", "bored", "흥미", "interested",
-            R.color.emotion_bored_blue, R.color.emotion_excited_pink
+            R.color.emotion_bored, R.color.emotion_interested
         )
         setupEmotionRow(
             binding.rowLethargicEnergetic,
             "무기력", "lethargic", "활력", "energetic",
-            R.color.emotion_lethargic_indigo, R.color.emotion_happy_orange
+            R.color.emotion_lethargic, R.color.emotion_energetic
         )
     }
 
@@ -71,8 +70,7 @@ class EmotionSelectFragment : Fragment() {
     ) {
         val leftColor = ContextCompat.getColor(requireContext(), leftColorRes)
         val rightColor = ContextCompat.getColor(requireContext(), rightColorRes)
-        val centerGrayColor = ContextCompat.getColor(requireContext(), R.color.emotion_lethargic_gray)
-
+        val centerGrayColor = ContextCompat.getColor(requireContext(), R.color.text_secondary)
         rowBinding.tvEmotionLeft.text = leftText
         rowBinding.tvEmotionLeft.setTextColor(leftColor)
         rowBinding.tvEmotionRight.text = rightText

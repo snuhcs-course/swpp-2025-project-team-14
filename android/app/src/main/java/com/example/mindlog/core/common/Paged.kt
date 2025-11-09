@@ -5,6 +5,6 @@ package com.example.mindlog.core.common
  */
 data class Paged<T>(
     val items: List<T>,
-    val cursor: Int,
+    val cursor: Int?,
     val size: Int,
 )

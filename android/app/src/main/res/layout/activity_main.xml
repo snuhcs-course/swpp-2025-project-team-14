@@ -5,42 +5,6 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
-    android:background="#F2F0E9">
-
-    <!-- 앱 이름 또는 환영 문구 -->
-    <TextView
-        android:id="@+id/tvWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Mindlog에 오신 것을 환영합니다!"
-        android:textColor="#2C2C54"
-        android:textSize="20sp"
-        android:layout_marginBottom="24dp"
-        android:fontFamily="sans-serif-medium" />
-
-    <!-- 로그인 버튼 -->
-    <Button
-        android:id="@+id/btnGoLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="로그인하기"
-        android:textSize="16sp"
-        android:textAllCaps="false"
-        android:backgroundTint="#2C2C54"
-        android:textColor="#FFFFFF"
-        android:fontFamily="sans-serif-medium"
-        android:layout_marginBottom="12dp" />
-
-    <!-- 로그아웃 버튼 (로그인 후에만 표시) -->
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="로그아웃"
-        android:textSize="16sp"
-        android:textAllCaps="false"
-        android:backgroundTint="#9B9B9B"
-        android:textColor="#FFFFFF"
-        android:visibility="gone" />
+    android:background="#F8F6F0">
 
 </LinearLayout>

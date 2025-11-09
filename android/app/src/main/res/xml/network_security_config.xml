@@ -7,6 +7,11 @@
         </trust-anchors>
     </base-config>
 
+    <!-- 로컬 서버에 대한 예외 설정 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+
     <!-- 개발 서버에 대한 예외 설정 -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com</domain>

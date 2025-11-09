@@ -1,66 +1,115 @@
 package com.example.mindlog.features.selfaware.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.selfaware.domain.model.QAItem
-import com.example.mindlog.features.selfaware.domain.usecase.GetHistoryUseCase
+import com.example.mindlog.features.selfaware.domain.usecase.GetQAHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 @HiltViewModel
 class SelfAwareHistoryViewModel @Inject constructor(
-    private val getHistoryUseCase: GetHistoryUseCase,
+    private val getHistoryUseCase: GetQAHistoryUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
     data class UiState(
-        val cursor: Int = 1,
-        val size: Int = 20,
+        val nextCursor: Int? = null,
+        val limit: Int = 10,
         val items: List<QAItem> = emptyList(),
-        val isLoading: Boolean = false,
+        val isRefreshing: Boolean = false,  // 최초/새로고침 로딩
+        val isLoading: Boolean = false,     // 다음 페이지 로딩
         val isEnd: Boolean = false,
         val error: String? = null
     )
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state
 
-    fun refresh() = viewModelScope.launch(dispatcher.io) {
-        val s = _state.value
-        _state.update { it.copy(isLoading = true, error = null) }
-        when (val res = getHistoryUseCase(cursor = 1, size = s.size)) {
-            is Result.Success -> _state.update {
-                it.copy(
-                    isLoading = false,
-                    cursor = 1,
-                    items = res.data.items,
-                    isEnd = res.data.items.size < s.size
-                )
+    private var loadMutex = kotlinx.coroutines.sync.Mutex()
+    private var refreshJob: Job? = null
+    private var loadJob: Job? = null
+
+    fun refresh() {
+        if (refreshJob?.isActive == true) return
+        loadJob?.cancel()
+
+        refreshJob = viewModelScope.launch(dispatcher.io) {
+            loadMutex.withLock {
+                // refresh
+                _state.update { it.copy(nextCursor = null, isRefreshing = true, isEnd = false, error = null) }
+
+                val s = _state.value
+                when (val res = getHistoryUseCase(limit = s.limit, cursor = s.nextCursor)) {
+                    is Result.Success -> {
+                        val page = res.data
+                        val items = page.items
+                        val nextCursor = page.cursor
+
+                        _state.update {
+                            it.copy(
+                                isRefreshing = false,
+                                items = items,
+                                nextCursor = nextCursor,
+                                isEnd = items.isEmpty() || nextCursor == null,
+                                error = null
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update { it.copy(isRefreshing = false, error = res.message) }
+                    }
+                }
             }
-            is Result.Error -> _state.update { it.copy(isLoading = false, error = res.message) }
         }
     }
 
-    fun loadNext() = viewModelScope.launch(dispatcher.io) {
+    fun loadNext()  {
         val s = _state.value
-        if (s.isLoading || s.isEnd) return@launch
-        _state.update { it.copy(isLoading = true) }
-        when (val res = getHistoryUseCase(cursor = s.cursor + 1, size = s.size)) {
-            is Result.Success -> _state.update {
-                val more = res.data.items
-                it.copy(
-                    isLoading = false,
-                    cursor = s.cursor + 1,
-                    items = s.items + more,
-                    isEnd = more.size < s.size
-                )
+        if (s.isRefreshing || s.isLoading || s.isEnd || s.nextCursor == null) return
+        if (loadJob?.isActive == true) return
+
+        loadJob = viewModelScope.launch(dispatcher.io) {
+            loadMutex.withLock {
+                _state.update { it.copy(isLoading = true, error = null) }
+
+                val s = _state.value
+                val nextCursor = s.nextCursor ?: run {
+                    _state.update { it.copy(isLoading = false, isEnd = true) }
+                    return@withLock
+                }
+
+                when (val res = getHistoryUseCase(limit = s.limit, cursor = nextCursor)) {
+                    is Result.Success -> {
+                        val page = res.data
+                        val more = page.items
+                        val nextCursor = page.cursor
+
+                        _state.update {
+                            val merged = (it.items + more)
+                            it.copy (
+                                items = merged,
+                                nextCursor = nextCursor,
+                                isLoading = false,
+                                isEnd = more.isEmpty() || nextCursor == null,
+                                error = null
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update { it.copy(isLoading = false, error = res.message) }
+                    }
+                }
             }
-            is Result.Error -> _state.update { it.copy(isLoading = false, error = res.message) }
         }
     }
+
 }

@@ -1,6 +1,7 @@
 package com.example.mindlog.features.selfaware.presentation.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -43,13 +44,29 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
 
         // 무한 스크롤(바닥 도달 시 다음 페이지 로드)
         binding.recyclerAnswers.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            private fun tryLoadNext(rv: RecyclerView) {
+                val lm = rv.layoutManager as? LinearLayoutManager ?: return
+                val s = viewModel.state.value
+                if (s.isLoading) return
+                val atBottom = !rv.canScrollVertically(1)
+                val last = lm.findLastVisibleItemPosition()
+                val total = lm.itemCount
+                val nearBottom = last >= total - 2
+                Log.d("scroll", "atBottom: $atBottom, nearBottom: $nearBottom")
+                if (atBottom || nearBottom) {
+                    Log.d("scroll", "load more")
+                    viewModel.loadNext()
+                }
+            }
             override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
                 if (dy <= 0) return
-                val lm = rv.layoutManager as? LinearLayoutManager ?: return
-                val lastVisible = lm.findLastVisibleItemPosition()
-                val total = lm.itemCount
-                // 끝에서 3개 남았을 때 미리 로드
-                if (lastVisible >= total - 3) viewModel.loadNext()
+                tryLoadNext(rv)
+            }
+            override fun onScrollStateChanged(rv: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    tryLoadNext(rv)
+                }
             }
         })
 
@@ -60,11 +77,7 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
-                    // 로딩 처리(필요하면 ProgressBar 등으로 바꿔도 됨)
-                    // binding.progressBar.isVisible = s.isLoading
-
-                    adapter.submitList(s.items) // DiffUtil이라 깜빡임 최소화
-                    // empty view 표시 등
+                    adapter.submitList(s.items.toList())
                     binding.recyclerAnswers.isEnabled = s.items.isNotEmpty()
                 }
             }

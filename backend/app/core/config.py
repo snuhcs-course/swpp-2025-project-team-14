@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     DB_NAME: str
 
     DATABASE_URL: str
-
+    
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION: str = "ap-northeast-2"

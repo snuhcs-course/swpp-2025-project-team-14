@@ -117,7 +117,8 @@ class JournalViewModel @Inject constructor(
                         content = item.content,
                         createdAt = createdAt,
                         imageUrl = imageUrl,
-                        keywords = keywords
+                        keywords = keywords,
+                        emotions = item.emotions
                     )
                 }
 
