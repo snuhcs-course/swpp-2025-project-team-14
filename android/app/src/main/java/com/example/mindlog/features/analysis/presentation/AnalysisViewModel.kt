@@ -12,13 +12,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
 
-enum class PeriodPreset { WEEK, MONTH, CUSTOM }
-
-data class ValueScoreItem(
-    val value: String,
-    val score: Float // 0..100
-)
-
 @HiltViewModel
 class AnalysisViewModel @Inject constructor(
     // 나중에 API 붙일 때:
