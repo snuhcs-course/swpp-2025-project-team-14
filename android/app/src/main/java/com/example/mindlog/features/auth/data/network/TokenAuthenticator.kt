@@ -20,7 +20,7 @@ class TokenAuthenticator @Inject constructor(
     private val lock = Any()
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        if (response.priorResponse() != null) return null
+        if (response.priorResponse != null) return null
         val refresh = tokenManager.getRefreshToken() ?: return null
 
         synchronized(lock) {
@@ -37,7 +37,7 @@ class TokenAuthenticator @Inject constructor(
 
             tokenManager.saveTokens(newAccess, newRefresh)
 
-            response.request().newBuilder()
+            response.request.newBuilder()
                 .header("Authorization", "Bearer $newAccess")
                 .build()
         } catch (_: Exception) {
