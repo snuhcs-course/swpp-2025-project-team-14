@@ -26,6 +26,10 @@ import com.google.android.material.chip.ChipGroup
 import com.jolenechong.wordcloud.WordCloud
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
@@ -51,6 +55,10 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         null -> null
     }
 
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+    private fun formatRange(start: LocalDate, end: LocalDate): String =
+        "${start.format(dateFormatter)}~${end.format(dateFormatter)}"
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentStatisticsBinding.bind(view)
 
@@ -73,12 +81,46 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             selectedEmotion?.let(viewModel::setEmotion)
         }
 
+        // 기간 프리셋: 주간 / 월간
+        binding.btnWeekly.setOnClickListener {
+            val end = LocalDate.now()
+            val start = end.minusDays(6) // 최근 7일
+            viewModel.setDateRange(start, end)
+            binding.tvPeriodRange.text = formatRange(start, end)
+            viewModel.load()
+        }
+        binding.btnMonthly.setOnClickListener {
+            val end = LocalDate.now()
+            val start = end.minusDays(29) // 최근 30일
+            viewModel.setDateRange(start, end)
+            binding.tvPeriodRange.text = formatRange(start, end)
+            viewModel.load()
+        }
+        // 사용자 지정: MaterialDatePicker (range)
+        binding.btnCustom.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("기간 선택")
+                .build()
+            picker.addOnPositiveButtonClickListener { sel ->
+                val startMillis = sel.first ?: return@addOnPositiveButtonClickListener
+                val endMillis = sel.second ?: return@addOnPositiveButtonClickListener
+                val zone = ZoneId.systemDefault()
+                val start = java.time.Instant.ofEpochMilli(startMillis).atZone(zone).toLocalDate()
+                val end = java.time.Instant.ofEpochMilli(endMillis).atZone(zone).toLocalDate()
+                viewModel.setDateRange(start, end)
+                binding.tvPeriodRange.text = formatRange(start, end)
+                viewModel.load()
+            }
+            picker.show(parentFragmentManager, "date_range_picker")
+        }
+
         // 상태 수집
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
                     // Chip UI 동기화 (상태 -> UI)
                     syncChipSelectionFromState(s.selectedEmotion)
+                    binding.tvPeriodRange.text = formatRange(s.startDate, s.endDate)
 
                     if (!s.isLoading) {
                         renderEmotionRates(s.emotionRatios)
