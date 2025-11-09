@@ -9,6 +9,7 @@ from starlette.testclient import TestClient
 
 from app.database.base import Base
 from app.database.session import get_db_session
+from app.features.journal.models import Journal, JournalEmotion, JournalKeyword
 from app.features.user.models import User  # noqa: F401 # 사용하는 모든 모델 임포트
 from app.main import app
 
@@ -90,3 +91,45 @@ def auth_headers(client: TestClient, test_user: User) -> dict[str, str]:
 
     headers = {"Authorization": f"Bearer {access_token}"}
     return headers
+
+
+@pytest.fixture
+def test_journal(db_session: Session, test_user: User) -> Journal:
+    """테스트 유저(test_user)가 소유한 일기 fixture"""
+    journal = Journal(
+        title="Fixture Journal",
+        content="This is a journal created by a fixture.",
+        gratitude="Thankful for fixtures.",
+        user_id=test_user.id,
+    )
+    db_session.add(journal)
+    db_session.flush()
+
+    emotions_list = [
+        JournalEmotion(journal_id=journal.id, emotion="happy", intensity=5),
+        JournalEmotion(journal_id=journal.id, emotion="anxious", intensity=1),
+        JournalEmotion(journal_id=journal.id, emotion="calm", intensity=3),
+    ]
+    db_session.add_all(emotions_list)
+
+    keywords_list = [
+        JournalKeyword(
+            journal_id=journal.id,
+            keyword="keyword1",
+            emotion="happy",
+            summary="string1",
+            weight=0.9,
+        ),
+        JournalKeyword(
+            journal_id=journal.id,
+            keyword="keyword2",
+            emotion="anxious",
+            summary="string1",
+            weight=0.5,
+        ),
+    ]
+    db_session.add_all(keywords_list)
+
+    db_session.commit()
+    db_session.refresh(journal)
+    return journal
