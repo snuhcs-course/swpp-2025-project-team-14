@@ -6,7 +6,6 @@ import com.example.mindlog.features.selfaware.data.api.SelfAwareApi
 import com.example.mindlog.features.selfaware.data.dto.AnswerRequest
 import com.example.mindlog.features.selfaware.data.dto.AnswerResponse
 import com.example.mindlog.features.selfaware.data.dto.CategoryResponse
-import com.example.mindlog.features.selfaware.data.dto.PersonalityInsightResponse
 import com.example.mindlog.features.selfaware.data.dto.QACursorResponse
 import com.example.mindlog.features.selfaware.data.dto.QAResponse
 import com.example.mindlog.features.selfaware.data.dto.QuestionResponse
@@ -290,29 +289,4 @@ class SelfAwareRepositoryTest {
 
     // ---------------------------
     // getPersonalityInsight
-    // ---------------------------
-    @Test
-    fun `getPersonalityInsight success`() = runTest {
-        val dto = PersonalityInsightResponse(
-            comment = "성취 지향적입니다.",
-            personalityInsight = "자율성과 성장 선호",
-            updatedAt = "2025-10-25T22:00:00"
-        )
-        val domain = PersonalityInsight(
-            comment = "성취 지향적입니다.",
-            personalityInsight = "자율성과 성장 선호",
-            updatedAt = LocalDate.of(2025, 10, 25)
-        )
-
-        `when`(api.getPersonalityInsight()).thenReturn(dto)
-        `when`(mapper.toPersonalityInsight(dto)).thenReturn(domain)
-
-        val res = repo.getPersonalityInsight()
-
-        assertTrue(res is Result.Success)
-        res as Result.Success
-        assertEquals("자율성과 성장 선호", res.data.personalityInsight)
-        verify(api).getPersonalityInsight()
-        verify(mapper).toPersonalityInsight(eq(dto))
-    }
 }

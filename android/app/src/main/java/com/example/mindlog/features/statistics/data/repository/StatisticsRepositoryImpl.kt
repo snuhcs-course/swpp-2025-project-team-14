@@ -24,12 +24,10 @@ class StatisticsRepositoryImpl @Inject constructor(
 
     override suspend fun getEmotionRates(startDate: String, endDate: String): Result<List<EmotionRate>> = withContext(dispatcher.io) {
         runCatching {
-            Log.d("StatisticsRepositoryImpl", "getEmotionRates call")
             val dto = statisticsApi.getEmotionRates(
                 startDate = startDate,
                 endDate = endDate
             )
-            Log.d("StatisticsRepositoryImpl", "getEmotionRates: $dto")
             val emotionRates = dto.statistics.map(mapper::toEmotionRate)
             emotionRates.toList()
         }.toResult()
