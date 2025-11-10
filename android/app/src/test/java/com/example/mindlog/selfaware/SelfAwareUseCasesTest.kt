@@ -118,8 +118,4 @@ class SelfAwareUseCasesTest {
         verify(repo).getValueMap()
         verifyNoMoreInteractions(repo)
     }
-
-    // ------------------------------
-    // getPersonalityInsight
-    // ------------------------------
 }

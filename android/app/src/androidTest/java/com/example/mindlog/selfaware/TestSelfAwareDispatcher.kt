@@ -14,6 +14,7 @@ class TestSelfAwareDispatcher : Dispatcher() {
             path.startsWith("/self-aware/question") -> {
                 MockResponse()
                     .setResponseCode(200)
+                    .setHeader("Content-Type", "application/json")
                     .setBody(
                         // answer가 있는 경우
                         """
@@ -43,6 +44,7 @@ class TestSelfAwareDispatcher : Dispatcher() {
             path.startsWith("/self-aware/answer") && request.method == "POST" -> {
                 MockResponse()
                     .setResponseCode(200)
+                    .setHeader("Content-Type", "application/json")
                     .setBody(
                         """
                         {
@@ -61,15 +63,16 @@ class TestSelfAwareDispatcher : Dispatcher() {
             path.startsWith("/self-aware/value-map") -> {
                 MockResponse()
                     .setResponseCode(200)
+                    .setHeader("Content-Type", "application/json")
                     .setBody(
                         """
                         {
                           "category_scores": [
-                            {"category_en": ""Neuroticism"", "category_ko": "불안정성", "score": 72},
+                            {"category_en": "Neuroticism", "category_ko": "불안정성", "score": 72},
                             {"category_en": "Extroversion", "category_ko": "외향성", "score": 64},
                             {"category_en": "Openness", "category_ko": "개방성", "score": 58},
                             {"category_en": "Agreeableness", "category_ko": "수용성", "score": 61},
-                            {"category_en": "Conscientiousness", "category_ko": "성실성", "score": 70},
+                            {"category_en": "Conscientiousness", "category_ko": "성실성", "score": 70}
                           ],
                           "updated_at": "2025-10-26T09:30:00"
                         }
@@ -81,6 +84,7 @@ class TestSelfAwareDispatcher : Dispatcher() {
             path.startsWith("/self-aware/top-value-scores") -> {
                 MockResponse()
                     .setResponseCode(200)
+                    .setHeader("Content-Type", "application/json")
                     .setBody(
                         """
                         {
@@ -98,10 +102,11 @@ class TestSelfAwareDispatcher : Dispatcher() {
 
 
             // 6) 기록(페이징)
-            path.startsWith("/self-aware/history") -> {
+            path.startsWith("/self-aware/QA-history") -> {
                 // 매우 단순화된 더미(첫 페이지 10개, next_cursor=2)
                 MockResponse()
                     .setResponseCode(200)
+                    .setHeader("Content-Type", "application/json")
                     .setBody(
                         """
                         {

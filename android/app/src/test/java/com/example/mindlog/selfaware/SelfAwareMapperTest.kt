@@ -120,4 +120,5 @@ class SelfAwareMapperTest {
         assertEquals(80, domain.categoryScores[0].score)
         assertEquals(LocalDate.of(2025, 3, 18), domain.updatedAt)
     }
+
 }

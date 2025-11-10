@@ -286,7 +286,4 @@ class SelfAwareRepositoryTest {
         verify(api).getValueMap()
         verify(mapper).toValueMap(eq(dto))
     }
-
-    // ---------------------------
-    // getPersonalityInsight
 }
