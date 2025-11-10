@@ -1,9 +1,8 @@
 package com.example.mindlog.features.statistics.di
 
-import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.statistics.data.api.StatisticsApi
 import com.example.mindlog.features.statistics.data.repository.StatisticsRepositoryImpl
-import com.example.mindlog.features.statistics.domain.respository.StatisticsRepository
+import com.example.mindlog.features.statistics.domain.repository.StatisticsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

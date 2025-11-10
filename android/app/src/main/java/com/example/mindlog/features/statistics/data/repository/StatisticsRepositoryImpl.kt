@@ -1,7 +1,6 @@
 package com.example.mindlog.features.statistics.data.repository
 
 
-import android.util.Log
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.common.toResult
 import com.example.mindlog.core.dispatcher.DispatcherProvider
@@ -11,7 +10,7 @@ import com.example.mindlog.features.statistics.data.api.StatisticsApi
 import com.example.mindlog.features.statistics.data.mapper.StatisticsMapper
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.JournalStatistics
-import com.example.mindlog.features.statistics.domain.respository.StatisticsRepository
+import com.example.mindlog.features.statistics.domain.repository.StatisticsRepository
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 

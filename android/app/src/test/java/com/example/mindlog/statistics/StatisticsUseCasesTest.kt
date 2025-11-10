@@ -6,7 +6,7 @@ import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.example.mindlog.features.statistics.domain.model.JournalKeyword
 import com.example.mindlog.features.statistics.domain.model.JournalStatistics
-import com.example.mindlog.features.statistics.domain.respository.StatisticsRepository
+import com.example.mindlog.features.statistics.domain.repository.StatisticsRepository
 import com.example.mindlog.features.statistics.domain.usecase.GetEmotionRatesUseCase
 import com.example.mindlog.features.statistics.domain.usecase.GetJournalStatisticsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -1,4 +1,4 @@
-package com.example.mindlog.features.statistics.domain.respository
+package com.example.mindlog.features.statistics.domain.repository
 
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.statistics.domain.model.EmotionRate

@@ -1,7 +1,7 @@
 package com.example.mindlog.statistics
 
 import com.example.mindlog.features.statistics.di.StatisticsBindModule
-import com.example.mindlog.features.statistics.domain.respository.StatisticsRepository
+import com.example.mindlog.features.statistics.domain.repository.StatisticsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.components.SingletonComponent
