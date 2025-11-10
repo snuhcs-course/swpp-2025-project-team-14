@@ -4,13 +4,11 @@ import app.cash.turbine.test
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.CategoryScore
-import com.example.mindlog.features.selfaware.domain.model.PersonalityInsight
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 import com.example.mindlog.features.selfaware.domain.model.Question
 import com.example.mindlog.features.selfaware.domain.model.TopValueScores
 import com.example.mindlog.features.selfaware.domain.model.ValueMap
 import com.example.mindlog.features.selfaware.domain.model.ValueScore
-import com.example.mindlog.features.selfaware.domain.usecase.GetPersonalityInsightUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTodayQAUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTopValueScoresUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetValueMapUseCase

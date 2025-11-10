@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    id("jacoco")
 }
 
 android {
@@ -25,6 +26,9 @@ android {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
             // buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/v1/\"")
+
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
         }
         release {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
@@ -63,7 +67,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
-    // ✅ SavedState 추가 (Fragment / Nav 최신 버전 호환)
+    // SavedState 추가 (Fragment / Nav 최신 버전 호환)
     implementation("androidx.savedstate:savedstate-ktx:1.2.1")
     androidTestImplementation("androidx.savedstate:savedstate-ktx:1.2.1")
 
@@ -129,5 +133,157 @@ configurations.all {
         force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
         force("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
         force("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.10"   // 또는 최신 권장 버전
+}
+
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    // Ensure exec file is generated with Android unit tests (Robolectric, inline, etc.)
+    extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
+}
+
+tasks.register("unitTestCoverageReport", org.gradle.testing.jacoco.tasks.JacocoReport::class.java) {
+    dependsOn("testDebugUnitTest")
+
+    val excludes = listOf(
+        "**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+        "**/*Hilt*.*", "**/*_HiltModules*.*", "**/hilt_aggregated_deps/**",
+        "**/databinding/**", "**/BR.class"
+    )
+
+    val kotlinClassesDir = layout.buildDirectory.dir("tmp/kotlin-classes/debug").get().asFile
+    val javaClassesDir = layout.buildDirectory.dir("intermediates/javac/debug/classes").get().asFile
+    classDirectories.setFrom(
+        files(
+            fileTree(kotlinClassesDir) { exclude(excludes) },
+            fileTree(javaClassesDir) { exclude(excludes) }
+        )
+    )
+
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.asFile.get()) {
+            include(
+                "jacoco/testDebugUnitTest.exec",                               // classic
+                "outputs/unit_test_code_coverage/**/testDebugUnitTest.exec",   // AGP 7.x/8.x
+                "outputs/unit_test_code_coverage/**/*.exec"                    // fallback
+            )
+        }
+    )
+
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/unitTest"))
+    }
+}
+
+tasks.register("printUnitCoverageExecs") {
+    dependsOn("testDebugUnitTest")
+    doLast {
+        val tree = fileTree(layout.buildDirectory.asFile.get()) {
+            include(
+                "jacoco/testDebugUnitTest.exec",
+                "outputs/unit_test_code_coverage/**/testDebugUnitTest.exec",
+                "outputs/unit_test_code_coverage/**/*.exec"
+            )
+        }
+        println("\n[unit coverage] exec files found:\n" + tree.files.joinToString("\n") + "\n")
+    }
+}
+
+// ---- UI(androidTest) coverage helpers ----
+tasks.register("printAndroidCoverageEcs") {
+    dependsOn("connectedDebugAndroidTest")
+    doLast {
+        val tree = fileTree(layout.buildDirectory.asFile.get()) {
+            include(
+                "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
+                "outputs/code_coverage/**/*.ec"
+            )
+        }
+        println("\n[androidTest coverage] .ec files found:\n" + tree.files.joinToString("\n") + "\n")
+    }
+}
+
+// ---- Final merged HTML/XML report ----
+tasks.register("debugCoverageReport", org.gradle.testing.jacoco.tasks.JacocoReport::class.java) {
+    dependsOn("testDebugUnitTest", "connectedDebugAndroidTest")
+
+    val excludes = listOf(
+        "**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+        "**/*Hilt*.*", "**/*_HiltModules*.*", "**/hilt_aggregated_deps/**",
+        "**/databinding/**", "**/BR.class"
+    )
+
+    val kotlinClassesDir = layout.buildDirectory.dir("tmp/kotlin-classes/debug").get().asFile
+    val javaClassesDir = layout.buildDirectory.dir("intermediates/javac/debug/classes").get().asFile
+    classDirectories.setFrom(
+        files(
+            fileTree(kotlinClassesDir) { exclude(excludes) },
+            fileTree(javaClassesDir) { exclude(excludes) }
+        )
+    )
+
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    executionData.setFrom(
+        files(
+            // unit test exec candidates
+            fileTree(layout.buildDirectory.asFile.get()) {
+                include(
+                    "jacoco/testDebugUnitTest.exec",
+                    "outputs/unit_test_code_coverage/**/testDebugUnitTest.exec",
+                    "outputs/unit_test_code_coverage/**/*.exec"
+                )
+            },
+            // androidTest ec candidates
+            fileTree(layout.buildDirectory.asFile.get()) {
+                include(
+                    "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
+                    "outputs/code_coverage/**/*.ec"
+                )
+            }
+        )
+    )
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/mergedDebug"))
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/mergedDebug.xml"))
+    }
+}
+// ---- Convenience: run all tests and generate merged coverage in one go ----
+tasks.register("coverageAll") {
+    // Run unit tests -> run androidTest -> build merged coverage report
+    dependsOn(
+        "testDebugUnitTest",
+        "connectedDebugAndroidTest",
+        "debugCoverageReport"
+    )
+    doLast {
+        println(
+            "\n✅ Coverage reports generated:" +
+                "\n - Unit:      ${layout.buildDirectory.dir("reports/jacoco/unitTest").get().asFile}/index.html" +
+                "\n - Merged(UI+Unit): ${layout.buildDirectory.dir("reports/jacoco/mergedDebug").get().asFile}/index.html\n"
+        )
+    }
+}
+
+// (Optional) Unit-only quick coverage
+tasks.register("coverageUnitOnly") {
+    dependsOn("testDebugUnitTest", "unitTestCoverageReport")
+    doLast {
+        println(
+            "\n✅ Unit coverage report:" +
+                "\n - ${layout.buildDirectory.dir("reports/jacoco/unitTest").get().asFile}/index.html\n"
+        )
     }
 }

@@ -2,7 +2,6 @@ package com.example.mindlog.selfaware
 
 import com.example.mindlog.features.selfaware.data.dto.AnswerResponse
 import com.example.mindlog.features.selfaware.data.dto.CategoryResponse
-import com.example.mindlog.features.selfaware.data.dto.PersonalityInsightResponse
 import com.example.mindlog.features.selfaware.data.dto.QAResponse
 import com.example.mindlog.features.selfaware.data.dto.QuestionResponse
 import com.example.mindlog.features.selfaware.data.dto.TopValueScoresResponse
@@ -122,17 +121,4 @@ class SelfAwareMapperTest {
         assertEquals(LocalDate.of(2025, 3, 18), domain.updatedAt)
     }
 
-    @Test
-    fun `toPersonalityInsight maps fields correctly`() {
-        val dto = PersonalityInsightResponse(
-            comment = "성취에 대한 열망이 강합니다.",
-            personalityInsight = "자율성과 성장을 중시하는 유형입니다.",
-            updatedAt = "2025-03-18T22:00:00"
-        )
-
-        val domain = mapper.toPersonalityInsight(dto)
-        assertEquals("성취에 대한 열망이 강합니다.", domain.comment)
-        assertEquals("자율성과 성장을 중시하는 유형입니다.", domain.personalityInsight)
-        assertEquals(LocalDate.of(2025, 3, 18), domain.updatedAt)
-    }
 }

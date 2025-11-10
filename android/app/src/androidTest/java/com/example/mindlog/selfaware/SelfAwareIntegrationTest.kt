@@ -72,6 +72,7 @@ class SelfAwareIntegrationTest {
     @Test
     fun testGetTodayQuestionWithAnswer() = kotlinx.coroutines.runBlocking {
         val res = repo.getTodayQA(LocalDate.of(2025, 10, 25))
+
         assertTrue(res is Result.Success)
         val qa = (res as Result.Success).data
         assertNotNull(qa)
