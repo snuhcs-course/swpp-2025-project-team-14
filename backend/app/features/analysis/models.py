@@ -24,7 +24,7 @@ class Analysis(Base):
 
     user_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # 목표성취형
 
-    neo_pi_score:  Mapped[Optional[List[int]]] = mapped_column(JSON, nullable=True) # 확인 필요
+    neo_pi_score:  Mapped[Optional[dict]] = mapped_column(JSON, nullable=True) # 확인 필요
 
     comprehensive_analysis: Mapped[str | None] = mapped_column(Text, nullable=True)
 
