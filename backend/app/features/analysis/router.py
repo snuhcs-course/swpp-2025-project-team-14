@@ -33,6 +33,9 @@ from app.features.analysis.schemas.requests import (
     ComprehensiveAnalysisRequest,
     PersonalizedAdviceRequest
 )
+from app.features.analysis.service import (
+    AnalysisService
+)
 
 security = HTTPBearer()
 
@@ -50,12 +53,18 @@ router = APIRouter(prefix="/analysis", tags=["analysis"])
     response_model=UserTypeResponse,
 )
 def create_or_get_user_type(
+    analysis_service: Annotated[AnalysisService, Depends()],
     user: User = Depends(get_current_user)
 ) -> UserTypeResponse:
-    return None
+    analysis = analysis_service.get_analysis_by_user(user_id = user.id)
+    if analysis == None:
+        raise
+    if analysis.user_type == None:
+        analysis_service.update_user_type(user_id = user.id)
+    return UserTypeResponse.from_analysis(analysis)
 
 @router.get(
-    "/comprehensive-analysis",
+    "/comprehensive-analysis/{category}",
     status_code=status.HTTP_201_CREATED,
     summary="Create comprehensive-analysis if not exists. If exists, return the existing one.",
     response_model=ComprehensiveAnalysisResponse,
