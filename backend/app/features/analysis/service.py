@@ -64,10 +64,11 @@ from app.features.selfaware.personality_insight.data.en.prompts import (
 
 from app.features.analysis.models import Analysis
 from app.features.analysis.repository import AnalysisRepository
+from app.features.analysis.prompt import personalized_advice_prompt
 
 load_dotenv()
 
-class AnalysisServie:
+class AnalysisService:
     def __init__(
         self,
         answer_repository: AnswerRepository,
@@ -136,11 +137,38 @@ class AnalysisServie:
         neo_pi_score = self.evaluate_big_5_score(user_id, 23, "Male", flag = True)
         self.analysis_repository.update_analysis(user_id=user_id, neo_pi_score=neo_pi_score)
     
-    def evaluate_user_type(self, user_id, age, sex):
-        return None
+    def evaluate_user_type(self, user_id):
+        analysis = self.analysis_repository.get_analysis_by_user_id(user_id)
+        if analysis == None:
+            raise
+        score = analysis.neo_pi_score
+        if score == None:
+            raise
+        C, N, E, O, A = score['CONSCIENTIOUSNESS'], score['NEUROTICISM'], score['EXTRAVERSION'], score['OPENNESS'], score['AGREEABLENESS']
+        if C >= 65 and N <= 45:
+            return "목표 지향형"
+        if O >= 60 and E >= 60:
+            return "탐험가형"
+        if E >= 60 and A >= 60:
+            return "사교가형"
+        if C >= 60 and A >= 60:
+            return "배려형"
+        if O >= 60 and E <= 45:
+            return "사색가형"
+        if E >= 60 and A <= 45:
+            return "도전형"
+        if N <= 40 and C >= 50:
+            return "안정추구형"
+        if N >= 60 and O >= 60:
+            return "감성형"
+        if C >= 65 and O <= 45:
+            return "분석형"
+        if O >= 65 and C <= 45:
+            return "변화추구형"
+        return "균형형"
     
     def update_user_type(self, user_id: int):
-        user_type = self.evaluate_user_type(user_id, 23, "Male")
+        user_type = self.evaluate_user_type(user_id)
         self.analysis_repository.update_analysis(user_id=user_id, user_type=user_type)
 
     def get_comment_from_big_5_score(self, user_id, age, sex):
@@ -165,7 +193,21 @@ class AnalysisServie:
         self.analysis_repository.update_analysis(user_id=user_id, comprehensive_analysis=comprehensive_analysis)
 
     def extract_personalized_advice(self, user_id: int, age, sex):
-        return None
+        analysis = self.analysis_repository.get_analysis_by_user_id(user_id)
+        if analysis == None:
+            raise
+        score = analysis.neo_pi_score
+        if score == None:
+            raise
+
+        llm = ChatOpenAI(model="gpt-5-nano")
+        personalized_advice_chain = personalized_advice_prompt | llm | StrOutputParser()
+
+        theory = random.choice(["CBT", "ACT", "EQ"])
+
+        response = personalized_advice_chain.invoke({"theory": theory, "neo_pi_summary": score})
+
+        return response
     
     def update_personalized_advice(self, user_id: int):
         personalized_advice = self.extract_personalized_advice(user_id, 23, "Male")
