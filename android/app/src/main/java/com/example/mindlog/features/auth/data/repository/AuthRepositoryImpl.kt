@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -26,10 +27,12 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signup(
         loginId: String,
         password: String,
-        username: String
+        username: String,
+        gender: String,
+        birthDate: LocalDate
     ): Boolean = withContext(Dispatchers.IO) {
         try {
-            val resp = authApi.signup(SignupRequest(loginId, password, username)).execute()
+            val resp = authApi.signup(SignupRequest(loginId, password, username, gender, birthDate.toString())).execute()
             if (!resp.isSuccessful) return@withContext false
 
             // 서버가 회원가입 시 토큰을 줄 수도/안 줄 수도 있음 → 있으면 저장
