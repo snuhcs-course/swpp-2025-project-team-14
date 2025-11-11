@@ -36,6 +36,7 @@ from app.features.analysis.schemas.requests import (
 from app.features.analysis.service import (
     AnalysisService
 )
+from app.features.analysis.di import get_analysis_service
 
 security = HTTPBearer()
 
@@ -53,7 +54,7 @@ router = APIRouter(prefix="/analysis", tags=["analysis"])
     response_model=UserTypeResponse,
 )
 def create_or_get_user_type(
-    analysis_service: Annotated[AnalysisService, Depends()],
+    analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> UserTypeResponse:
     analysis = analysis_service.get_analysis_by_user(user_id = user.id)
@@ -70,9 +71,16 @@ def create_or_get_user_type(
     response_model=ComprehensiveAnalysisResponse,
 )
 def create_or_get_comprehensive_analysis(
+    category: str,
+    analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> ComprehensiveAnalysisResponse:
-    return None
+    analysis = analysis_service.get_analysis_by_user(user_id = user.id)
+    if analysis == None:
+        raise
+    if analysis.comprehensive_analysis == None:
+        analysis_service.update_comprehensive_analysis(user_id = user.id)
+    return ComprehensiveAnalysisResponse.from_analysis(analysis)
 
 @router.get(
     "/personalized-advice",
@@ -81,9 +89,15 @@ def create_or_get_comprehensive_analysis(
     response_model=PersonalizedAdviceResponse,
 )
 def create_or_get_personalized_advice(
+    analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> PersonalizedAdviceResponse:
-    return None
+    analysis = analysis_service.get_analysis_by_user(user_id = user.id)
+    if analysis == None:
+        raise
+    if analysis.personalized_advice == None:
+        analysis_service.update_personalized_advice(user_id = user.id)
+    return PersonalizedAdviceResponse.from_analysis(analysis)
 
 @router.patch(
     "/update",
