@@ -109,7 +109,7 @@ class AnswerRepository:
         )
 
     # user의 모든 answer를 반환... 아직 사용된 적 없는 듯 함. 가장 최근 하나를 사용하는 용도라면 all->first, Sequence->Optional
-    def get_by_user(self, user_id: int) -> Sequence[Answer]:
+    def get_by_user(self, user_id: int) -> list[Answer]:
         return (
             self.session.query(Answer)
             .filter(Answer.user_id == user_id)

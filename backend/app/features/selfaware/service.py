@@ -191,10 +191,12 @@ class AnswerService:
         )
         return answer
 
-
     def get_answer_by_question(self, question_id: int) -> Answer | None:
         return self.answer_repository.get_by_question(question_id)
     
+    def get_answer_by_user(self, user_id: int) -> list[Answer]:
+        return self.answer_repository.get_by_user(user_id)
+
     def list_answers_by_user(self, user_id: int, question_ids: List[int]) -> list[Answer]:
         return self.answer_repository.list_answers_by_user(user_id, question_ids)
 
