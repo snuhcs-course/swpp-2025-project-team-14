@@ -38,9 +38,22 @@ class ComprehensiveAnalysisResponse(BaseModel):
     updated_at: datetime
     
     @staticmethod
-    def from_analysis(analysis: Analysis) -> "ComprehensiveAnalysisResponse":
+    def from_analysis(analysis: Analysis, category) -> "ComprehensiveAnalysisResponse":
+        if category in ['CONSCIENTIOUSNESS', 'NEUROTICISM', 'EXTRAVERSION', 'OPENNESS', 'AGREEABLENESS']:
+            if category == 'CONSCIENTIOUSNESS':
+                comprehensive_analysis = analysis.conscientiousness
+            elif category == 'NEUROTICISM':
+                comprehensive_analysis = analysis.neuroticism
+            elif category == 'EXTRAVERSION':
+                comprehensive_analysis = analysis.extraversion
+            elif category == 'OPENNESS':
+                comprehensive_analysis = analysis.openness
+            else:
+                comprehensive_analysis = analysis.agreeableness
+        else:
+            raise Exception("Improper category")
         return ComprehensiveAnalysisResponse(
-            comprehensive_analysis=analysis.comprehensive_analysis,
+            comprehensive_analysis=comprehensive_analysis,
             updated_at=analysis.updated_at
         )
 

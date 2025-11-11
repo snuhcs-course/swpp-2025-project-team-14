@@ -44,8 +44,12 @@ class AnalysisRepository:
         self,
         user_id: int,
         user_type: Optional[str] = None,
-        neo_pi_score: Optional[List[int]] = None,
-        comprehensive_analysis: Optional[str] = None,
+        neo_pi_score: Optional[dict] = None,
+        conscientiousness: Optional[str] = None,
+        neuroticism: Optional[str] = None,
+        extraversion: Optional[str] = None,
+        openness: Optional[str] = None,
+        agreeableness: Optional[str] = None,
         advice_type: Optional[str] = None,
         personalized_advice: Optional[str] = None
     ):
@@ -57,8 +61,16 @@ class AnalysisRepository:
             analysis.user_type = user_type
         if neo_pi_score != None:
             analysis.neo_pi_score = neo_pi_score
-        if comprehensive_analysis != None:
-            analysis.comprehensive_analysis = comprehensive_analysis
+        if conscientiousness != None:
+            analysis.conscientiousness = conscientiousness
+        if neuroticism != None:
+            analysis.neuroticism = neuroticism
+        if extraversion != None:
+            analysis.extraversion = extraversion
+        if openness != None:
+            analysis.openness = openness
+        if agreeableness != None:
+            analysis.agreeableness = agreeableness
         if advice_type != None:
             analysis.advice_type = advice_type
         if personalized_advice != None:

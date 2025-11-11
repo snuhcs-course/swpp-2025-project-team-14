@@ -177,20 +177,20 @@ class AnalysisService:
         parser = StrOutputParser()
         llm = ChatOpenAI(model="gpt-5-nano")
         big_5_chain = big_5_prompt | llm | parser
-        total_comment_chain = total_comment_prompt | llm | parser
+        # total_comment_chain = total_comment_prompt | llm | parser
         a_response = big_5_chain.invoke({"big_5_explanations": agreeableness_explanations, "big_5_score": score_json})
         c_response = big_5_chain.invoke({"big_5_explanations": conscientiousness_explanations, "big_5_score": score_json})
         e_response = big_5_chain.invoke({"big_5_explanations": extraversion_explanations, "big_5_score": score_json})
         n_response = big_5_chain.invoke({"big_5_explanations": neuroticism_explanations, "big_5_score": score_json})
         o_response = big_5_chain.invoke({"big_5_explanations": openness_explanations, "big_5_score": score_json})
-        total_response = total_comment_chain.invoke({"a_response": a_response,"c_response": c_response,"e_response": e_response,"n_response": n_response,"o_response": o_response})
+        # total_response = total_comment_chain.invoke({"a_response": a_response,"c_response": c_response,"e_response": e_response,"n_response": n_response,"o_response": o_response})
         # example output
         # 당신은 타인에 대한 신뢰와 공감을 바탕으로 협력과 조화를 중시하는 성향이 강하고, 갈등을 피하며 상황에 따라 타협하는 균형 감각이 돋보입니다. 필요할 때는 진실되고 분명하게 자기주장을 표현하는 편이라, 다른 사람의 필요를 돕는 동시에 자신의 목소리도 잃지 않는 모습을 보입니다. 계획성과 체계성을 바탕으로 목표를 명확히 설정하고 꾸준히 달성하려는 자기효능감과 의무감이 강하며, 질서정돈과 성취추구, 자기절제의 특성이 뚜렷합니다. 즉흥적 선택보다는 신중한 판단을 우선하고, 어려운 과제도 끝까지 밀고 나가려는 지속성을 가지며, 상황에 맞춘 주의 집중력을 발휘합니다. 외향적이고 에너지 넘치는 사회적 성향으로 사람들과의 교류에서 활력을 얻되, 자신의 페이스를 지키는 여유도 함께 갖추고 있습니다. 미학과 아이디어에 대한 예민한 감수성과 창 의적 사고를 통해 추상적이고 상징적인 표현을 즐기고, 새로운 경험과 규범에 대한 도전 의식이 강합니다. 그러나 타인 평가에 예민하고 스트레스 상황에서 일시적으로 흔들릴 수 있어, 스트레 스 관리와 감정 조절이 도움이 될 수 있습니다. 전반적으로 구조화된 환경에서도 창의성과 대인 관계를 균형 있게 발휘하는 능력이 돋보이며, 과도한 완벽주의나 몰입으로 인한 부작용을 주의하면 더욱 생산성과 창의성을 폭넓게 확장할 수 있습니다.
-        return total_response
+        return a_response, c_response, e_response, n_response, o_response
     
     def update_comprehensive_analysis(self, user_id: int):
-        comprehensive_analysis = self.get_comment_from_big_5_score(user_id, 23, "Male")
-        self.analysis_repository.update_analysis(user_id=user_id, comprehensive_analysis=comprehensive_analysis)
+        a_response, c_response, e_response, n_response, o_response = self.get_comment_from_big_5_score(user_id, 23, "Male")
+        self.analysis_repository.update_analysis(user_id=user_id, conscientiousness=c_response, neuroticism=n_response, extraversion=e_response, openness=o_response, agreeableness=a_response)
 
     def extract_personalized_advice(self, user_id: int, age, sex):
         analysis = self.analysis_repository.get_analysis_by_user_id(user_id)

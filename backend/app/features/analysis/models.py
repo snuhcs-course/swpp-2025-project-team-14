@@ -26,7 +26,11 @@ class Analysis(Base):
 
     neo_pi_score:  Mapped[Optional[dict]] = mapped_column(JSON, nullable=True) # 확인 필요
 
-    comprehensive_analysis: Mapped[str | None] = mapped_column(Text, nullable=True)
+    conscientiousness: Mapped[str | None] = mapped_column(Text, nullable=True)
+    neuroticism: Mapped[str | None] = mapped_column(Text, nullable=True)
+    extraversion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    openness: Mapped[str | None] = mapped_column(Text, nullable=True)
+    agreeableness: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     advice_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # 조언 이론 유형
 
