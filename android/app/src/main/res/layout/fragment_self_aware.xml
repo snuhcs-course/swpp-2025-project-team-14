@@ -1,43 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/scroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:background="#F8F6F0"
     android:clipToPadding="false"
-    android:paddingBottom="96dp">
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="#F8F6F0"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="24dp">
+    android:padding="24dp">
 
-            <!-- 제목 -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:text="나 알아보기"
-                android:textColor="#2D3142"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                app:layout_constrainedWidth="true"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+    <!-- 제목 -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="나 알아보기"
+        android:textColor="#2D3142"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- 제목 하단 구분선 -->
-            <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/dividerTop"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_marginTop="5dp"
-                app:dividerColor="#636779"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+    <!-- 제목 하단 구분선 -->
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/dividerTop"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        app:dividerColor="#636779"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/dividerTop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/contentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="96dp">
 
             <!-- 카드 1 : 오늘의 질문 -->
             <com.google.android.material.card.MaterialCardView
@@ -48,10 +61,7 @@
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/dividerTop"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -120,31 +130,59 @@
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
                             android:layout_marginTop="10dp"
-                            android:text="답변 완료"
+                            android:text="답변 제출!"
                             android:textColor="#2D3142"
                             android:textSize="14sp"
                             app:cornerRadius="12dp"
                             android:backgroundTint="#EFE9DE"/>
                     </LinearLayout>
 
-                    <!-- 완료 UI가 필요하면 여기 아래에 groupCompleted 추가 (GONE/ VISIBLE 토글) -->
+                    <!-- 완료 오버레이 뷰 (처음엔 GONE) -->
+                    <FrameLayout
+                        android:id="@+id/completionOverlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:visibility="gone">
 
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_gravity="center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                            <!-- ✅ 벡터 아이콘으로 교체 -->
+                            <ImageView
+                                android:id="@+id/ivCheck"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:contentDescription="답변 완료 표시 아이콘"
+                                app:srcCompat="@drawable/ic_success_check" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="오늘 답변 완료!"
+                                android:textSize="16sp"
+                                android:textColor="#2D3142"
+                                android:layout_marginTop="12dp"/>
+                        </LinearLayout>
+                    </FrameLayout>
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
             <!-- 카드 2 : 나의 가치 지도 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardValueMap"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardQuestion"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -160,14 +198,23 @@
                         android:textColor="#636779"
                         android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/ivRadar"
+                    <!-- cardValueMap 안의 groupValueMapLoading에 추가 -->
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/progressValueMap"
+                        style="@style/Widget.Material3.CircularProgressIndicator"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        app:indicatorSize="48dp"
+                        app:trackThickness="4dp"
+                        app:indicatorColor="#64B5F6"
+                        android:visibility="gone"/>
+
+                    <com.github.mikephil.charting.charts.RadarChart
+                        android:id="@+id/radar"
                         android:layout_width="match_parent"
-                        android:layout_height="180dp"
-                        android:layout_marginTop="12dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/ic_analysis_placeholder"
-                        android:contentDescription="@null" />
+                        android:layout_height="240dp"
+                        android:background="#F3F1EB"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvValueSummary"
@@ -180,59 +227,16 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 카드 3 : 성격 및 성향 분석 -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardPersonality"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                app:cardBackgroundColor="#F3F1EB"
-                app:cardUseCompatPadding="false"
-                app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardValueMap"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvPersonalityTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="성격 및 성향 분석"
-                        android:textColor="#636779"
-                        android:textSize="14sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvPersonality"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="당신의 성격과 성향에 대한 분석 결과가 표시됩니다."
-                        android:textColor="#2D3142"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="2dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
             <!-- 카드 4 : 핵심 가치 키워드 -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardKeywords"
-                android:layout_width="0dp"
+                android:id="@+id/cardTopValueScores"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardPersonality"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -241,7 +245,7 @@
                     android:padding="16dp">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvKeywordTitle"
+                        android:id="@+id/tvTopValueScores"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="핵심 가치 키워드"
@@ -257,6 +261,7 @@
                         app:chipSpacingHorizontal="10dp">
 
                         <com.google.android.material.chip.Chip
+                            android:id="@+id/chipValueFirst"
                             style="@style/Widget.Material3.Chip.Assist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -269,6 +274,7 @@
                             app:ensureMinTouchTargetSize="false"/>
 
                         <com.google.android.material.chip.Chip
+                            android:id="@+id/chipValueSecond"
                             style="@style/Widget.Material3.Chip.Assist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -281,6 +287,7 @@
                             app:ensureMinTouchTargetSize="false"/>
 
                         <com.google.android.material.chip.Chip
+                            android:id="@+id/chipValueThird"
                             style="@style/Widget.Material3.Chip.Assist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -293,6 +300,7 @@
                             app:ensureMinTouchTargetSize="false"/>
 
                         <com.google.android.material.chip.Chip
+                            android:id="@+id/chipValueFourth"
                             style="@style/Widget.Material3.Chip.Assist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -305,6 +313,7 @@
                             app:ensureMinTouchTargetSize="false"/>
 
                         <com.google.android.material.chip.Chip
+                            android:id="@+id/chipValueFifth"
                             style="@style/Widget.Material3.Chip.Assist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -318,11 +327,10 @@
                     </com.google.android.material.chip.ChipGroup>
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvKeywordSummary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="당신이 자주 언급한 가치가 여기에 표시됩니다."
+                        android:text="사용자님이 중시하는 가치들은 위와 같아요."
                         android:textColor="#636779"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -331,17 +339,15 @@
             <!-- 하단: 답변 기록 보기 버튼 (카드 느낌 버튼) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnOpenHistory"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="15dp"
                 android:text="나의 답변 기록 보기 →"
                 android:textStyle="bold"
                 android:textColor="#2D3142"
                 app:backgroundTint="#F3F1EB"
-                app:cornerRadius="16dp"
-                app:layout_constraintTop_toBottomOf="@id/cardKeywords"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:cornerRadius="16dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
