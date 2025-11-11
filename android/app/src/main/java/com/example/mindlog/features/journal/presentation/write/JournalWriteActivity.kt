@@ -28,8 +28,6 @@ class JournalWriteActivity : AppCompatActivity() {
     private val emotionSelectFragment by lazy { EmotionSelectFragment() }
     private val contentWriteFragment by lazy { ContentWriteFragment() }
 
-    private var loadingDialog: Dialog? = null
-
     // 1. ViewModel을 주입받음
     private val viewModel: JournalWriteViewModel by viewModels()
 
@@ -49,7 +47,6 @@ class JournalWriteActivity : AppCompatActivity() {
 
         setupButtonClickListeners()
         setupOnBackPressed()
-        setupLoadingDialog()
         observeViewModel() // 3. ViewModel의 상태 변화를 관찰하는 함수 호출
     }
 
@@ -96,25 +93,8 @@ class JournalWriteActivity : AppCompatActivity() {
                 }
             }
         }
-
-        lifecycleScope.launch {
-            viewModel.isLoading.collect { isLoading ->
-                if (isLoading) {
-                    loadingDialog?.show()
-                } else {
-                    loadingDialog?.dismiss()
-                }
-            }
-        }
     }
 
-    private fun setupLoadingDialog() {
-        loadingDialog = Dialog(this).apply {
-            setContentView(R.layout.dialog_loading)
-            setCancelable(false)
-            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
-    }
     private fun handleBackButton() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()

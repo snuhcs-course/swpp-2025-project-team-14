@@ -12,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException // ✨ 올바른 HttpException을 사용합니다.
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 class JournalRepositoryImpl @Inject constructor(
@@ -129,9 +130,15 @@ class JournalRepositoryImpl @Inject constructor(
     }
 
     override suspend fun generateImage(style: String, content: String): String {
-        val request = GenerateImageRequest(style = style, content = content)
-        val response = journalApi.generateImage(request)
-        return response.imageBase64
+        try {
+            val request = GenerateImageRequest(style = style, content = content)
+            val response = journalApi.generateImage(request)
+            return response.imageBase64
+        } catch (e: SocketTimeoutException) {
+            throw RuntimeException("이미지 생성 시간이 초과되었어요. 잠시 후 다시 시도해 주세요.", e)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun extractKeywords(journalId: Int): KeywordListResponse {

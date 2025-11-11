@@ -183,6 +183,7 @@ class JournalWriteViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+                noImage.emit(true)
             } finally {
                 isLoading.value = false
             }

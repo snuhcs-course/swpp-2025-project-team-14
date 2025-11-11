@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
-        <!-- 제목, 날짜, 이미지 등 상단 부분 (변경 없음) -->
+        <!-- 제목, 날짜 등 상단 부분 -->
         <TextView
             android:id="@+id/label_title"
             android:layout_width="wrap_content"
@@ -63,6 +63,60 @@
             app:layout_constraintTop_toBottomOf="@id/divider_title"
             app:layout_constraintStart_toStartOf="parent"/>
 
+        <!-- 이미지 미리보기와 로딩 인디케이터를 담는 컨테이너 (기본: 숨김) -->
+        <FrameLayout
+            android:id="@+id/image_container"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/tv_date"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- 이미지 미리보기 -->
+            <ImageView
+                android:id="@+id/iv_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <!-- ✨ [핵심 수정 1] 로딩 시 어두워지는 오버레이 -->
+            <View
+                android:id="@+id/image_loading_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80000000"
+                android:visibility="gone" />
+
+            <!-- ✨ [핵심 수정 2] 로딩 아이콘과 텍스트를 묶는 그룹 -->
+            <LinearLayout
+                android:id="@+id/image_loading_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_gravity="center"
+                android:visibility="gone">
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminateTint="@color/white"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="이미지 생성중..."
+                    android:textColor="@color/white"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+
+        </FrameLayout>
+
         <FrameLayout
             android:id="@+id/layout_add_image"
             android:layout_width="0dp"
@@ -79,21 +133,38 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="사진을 추가해 보세요"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp" />
+                android:drawablePadding="8dp"
+                android:gravity="center"
+                android:text="사진을 추가해보세요."
+                android:textColor="@color/text_secondary"/>
 
-            <ImageView
-                android:id="@+id/iv_preview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
+            <LinearLayout
+                android:id="@+id/placeholder_loading_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_gravity="center"
                 android:visibility="gone"
-                tools:srcCompat="@tools:sample/backgrounds/scenic" />
+                tools:visibility="visible">
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="이미지 생성중..."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"/>
+            </LinearLayout>
 
         </FrameLayout>
 
-
+        <!-- 이하 나머지 레이아웃은 동일 -->
         <TextView
             android:id="@+id/label_content"
             android:layout_width="wrap_content"
@@ -102,7 +173,7 @@
             android:text="오늘의 하루"
             android:textColor="@color/text_secondary"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/layout_add_image"
+            app:layout_constraintTop_toBottomOf="@id/image_container"
             app:layout_constraintStart_toStartOf="parent"/>
 
         <EditText
