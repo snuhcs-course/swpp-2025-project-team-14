@@ -10,6 +10,8 @@ from app.database.base import Base
 if TYPE_CHECKING:
     from app.features.user.models import User
 
+from app.common.utilities import get_korea_time
+
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -25,9 +27,9 @@ class Question(Base):
     question_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # single_category | multi_category | personalized_category
     text: Mapped[str] = mapped_column(Text, nullable=False)
     
-    date: Mapped[date] = mapped_column(Date, default=lambda: utcnow().date(), nullable=False)
+    date: Mapped[date] = mapped_column(Date, default=lambda: get_korea_time().date(), nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, nullable=False)
 
     user: Mapped[User] = relationship(back_populates="questions")
     answers: Mapped[Answer] = relationship(back_populates="question", uselist=False, cascade="all, delete-orphan")
@@ -48,8 +50,8 @@ class Answer(Base):
 
     keywords: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True) # 확인 필요
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, onupdate=get_korea_time, nullable=False)
 
     user: Mapped[User] = relationship(back_populates="answers")
     question: Mapped[Question] = relationship(back_populates="answers")
@@ -82,7 +84,7 @@ class ValueScore(Base):
 
     # 증거(문장/구) — 최대 2개 저장 추천
     evidence_quotes: Mapped[Optional[List[str]]] = mapped_column(JSON)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, nullable=False)
     
     answer: Mapped[Answer] = relationship(back_populates="value_scores")
 
@@ -108,8 +110,8 @@ class ValueMap(Base):
     count_4: Mapped[int] = mapped_column(Integer, nullable=False, default = 0)
 
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, onupdate=get_korea_time, nullable=False)
 
     comment: Mapped[str] = mapped_column(Text, nullable=True)
     personality_insight: Mapped[str] = mapped_column(Text, nullable=True)

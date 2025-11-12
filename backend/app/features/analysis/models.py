@@ -10,6 +10,8 @@ from app.database.base import Base
 if TYPE_CHECKING:
     from app.features.user.models import User
 
+from app.common.utilities import get_korea_time
+
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -36,7 +38,7 @@ class Analysis(Base):
 
     personalized_advice: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, onupdate=get_korea_time, nullable=False)
 
     user: Mapped[User] = relationship(back_populates="analysis")
