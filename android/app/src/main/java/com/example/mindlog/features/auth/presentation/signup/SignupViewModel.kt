@@ -4,17 +4,19 @@ import com.example.mindlog.core.common.Result
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.sql.Date
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import java.time.LocalDate
 
 
 @HiltViewModel
 class SignupViewModel @Inject constructor(
-    private val signupUseCase: SignupUseCase
+    private val signupUseCase: SignupUseCase,
+    private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
     val signupResult = MutableLiveData<Boolean>()
@@ -27,17 +29,19 @@ class SignupViewModel @Inject constructor(
         gender: String,
         birthDate: LocalDate
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher.io) {
             when (val result = signupUseCase(loginId, password, username, gender, birthDate)) {
                 is Result.Success -> {
-                    signupResult.value = result.data   // true / false 값 그대로 전달
-                    errorMessage.value = null
+                    withContext(dispatcher.main) {
+                        signupResult.value = result.data
+                        errorMessage.value = null
+                    }
                 }
-
                 is Result.Error -> {
-                    signupResult.value = false
-                    errorMessage.value =
-                        result.message ?: "회원가입 중 오류가 발생했습니다 (${result.code ?: "unknown"})"
+                    withContext(dispatcher.main) {
+                        signupResult.value = false
+                        errorMessage.value = result.message ?: "회원가입 중 오류 발생"
+                    }
                 }
             }
         }
