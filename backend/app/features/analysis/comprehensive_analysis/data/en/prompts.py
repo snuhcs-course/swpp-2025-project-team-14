@@ -566,23 +566,7 @@ big_5_prompt = ChatPromptTemplate.from_template(
     {big_5_score}
 
     - 단, 분석에 value와 score를 직접적으로 언급하지 말아줘.
-    - 사용자의 점수 중, 점수 설명에서 언급된 부분만 초점을 두어 설명해줘.
-    """
-)
-
-total_comment_prompt = ChatPromptTemplate.from_template(
-    """다음은 사용자의 성향을 5가지 관점에서 각각 분석한 글입니다.
-
-    {a_response}
-
-    {c_response}
-
-    {e_response}
-
-    {n_response}
-
-    {o_response}
-
-    다음 글을 토대로 사용자의 성향을 분석한 최대 10문장 길이의 하나의 글로 정리하세요.
+    - 사용자의 점수 중, 점수 설명에서 언급된 카테고리 에만 초점을 두어 설명해줘.
+    - 2, 3문장 내외로 정리해줘.
     """
 )
