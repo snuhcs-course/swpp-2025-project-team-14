@@ -9,12 +9,12 @@ from langchain_core.output_parsers import StrOutputParser
 from app.features.selfaware.repository import (
     AnswerRepository, 
 )
-from app.features.selfaware.personality_insight.score import (
+from app.features.analysis.comprehensive_analysis.score import (
     questions, choices, prompt, 
     NeoPiAnswers
 )
-from app.features.selfaware.personality_insight.evaluator import evaluate
-from app.features.selfaware.personality_insight.data.en.prompts import (
+from app.features.analysis.comprehensive_analysis.evaluator import evaluate
+from app.features.analysis.comprehensive_analysis.data.en.prompts import (
     big_5_prompt, 
     extraversion_explanations, 
     openness_explanations, 
