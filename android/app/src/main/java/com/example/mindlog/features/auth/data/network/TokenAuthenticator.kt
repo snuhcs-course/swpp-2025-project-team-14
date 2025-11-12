@@ -29,11 +29,9 @@ class TokenAuthenticator @Inject constructor(
         }
 
         return try {
-            val res = refreshApi.refresh(RefreshTokenRequest(refresh)).execute()
-            if (!res.isSuccessful) return null
-            val body = res.body() ?: return null
-            val newAccess = body.data.access ?: return null
-            val newRefresh = body.data.refresh ?: refresh
+            val res = refreshApi.refresh(RefreshTokenRequest(refresh))
+            val newAccess = res.access ?: return null
+            val newRefresh = res.refresh ?: refresh
 
             tokenManager.saveTokens(newAccess, newRefresh)
 
