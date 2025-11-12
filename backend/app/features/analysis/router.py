@@ -1,37 +1,22 @@
 from datetime import date, datetime, timezone
 from typing import Annotated
-import asyncio
-from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
 from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
 from app.features.user.models import User
-from app.features.selfaware.models import Question
-from app.features.analysis.models import Analysis
 
 from app.features.selfaware.service import (
-    QuestionService,
     AnswerService,
-    ValueMapService,
-    ValueScoreService,
 )
 from app.features.selfaware.di import (
-    get_question_service,
     get_answer_service,
-    get_value_map_service,
-    get_value_score_service,
 )
 
 from app.features.analysis.schemas.responses import (
     UserTypeResponse,
     ComprehensiveAnalysisResponse,
     PersonalizedAdviceResponse
-)
-from app.features.analysis.schemas.requests import (
-    UserTypeRequest,
-    ComprehensiveAnalysisRequest,
-    PersonalizedAdviceRequest
 )
 from app.features.analysis.service import (
     AnalysisService
