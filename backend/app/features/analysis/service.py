@@ -131,12 +131,10 @@ class AnalysisService:
     
     def evaluate_big_5_score(self, user_id, age, sex, flag = False):
         neo_pi = self.extract_neo_pi_from_answer(user_id)
-        print(neo_pi)
         return evaluate(neo_pi, sex, age, flag)
     
     def update_neo_pi_score(self, user_id: int):
         neo_pi_score = self.evaluate_big_5_score(user_id, 23, "Male", flag = False)
-        print(neo_pi_score)
         self.analysis_repository.update_analysis(user_id=user_id, neo_pi_score=neo_pi_score)
     
     def evaluate_user_type(self, user_id):
@@ -178,7 +176,6 @@ class AnalysisService:
         if analysis == None or analysis.neo_pi_score == None:
             raise
         score_json = json.dumps(analysis.neo_pi_score, indent=4)
-        print(score_json)
         parser = StrOutputParser()
         llm = ChatOpenAI(model="gpt-5-nano")
         big_5_chain = big_5_prompt | llm | parser
