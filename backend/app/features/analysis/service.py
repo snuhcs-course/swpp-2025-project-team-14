@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Annotated, List, Optional, Literal, Dict, Any, Tuple
 from datetime import datetime, timezone, date
-import random
+import random, json
 from app.core.config import settings
 from dotenv import load_dotenv
 
@@ -172,7 +172,10 @@ class AnalysisService:
         self.analysis_repository.update_analysis(user_id=user_id, user_type=user_type)
 
     def get_comment_from_big_5_score(self, user_id, age, sex):
-        score_json = self.evaluate_big_5_score(user_id, age, sex)
+        analysis = self.get_analysis_by_user(user_id)
+        if analysis == None or analysis.neo_pi_score == None:
+            raise
+        score_json = json.dumps(analysis.neo_pi_score, indent=4)
         print(score_json)
         parser = StrOutputParser()
         llm = ChatOpenAI(model="gpt-5-nano")

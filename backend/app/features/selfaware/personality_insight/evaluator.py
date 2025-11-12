@@ -333,4 +333,4 @@ def evaluate(Q, Sex, Age, flag = False):
         for i in range(1, len(labels)):
             m[labels[i]] = SOFP[i]
 
-        return json.dumps(m, indent=4)
+        return m
