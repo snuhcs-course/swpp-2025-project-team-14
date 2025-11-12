@@ -72,7 +72,7 @@ class JournalService:
     def get_journal(self, journal_id: int) -> Journal | None:
         journal = self.journal_repository.get_journal_by_id(journal_id)
         if journal is None:
-            raise JournalNotFoundError()
+            raise JournalNotFoundError(journal_id)
         return journal
 
     def delete_journal(self, journal_id: int) -> None:

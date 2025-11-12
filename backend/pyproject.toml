@@ -24,11 +24,14 @@ boto3 = "^1.40.51"
 langchain = "^0.3.27"
 openai = "^2.4.0"
 langchain-openai = "^0.3.35"
+tzdata = "^2025.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
 ruff = "^0.14.0"
 pre-commit = "^4.3.0"
+pytest-asyncio = "^1.2.0"
+pytest-cov = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
