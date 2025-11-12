@@ -82,9 +82,7 @@ def create_or_get_user_type(
 ) -> UserTypeResponse:
     analysis = analysis_service.get_analysis_by_user(user_id = user.id)
     if analysis == None:
-        raise
-    if analysis.user_type == None:
-        analysis_service.update_user_type(user_id = user.id)
+        raise Exception("User should write selfaware answer first.")
     return UserTypeResponse.from_analysis(analysis)
 
 @router.get(
@@ -102,9 +100,7 @@ def create_or_get_comprehensive_analysis(
         raise
     analysis = analysis_service.get_analysis_by_user(user_id = user.id)
     if analysis == None:
-        raise
-    if analysis.neo_pi_score == None: # neo_pi_score, comprehensive_analysis는 같이 업데이트 됨
-        analysis_service.update_comprehensive_analysis(user_id = user.id)
+        raise Exception("User should write selfaware answer first.")
     return ComprehensiveAnalysisResponse.from_analysis(analysis, category)
 
 @router.get(
@@ -119,8 +115,8 @@ def create_or_get_personalized_advice(
 ) -> PersonalizedAdviceResponse:
     analysis = analysis_service.get_analysis_by_user(user_id = user.id)
     if analysis == None:
-        raise
-    if analysis.personalized_advice == None or utcnow().date() != analysis.updated_at.date():
+        raise Exception("User should write selfaware answer first.")
+    if utcnow().date() != analysis.updated_at.date():
         analysis_service.update_personalized_advice(user_id = user.id)
     return PersonalizedAdviceResponse.from_analysis(analysis)
 
