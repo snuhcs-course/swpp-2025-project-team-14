@@ -47,6 +47,7 @@ def update_analysis_table(
         analysis_service.update_comprehensive_analysis(user_id)
         print("Start updating personalized_advice")
         analysis_service.update_personalized_advice(user_id)
+        print("Analysis updated")
     except Exception as e:
         print(f"Error processing updating analysis table for user {user_id}: {e}")
         # 로깅을 위해 에러를 출력하지만 예외를 다시 발생시키지 않음
