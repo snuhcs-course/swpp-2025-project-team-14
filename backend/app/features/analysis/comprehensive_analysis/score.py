@@ -31,7 +31,7 @@ def load_questions_with_keyed(path: str) -> list[str]:
     return results
 
 
-questions = load_questions_with_keyed("app/features/selfaware/personality_insight/data/ko/questions.ts")
+questions = load_questions_with_keyed("app/features/analysis/comprehensive_analysis/data/ko/questions.ts")
 
 choices = """
 각 문항에 대해 1부터 5까지의 5점 척도로 응답합니다.
