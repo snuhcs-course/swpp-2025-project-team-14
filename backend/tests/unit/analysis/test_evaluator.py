@@ -7,7 +7,7 @@ from app.features.analysis.comprehensive_analysis.evaluator import evaluate
 @pytest.fixture
 def sample_responses():
     # 120문항 모두 3점으로 가정 (중간 응답)
-    return [3] * 120
+    return [3] * 121
 
 # -------------------------------
 # 1️⃣ 정상 작동 테스트
