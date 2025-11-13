@@ -75,16 +75,13 @@ def get_user_type(
     response_model=ComprehensiveAnalysisResponse,
 )
 def get_comprehensive_analysis(
-    category: str,
     analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> ComprehensiveAnalysisResponse:
-    if category not in ['CONSCIENTIOUSNESS', 'NEUROTICISM', 'EXTRAVERSION', 'OPENNESS', 'AGREEABLENESS']:
-        raise
     analysis = analysis_service.get_analysis_by_user(user_id = user.id)
     if analysis == None:
         raise Exception("User should write selfaware answer first.")
-    return ComprehensiveAnalysisResponse.from_analysis(analysis, category)
+    return ComprehensiveAnalysisResponse.from_analysis(analysis)
 
 @router.get(
     "/personalized-advice",

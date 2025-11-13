@@ -34,26 +34,21 @@ class UserTypeResponse(BaseModel):
         )
 
 class ComprehensiveAnalysisResponse(BaseModel):
-    comprehensive_analysis: Optional[str] = None
+    conscientiousness: Optional[str] = None
+    neuroticism: Optional[str] = None
+    extraversion: Optional[str] = None
+    openness: Optional[str] = None
+    agreeableness: Optional[str] = None
     updated_at: datetime
     
     @staticmethod
-    def from_analysis(analysis: Analysis, category) -> "ComprehensiveAnalysisResponse":
-        if category in ['CONSCIENTIOUSNESS', 'NEUROTICISM', 'EXTRAVERSION', 'OPENNESS', 'AGREEABLENESS']:
-            if category == 'CONSCIENTIOUSNESS':
-                comprehensive_analysis = analysis.conscientiousness
-            elif category == 'NEUROTICISM':
-                comprehensive_analysis = analysis.neuroticism
-            elif category == 'EXTRAVERSION':
-                comprehensive_analysis = analysis.extraversion
-            elif category == 'OPENNESS':
-                comprehensive_analysis = analysis.openness
-            else:
-                comprehensive_analysis = analysis.agreeableness
-        else:
-            raise Exception("Improper category")
+    def from_analysis(analysis: Analysis) -> "ComprehensiveAnalysisResponse":
         return ComprehensiveAnalysisResponse(
-            comprehensive_analysis=comprehensive_analysis,
+            conscientiousness = analysis.conscientiousness,
+            neuroticism = analysis.neuroticism,
+            extraversion = analysis.extraversion,
+            openness = analysis.openness,
+            agreeableness = analysis.agreeableness,
             updated_at=analysis.updated_at
         )
 
