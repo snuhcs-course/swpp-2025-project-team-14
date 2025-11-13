@@ -69,7 +69,7 @@ def get_user_type(
     return UserTypeResponse.from_analysis(analysis)
 
 @router.get(
-    "/comprehensive-analysis/{category}",
+    "/comprehensive-analysis",
     status_code=status.HTTP_201_CREATED,
     summary="Create comprehensive-analysis if not exists. If exists, return the existing one.",
     response_model=ComprehensiveAnalysisResponse,
