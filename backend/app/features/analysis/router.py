@@ -59,7 +59,7 @@ def update_analysis_table(
     summary="Create user_type if not exists. If exists, return the existing one.",
     response_model=UserTypeResponse,
 )
-def create_or_get_user_type(
+def get_user_type(
     analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> UserTypeResponse:
@@ -74,7 +74,7 @@ def create_or_get_user_type(
     summary="Create comprehensive-analysis if not exists. If exists, return the existing one.",
     response_model=ComprehensiveAnalysisResponse,
 )
-def create_or_get_comprehensive_analysis(
+def get_comprehensive_analysis(
     category: str,
     analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
@@ -92,7 +92,7 @@ def create_or_get_comprehensive_analysis(
     summary="Create a new personalized-advice if not generated today. If not, return the existing one.",
     response_model=PersonalizedAdviceResponse,
 )
-def create_or_get_personalized_advice(
+def update_or_get_personalized_advice(
     analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> PersonalizedAdviceResponse:
