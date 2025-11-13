@@ -1,12 +1,14 @@
 import re
 from typing import Annotated
 
-from fastapi import HTTPException
 from pydantic import BaseModel
 from pydantic.functional_validators import AfterValidator
 
+from app.common.errors import InvalidFieldFormatError
+
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 LOGIN_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_.]{6,20}$")
+GENDER = {"F", "M"}
 
 
 def validate_username(value: str | None) -> str | None:
@@ -14,7 +16,7 @@ def validate_username(value: str | None) -> str | None:
     if value is None:
         return value
     if not re.match(USERNAME_PATTERN, value):
-        raise HTTPException(status_code=400, detail="Invalid username format")
+        raise InvalidFieldFormatError("username")
     return value
 
 
@@ -23,7 +25,7 @@ def validate_login_id(value: str | None) -> str | None:
     if value is None:
         return value
     if not re.match(LOGIN_ID_PATTERN, value):
-        raise HTTPException(status_code=400, detail="Invalid login_id format")
+        raise InvalidFieldFormatError("Login_id")
     return value
 
 
@@ -32,7 +34,7 @@ def validate_password(value: str | None) -> str | None:
     if value is None:
         return value
     if len(value) < 8 or len(value) > 20:
-        raise HTTPException(status_code=400, detail="Invalid password format")
+        raise InvalidFieldFormatError("password")
 
     contains_uppercase = False
     contains_lowercase = False
@@ -53,8 +55,20 @@ def validate_password(value: str | None) -> str | None:
         [contains_uppercase, contains_lowercase, contains_digit, contains_special]
     )
     if constraints_cardinality < 2:
-        raise HTTPException(status_code=400, detail="Invalid password format")
+        raise InvalidFieldFormatError("password")
 
+    return value
+
+
+def validate_gender(value: str) -> str:
+    if value not in GENDER:
+        raise InvalidFieldFormatError("gender")
+    return value
+
+
+def validate_age(value: int) -> int:
+    if value <= 0 or value >= 120:
+        raise InvalidFieldFormatError("age")
     return value
 
 
@@ -62,6 +76,8 @@ class SignupRequest(BaseModel):
     login_id: Annotated[str, AfterValidator(validate_login_id)]
     password: Annotated[str, AfterValidator(validate_password)]
     username: Annotated[str, AfterValidator(validate_username)]
+    gender: Annotated[str, AfterValidator(validate_gender)]
+    age: Annotated[int, AfterValidator(validate_age)]
 
 
 class LoginRequest(BaseModel):

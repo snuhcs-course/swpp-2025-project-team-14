@@ -1,12 +1,10 @@
 from pydantic import BaseModel
 
-from app.common.schemas import ResponseEnvelope
-
 
 class TokenResponse(BaseModel):
     access: str
     refresh: str
 
-
-class TokenResponseEnvelope(ResponseEnvelope):
-    data: TokenResponse
+    @staticmethod
+    def from_token(access: str, refresh: str) -> "TokenResponse":
+        return TokenResponse(access=access, refresh=refresh)

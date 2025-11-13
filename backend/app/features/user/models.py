@@ -18,6 +18,9 @@ class User(Base):
     login_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
     username: Mapped[str] = mapped_column(String(100), nullable=True)
+    gender: Mapped[str] = mapped_column(String(50), nullable=False)
+    age: Mapped[int] = mapped_column(Integer, nullable=False)
+    appearance: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     journals: Mapped[list[Journal]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
