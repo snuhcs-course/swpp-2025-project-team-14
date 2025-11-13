@@ -2,7 +2,7 @@ from datetime import date, datetime, timezone
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
 from fastapi.security import HTTPBearer
-
+from app.common.utilities import get_korea_time
 from app.common.authorization import get_current_user
 from app.features.user.models import User
 
@@ -22,9 +22,6 @@ from app.features.analysis.service import (
     AnalysisService
 )
 from app.features.analysis.di import get_analysis_service
-
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 
 security = HTTPBearer()
 
@@ -102,7 +99,7 @@ def create_or_get_personalized_advice(
     analysis = analysis_service.get_analysis_by_user(user_id = user.id)
     if analysis == None:
         raise Exception("User should write selfaware answer first.")
-    if utcnow().date() != analysis.updated_at.date():
+    if get_korea_time().date() != analysis.updated_at.date():
         analysis_service.update_personalized_advice(user_id = user.id)
     return PersonalizedAdviceResponse.from_analysis(analysis)
 
