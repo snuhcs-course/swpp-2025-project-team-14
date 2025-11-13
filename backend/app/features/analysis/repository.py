@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from fastapi import Depends
 from sqlalchemy import select, func, desc
 from sqlalchemy.orm import Session
-
+from app.common.utilities import get_korea_time
 from app.database.session import get_db_session
 from app.features.journal.models import Journal
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
@@ -76,7 +76,7 @@ class AnalysisRepository:
         if personalized_advice != None:
             analysis.personalized_advice = personalized_advice
 
-        analysis.updated_at = datetime.utcnow()
+        analysis.updated_at = get_korea_time()
 
         self.session.flush()
         self.session.commit() # background에서 진행 예정
