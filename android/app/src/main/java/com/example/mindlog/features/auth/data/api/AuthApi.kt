@@ -13,15 +13,15 @@ import retrofit2.http.POST
 interface AuthApi {
     @Headers("No-Auth: true")
     @POST("auth/signup")
-    fun signup(@Body signupRequest: SignupRequest): TokenResponse
+    suspend fun signup(@Body signupRequest: SignupRequest): TokenResponse
 
     @Headers("No-Auth: true")
     @POST("auth/login")
-    fun login(@Body loginRequest: LoginRequest): TokenResponse
+    suspend fun login(@Body loginRequest: LoginRequest): TokenResponse
 
     @POST("auth/verify")
-    fun verify(@Header("Authorization") bearerToken: String): Unit
+    suspend fun verify(@Header("Authorization") bearerToken: String): Unit
 
     @POST("auth/logout")
-    fun logout(@Header("Authorization") bearerToken: String): Unit
+    suspend fun logout(@Header("Authorization") bearerToken: String): Unit
 }
