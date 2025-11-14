@@ -544,6 +544,7 @@ async def test_complete_image_upload_success(
 @pytest.mark.asyncio
 async def test_request_journal_image_generation_success(
     client: TestClient,
+    auth_headers: dict[str, str],
     mocker,
 ):
     """
@@ -566,6 +567,7 @@ async def test_request_journal_image_generation_success(
     # 1. API 요청
     response = client.post(
         "/api/v1/journal/image/generate",
+        headers=auth_headers,
         json=request_data,
     )
 

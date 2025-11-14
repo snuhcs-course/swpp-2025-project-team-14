@@ -14,6 +14,8 @@ def test_signup_success(client: TestClient, db_session: Session):
         "login_id": "new_user",
         "password": "qwerQWER123!",
         "username": "new-user",
+        "gender": "Female",
+        "age": 23,
     }
 
     # Act: API 엔드포인트를 호출합니다.
@@ -24,10 +26,8 @@ def test_signup_success(client: TestClient, db_session: Session):
     # Assert 1: API 응답을 검증합니다.
     assert response.status_code == 201
     response_json = response.json()
-    assert response_json["ok"] is True
-    assert "access" in response_json["data"]
-    assert "refresh" in response_json["data"]
-    assert response_json["error"] is None
+    assert "access" in response_json
+    assert "refresh" in response_json
 
     # Assert 2: 데이터베이스 상태를 직접 검증합니다.
     user_in_db = (
@@ -38,24 +38,23 @@ def test_signup_success(client: TestClient, db_session: Session):
     assert user_in_db.login_id == data["login_id"]
     assert user_in_db.username == data["username"]
     assert user_in_db.hashed_password != data["password"]
+    assert user_in_db.gender == data["gender"]
+    assert user_in_db.age == data["age"]
 
 
-def test_signup_duplicate_login_id(client: TestClient, db_session: Session):
+def test_signup_duplicate_login_id(
+    client: TestClient, db_session: Session, test_user: User
+):
     """Test user signup with a duplicate login_id."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="existing_user",
-        hashed_password="hashedpassword",
-        username="Existing-User",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 동일한 login_id로 회원가입을 시도합니다.
     data = {
-        "login_id": "existing_user",  # 중복된 login_id
-        "password": "AnotherPass123!",
-        "username": "Another-User",
+        "login_id": "test_user",  # 중복된 login_id
+        "password": "ValidPass123!",
+        "username": "Test-User",
+        "gender": "Female",
+        "age": 23,
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -73,6 +72,8 @@ def test_signup_invalid_password(client: TestClient, db_session: Session):
         "login_id": "new_user2",
         "password": "short",  # 너무 짧은 비밀번호
         "username": "new-user2",
+        "gender": "Female",
+        "age": 23,
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -80,7 +81,7 @@ def test_signup_invalid_password(client: TestClient, db_session: Session):
     # Assert: API 응답을 검증합니다.
     assert response.status_code == 400
     response_json = response.json()
-    assert response_json["detail"] == "Invalid password format"
+    assert response_json["detail"] == "Invalid format for field password"
 
 
 def test_signup_invalid_username(client: TestClient, db_session: Session):
@@ -90,6 +91,8 @@ def test_signup_invalid_username(client: TestClient, db_session: Session):
         "login_id": "new_user3",
         "password": "ValidPass123!",
         "username": "Invalid Username!",  # 공백과 특수문자가 포함된 username
+        "gender": "Female",
+        "age": 23,
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -97,7 +100,7 @@ def test_signup_invalid_username(client: TestClient, db_session: Session):
     # Assert: API 응답을 검증합니다.
     assert response.status_code == 400
     response_json = response.json()
-    assert response_json["detail"] == "Invalid username format"
+    assert response_json["detail"] == "Invalid format for field username"
 
 
 def test_signup_missing_fields(client: TestClient, db_session: Session):
@@ -106,6 +109,8 @@ def test_signup_missing_fields(client: TestClient, db_session: Session):
     data = {
         "login_id": "new_user4",
         "password": "ValidPass123!",
+        "gender": "Female",
+        "age": 23,
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -119,20 +124,13 @@ def test_signup_missing_fields(client: TestClient, db_session: Session):
     assert error_detail["type"] == "missing"  # 에러 타입
 
 
-def test_login_success(client: TestClient, db_session: Session):
+def test_login_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful user login with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="login_user",
-        hashed_password=pwd_context.hash("ValidPass123!"),
-        username="Login-User",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 올바른 자격 증명으로 로그인 시도
     data = {
-        "login_id": "login_user",
+        "login_id": "test_user",
         "password": "ValidPass123!",
     }
     response = client.post("/api/v1/auth/login", json=data)
@@ -141,22 +139,15 @@ def test_login_success(client: TestClient, db_session: Session):
     # Assert: API 응답을 검증합니다.
     assert response.status_code == 201
     response_json = response.json()
-    assert response_json["ok"] is True
-    assert "access" in response_json["data"]
-    assert "refresh" in response_json["data"]
-    assert response_json["error"] is None
+    assert "access" in response_json
+    assert "refresh" in response_json
 
 
-def test_login_invalid_password(client: TestClient, db_session: Session):
+def test_login_invalid_password(
+    client: TestClient, db_session: Session, test_user: User
+):
     """Test user login with an invalid password."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="login_user2",
-        hashed_password=pwd_context.hash("ValidPass123!"),
-        username="Login-User2",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 잘못된 비밀번호로 로그인 시도
     data = {
@@ -207,26 +198,19 @@ def test_login_missing_fields(client: TestClient, db_session: Session):
     assert error_detail["type"] == "missing"  # 에러 타입
 
 
-def test_logout_success(client: TestClient, db_session: Session):
+def test_logout_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful user logout with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="logout_user",
-        hashed_password=pwd_context.hash("ValidPass123!"),
-        username="Logout-User",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
-        "login_id": "logout_user",
+        "login_id": "test_user",
         "password": "ValidPass123!",
     }
     login_response = client.post("/api/v1/auth/login", json=login_data)
     db_session.flush()
     login_response_json = login_response.json()
-    refresh_token = login_response_json["data"]["refresh"]
+    refresh_token = login_response_json["refresh"]
 
     # Act: 올바른 리프레시 토큰으로 로그아웃 시도
     logout_data = {
@@ -258,26 +242,19 @@ def test_logout_invalid_token(client: TestClient, db_session: Session):
     assert response_json["detail"] == "Invalid token"
 
 
-def test_refresh_success(client: TestClient, db_session: Session):
+def test_refresh_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful token refresh with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="refresh_user",
-        hashed_password=pwd_context.hash("ValidPass123!"),
-        username="Refresh-User",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
-        "login_id": "refresh_user",
+        "login_id": "test_user",
         "password": "ValidPass123!",
     }
     login_response = client.post("/api/v1/auth/login", json=login_data)
     db_session.flush()
     login_response_json = login_response.json()
-    refresh_token = login_response_json["data"]["refresh"]
+    refresh_token = login_response_json["refresh"]
 
     # Act: 올바른 리프레시 토큰으로 토큰 갱신 시도
     refresh_data = {
@@ -289,10 +266,8 @@ def test_refresh_success(client: TestClient, db_session: Session):
     # Assert: API 응답을 검증합니다.
     assert response.status_code == 200
     response_json = response.json()
-    assert response_json["ok"] is True
-    assert "access" in response_json["data"]
-    assert "refresh" in response_json["data"]
-    assert response_json["error"] is None
+    assert "access" in response_json
+    assert "refresh" in response_json
 
 
 def test_refresh_invalid_token(client: TestClient, db_session: Session):
@@ -310,26 +285,19 @@ def test_refresh_invalid_token(client: TestClient, db_session: Session):
     assert response_json["detail"] == "Invalid token"
 
 
-def test_verify_success(client: TestClient, db_session: Session):
+def test_verify_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful access token verification with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="verify_user",
-        hashed_password=pwd_context.hash("ValidPass123!"),
-        username="Verify-User",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
-        "login_id": "verify_user",
+        "login_id": "test_user",
         "password": "ValidPass123!",
     }
     login_response = client.post("/api/v1/auth/login", json=login_data)
     db_session.flush()
     login_response_json = login_response.json()
-    access_token = login_response_json["data"]["access"]
+    access_token = login_response_json["access"]
 
     # Pass the token in the Authorization header if required by your API
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -342,7 +310,7 @@ def test_verify_success(client: TestClient, db_session: Session):
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["ok"] is True
-    assert response_json["data"]["login_id"] == "verify_user"
+    assert response_json["data"]["login_id"] == "test_user"
     assert response_json["error"] is None
 
 
@@ -361,26 +329,19 @@ def test_verify_invalid_token(client: TestClient, db_session: Session):
     assert response_json["detail"] == "Not authenticated"
 
 
-def test_me_success(client: TestClient, db_session: Session):
+def test_me_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful retrieval of user profile with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다.
-    existing_user = User(
-        login_id="profile_user",
-        hashed_password=pwd_context.hash("ValidPass123!"),
-        username="Profile-User",
-    )
-    db_session.add(existing_user)
-    db_session.commit()
+    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
-        "login_id": "profile_user",
+        "login_id": "test_user",
         "password": "ValidPass123!",
     }
     login_response = client.post("/api/v1/auth/login", json=login_data)
     db_session.flush()
     login_response_json = login_response.json()
-    access_token = login_response_json["data"]["access"]
+    access_token = login_response_json["access"]
 
     # Pass the token in the Authorization header
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -390,10 +351,8 @@ def test_me_success(client: TestClient, db_session: Session):
     # Assert: API 응답을 검증합니다.
     assert response.status_code == 200
     response_json = response.json()
-    assert response_json["ok"] is True
-    assert response_json["data"]["login_id"] == "profile_user"
-    assert response_json["data"]["username"] == "Profile-User"
-    assert response_json["error"] is None
+    assert response_json["login_id"] == "test_user"
+    assert response_json["username"] == "Test-User"
 
 
 def test_me_unauthenticated(client: TestClient, db_session: Session):
