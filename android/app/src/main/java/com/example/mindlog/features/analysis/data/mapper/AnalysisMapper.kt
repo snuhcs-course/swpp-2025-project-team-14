@@ -12,18 +12,22 @@ import javax.inject.Inject
 class AnalysisMapper @Inject constructor() {
     fun toUserType(res: UserTypeResponse) = UserType(
         userType = res.userType,
+        description = res.description,
         updatedAt = res.updatedAt
     )
 
     fun toComprehensive(res: ComprehensiveAnalysisResponse) = ComprehensiveAnalysis(
-        text = res.comprehensiveAnalysis,
+        conscientiousness = res.conscientiousness,
+        neuroticism = res.neuroticism,
+        extraversion = res.extraversion,
+        openness = res.openness,
+        agreeableness = res.agreeableness,
         updatedAt = res.updatedAt
     )
 
     fun toAdvice(res: PersonalizedAdviceResponse) = PersonalizedAdvice(
         adviceType = res.adviceType,
-        text = res.personalizedAdvice,
+        personalizedAdvice = res.personalizedAdvice,
         updatedAt = res.updatedAt
     )
-
 }
