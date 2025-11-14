@@ -11,6 +11,8 @@ import com.example.mindlog.features.analysis.domain.usecase.GetComprehensiveAnal
 import com.example.mindlog.features.analysis.domain.usecase.GetPersonalizedAdviceUseCase
 import com.example.mindlog.features.analysis.domain.usecase.GetUserTypeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -41,22 +43,23 @@ class AnalysisViewModel @Inject constructor(
         viewModelScope.launch(dispatchers.main) {
             _state.update { it.copy(isLoading = true, error = null) }
 
-            // 1. 유저 타입
-            when (val result = getUserTypeUseCase()) {
-                is Result.Success -> _state.update { it.copy(userType = result.data) }
-                is Result.Error -> setError(result.message)
-            }
+            coroutineScope {
+                val userType = async { getUserTypeUseCase() }
+                val comp = async { getComprehensiveAnalysisUseCase() }
+                val advice = async { getPersonalizedAdviceUseCase() }
 
-            // 2. 종합 분석
-            when (val result = getComprehensiveAnalysisUseCase()) {
-                is Result.Success -> _state.update { it.copy(comprehensiveAnalysis = result.data) }
-                is Result.Error -> setError(result.message)
-            }
-
-            // 3. 개인화 조언
-            when (val result = getPersonalizedAdviceUseCase()) {
-                is Result.Success -> _state.update { it.copy(advice = result.data) }
-                is Result.Error -> setError(result.message)
+                when (val res = userType.await()) {
+                    is Result.Success -> _state.update { it.copy(userType = res.data) }
+                    is Result.Error -> setError(res.message)
+                }
+                when (val res = comp.await()) {
+                    is Result.Success -> _state.update { it.copy(comprehensiveAnalysis = res.data) }
+                    is Result.Error -> setError(res.message)
+                }
+                when (val res = advice.await()) {
+                    is Result.Success -> _state.update { it.copy(advice = res.data) }
+                    is Result.Error -> setError(res.message)
+                }
             }
 
             _state.update { it.copy(isLoading = false) }
