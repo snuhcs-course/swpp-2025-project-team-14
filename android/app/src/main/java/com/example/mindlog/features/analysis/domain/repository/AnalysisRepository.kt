@@ -9,5 +9,4 @@ interface AnalysisRepository {
     suspend fun getUserType(): Result<UserType>
     suspend fun getComprehensiveAnalysis(): Result<ComprehensiveAnalysis>
     suspend fun getPersonalizedAdvice(): Result<PersonalizedAdvice>
-    suspend fun updateAnalysis(): Result<String>
 }

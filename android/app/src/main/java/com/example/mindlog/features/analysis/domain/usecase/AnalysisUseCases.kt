@@ -20,7 +20,4 @@ class GetPersonalizedAdviceUseCase @Inject constructor(private val repo: Analysi
     suspend operator fun invoke(): Result<PersonalizedAdvice> = repo.getPersonalizedAdvice()
 }
 
-class UpdateAnalysisUseCase @Inject constructor(private val repo: AnalysisRepository) {
-    suspend operator fun invoke(): Result<String> = repo.updateAnalysis()
-}
 

@@ -16,7 +16,4 @@ interface AnalysisApi {
 
     @GET("analysis/personalized-advice")
     suspend fun getPersonalizedAdvice(): PersonalizedAdviceResponse
-
-    @PATCH("analysis/update")
-    suspend fun patchUpdateAnalysis(): String
 }

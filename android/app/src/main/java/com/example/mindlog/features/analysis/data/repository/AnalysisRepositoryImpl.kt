@@ -38,10 +38,4 @@ class AnalysisRepositoryImpl @Inject constructor(
             mapper.toAdvice(res)
         }.toResult()
     }
-
-    override suspend fun updateAnalysis(): Result<String> = withContext(dispatcher.io) {
-        runCatching {
-            api.patchUpdateAnalysis()
-        }.toResult()
-    }
 }
