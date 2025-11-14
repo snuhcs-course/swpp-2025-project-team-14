@@ -21,33 +21,10 @@ class SelfAwareHistoryAdapter :
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: QAItem) = with(binding) {
-            tvDate.text = item.answer.createdAt.toString()
-            tvQuestion.text = item.question.text
-            tvAnswer.text = item.answer.text
-
-            // 가치 칩들 표시 (value_scores 기반)
-            /*
-            chipGroupValues.removeAllViews()
-            val scores = item.answer.valueScores.take(4) // 상위 4개만 표시
-            scores.forEach { score ->
-                chipGroupValues.addView(createChip(score))
-            }
-            */
+            tvDate.text = item.question?.createdAt.toString()
+            tvQuestion.text = "Q. ${item.question.text}"
+            tvAnswer.text = "A. ${item.answer?.text}"
         }
-
-        /*
-        private fun createChip(score: ValueScore): Chip {
-            val chip = Chip(binding.root.context)
-            chip.text = score.value
-            chip.isClickable = false
-            chip.isCheckable = false
-            chip.setTextColor(0xFF2D3142.toInt())
-            chip.chipCornerRadius = 18f
-            chip.chipMinHeight = 36f
-            chip.setChipBackgroundColorResource(com.minglog.core.R.color.mindlog_chip_bg_beige)
-            return chip
-        }
-         */
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -63,7 +40,7 @@ class SelfAwareHistoryAdapter :
     companion object {
         val Diff = object : DiffUtil.ItemCallback<QAItem>() {
             override fun areItemsTheSame(oldItem: QAItem, newItem: QAItem) =
-                oldItem.answer.id == newItem.answer.id
+                oldItem.answer?.id == newItem.answer?.id
 
             override fun areContentsTheSame(oldItem: QAItem, newItem: QAItem) =
                 oldItem == newItem
