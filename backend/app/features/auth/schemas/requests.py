@@ -8,7 +8,7 @@ from app.common.errors import InvalidFieldFormatError
 
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 LOGIN_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_.]{6,20}$")
-GENDER = {"F", "M"}
+GENDER = {"Female", "Male"}
 
 
 def validate_username(value: str | None) -> str | None:
