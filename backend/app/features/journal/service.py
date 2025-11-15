@@ -29,6 +29,7 @@ from app.features.journal.schemas.responses import (
     JournalKeywordsListResponse,
     PresignedUrlResponse,
 )
+from app.features.user.models import User
 
 BASE_PROMPT_PATH = Path(__file__).parent / "prompt"
 
@@ -232,7 +233,9 @@ class JournalOpenAIService:
 
         self.keyword_prompt_template = PromptTemplate.from_template(keyword_prompt_text)
 
-    async def request_image_generation(self, request: ImageGenerateRequest) -> str:
+    async def request_image_generation(
+        self, request: ImageGenerateRequest, user: User
+    ) -> str:
         """
         일기를 받아 이미지를 생성하고 Base64로 반환합니다.
         """
@@ -247,9 +250,16 @@ class JournalOpenAIService:
 
         prompt_template = style_prompt_map.get(request.style)
 
+        user_parts = [
+            f"The protagonist of this diary is a {user.gender}, aged {user.age}."
+        ]
+        if user.appearance:
+            user_parts.append(f"Appearance details: {user.appearance}.")
+        user_description = " ".join(user_parts)
+
         try:
             prompt = await self._generate_scene_prompt_from_diary(
-                request.content, prompt_template
+                request.content, prompt_template, user_description
             )
         except Exception as e:
             print(f"GPT 호출 실패: {e}")
@@ -262,15 +272,21 @@ class JournalOpenAIService:
         return image_b64
 
     async def _generate_scene_prompt_from_diary(
-        self, journal_content: str, input_prompt: str
+        self, journal_content: str, input_prompt: str, user_description: str
     ) -> str:
         """
         (Helper) GPT-5-mini를 비동기 호출하여 DALL-E용 프롬프트를 생성합니다.
         """
+        system_prompt = (
+            f"{input_prompt}\n\n"
+            f"[Character Consistency Requirement]\n"
+            f"{user_description}\n"
+            f"You MUST ensure the person in the generated scene prompt matches the description above."
+        )
         chat_response = await self.client.chat.completions.create(
             model="gpt-5-mini",
             messages=[
-                {"role": "system", "content": input_prompt},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": journal_content},
             ],
             response_format={"type": "json_object"},
