@@ -375,4 +375,63 @@ class JournalEditViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun `updateJournal - AI 생성 이미지가 있을 때 - uploadJournalImageUseCase가 호출된다`() = runTest {
+        // Given: ViewModel 상태 초기화
+        whenever(getJournalByIdUseCase.invoke(1)).thenReturn(dummyJournalEntry)
+        viewModel.loadJournalDetails(1)
+        advanceUntilIdle()
+
+        // Given: AI 이미지 비트맵 설정
+        val mockBitmap: Bitmap = mock()
+        // bitmap.compress가 항상 true를 반환하도록 설정
+        whenever(mockBitmap.compress(any(), any(), any())).thenReturn(true)
+        viewModel.generatedImageBitmap.value = mockBitmap
+
+        // When
+        viewModel.updateJournal()
+        advanceUntilIdle()
+
+        // Then: 이미지가 변경되었으므로 uploadJournalImageUseCase가 호출되어야 함
+        verify(uploadJournalImageUseCase, times(1)).invoke(
+            journalId = eq(1),
+            imageBytes = any(), // ByteArrayOutputStream을 통해 생성된 byte 배열
+            contentType = eq("image/jpeg"),
+            fileName = any()
+        )
+        // 텍스트는 변경되지 않았으므로 updateJournalUseCase는 호출되지 않아야 함
+        verify(updateJournalUseCase, never()).invoke(any(), any(), any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `generateImage - 실패 시 - 에러 메시지와 noImage 이벤트를 방출한다`() = runTest {
+        // Given: UseCase가 예외를 던지도록 설정
+        val errorMessage = "AI 서버 연결 실패"
+        whenever(generateImageUseCase.invoke(any(), any())).thenThrow(RuntimeException(errorMessage))
+
+        viewModel.content.value = "AI 그림 생성 테스트"
+
+        // 이벤트를 수집할 리스트 준비
+        val errors = mutableListOf<String>()
+        val noImageEvents = mutableListOf<Boolean>()
+        val errorJob = launch { viewModel.aiGenerationError.collect { errors.add(it) } }
+        val noImageJob = launch { viewModel.noImage.collect { noImageEvents.add(it) } }
+
+        // When: 이미지 생성 함수 호출
+        viewModel.generateImage("any-style")
+        advanceUntilIdle()
+
+        // Then: 에러와 noImage 이벤트가 올바르게 방출되었는지 검증
+        assertEquals(1, errors.size)
+        assertEquals(errorMessage, errors.first())
+        assertEquals(1, noImageEvents.size)
+        assertTrue(noImageEvents.first())
+
+        // Then: 로딩 상태가 false로 돌아왔는지 검증
+        assertFalse(viewModel.isLoading.value)
+
+        // 사용한 코루틴 잡 정리
+        errorJob.cancel()
+        noImageJob.cancel()
+    }
 }
