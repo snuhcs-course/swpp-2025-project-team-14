@@ -9,6 +9,8 @@ from app.database.session import get_db_session
 from app.features.journal.models import Journal
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
 
+from app.common.utilities import get_korea_time
+
 # -------------------------------
 # Question Repository
 # -------------------------------
@@ -235,7 +237,7 @@ class ValueMapRepository:
         setattr(value_map, f"count_{category}", count)
 
         # 갱신 시간 업데이트 (선택적)
-        value_map.updated_at = datetime.utcnow()
+        value_map.updated_at = get_korea_time()
 
         self.session.flush()
         self.session.commit()
