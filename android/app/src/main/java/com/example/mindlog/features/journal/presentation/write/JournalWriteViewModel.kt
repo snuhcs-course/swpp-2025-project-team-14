@@ -5,8 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
-import android.util.Log
-import androidx.lifecycle.SavedStateHandle // ✨ import 추가
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
@@ -98,16 +97,15 @@ class JournalWriteViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            var journalId: Int?
             try {
                 val emotionsToSend = getEmotionsForSaving()
-                val journalResponse = createJournalUseCase(
+
+                val journalId = createJournalUseCase(
                     title = currentTitle,
                     content = currentContent,
                     emotions = emotionsToSend,
                     gratitude = currentGratitude
                 )
-                journalId = journalResponse.id
 
                 val imageData: Triple<ByteArray, String, String>? = when {
                     galleryImageUri != null -> {
@@ -136,22 +134,16 @@ class JournalWriteViewModel @Inject constructor(
                         fileName = fileName
                     )
                 }
+
+                try {
+                    journalRepository.extractKeywords(journalId)
+                } catch (e: Exception) {
+                }
+
                 _saveResult.emit(Result.Success(Unit))
 
             } catch (e: Exception) {
-                Log.e("JournalSaveError", "저장 실패", e)
                 _saveResult.emit(Result.Error(message = e.message ?: "알 수 없는 오류가 발생했습니다."))
-                return@launch
-            }
-
-            journalId?.let { id ->
-                try {
-                    Log.d("JournalWriteViewModel", "일기 작성 완료. 키워드 분석을 시작합니다. (ID: $id)")
-                    journalRepository.extractKeywords(id)
-                    Log.d("JournalWriteViewModel", "키워드 분석 요청 성공. (ID: $id)")
-                } catch (e: Exception) {
-                    Log.e("JournalWriteViewModel", "키워드 분석 요청 실패 (ID: $id)", e)
-                }
             }
         }
     }
@@ -159,7 +151,7 @@ class JournalWriteViewModel @Inject constructor(
     fun setGalleryImageUri(uri: Uri?) {
         if (uri != null) {
             selectedImageUri.value = uri
-            generatedImageBitmap.value = null // AI 이미지 초기화
+            generatedImageBitmap.value = null
         }
     }
 

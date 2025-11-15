@@ -1,23 +1,22 @@
 package com.example.mindlog.features.journal.data.repository
 
 import ImageUploadCompleteRequest
-import android.content.Context
-import android.net.Uri
-import android.provider.OpenableColumns
-import android.util.Log
+import com.example.mindlog.core.model.JournalEntry
+import com.example.mindlog.core.model.Keyword
+import com.example.mindlog.core.model.PagedResult
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.journal.data.dto.*
+import com.example.mindlog.features.journal.data.mapper.JournalMapper
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.HttpException // ✨ 올바른 HttpException을 사용합니다.
+import retrofit2.HttpException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 class JournalRepositoryImpl @Inject constructor(
     private val journalApi: JournalApi,
-    @ApplicationContext private val context: Context
+    private val mapper: JournalMapper
 ) : JournalRepository {
 
     override suspend fun createJournal(
@@ -25,22 +24,29 @@ class JournalRepositoryImpl @Inject constructor(
         content: String,
         emotions: Map<String, Int>,
         gratitude: String
-    ): JournalResponse {
+    ): Int {
         val request = JournalRequest(
             title = title,
             content = content,
             emotions = emotions,
             gratitude = gratitude
         )
-        return journalApi.createJournal(request)
+        val response = journalApi.createJournal(request)
+        return response.id
     }
 
-    override suspend fun getJournals(limit: Int, cursor: Int?): JournalListResponse {
-        return journalApi.getJournals(limit = limit, cursor = cursor)
+    override suspend fun getJournals(limit: Int, cursor: Int?): PagedResult<JournalEntry> {
+        val response = journalApi.getJournals(limit = limit, cursor = cursor)
+        return PagedResult(
+            items = response.items.map { mapper.toJournalEntry(it) },
+            nextCursor = response.nextCursor
+        )
     }
 
-    override suspend fun getJournalById(journalId: Int): JournalItemResponse {
-        return journalApi.getJournalById(journalId = journalId)
+
+    override suspend fun getJournalById(journalId: Int): JournalEntry {
+        val response = journalApi.getJournalById(journalId = journalId)
+        return mapper.toJournalEntry(response)
     }
 
     override suspend fun updateJournal(
@@ -102,32 +108,20 @@ class JournalRepositoryImpl @Inject constructor(
         title: String?,
         limit: Int,
         cursor: Int?
-    ): JournalListResponse {
-        return journalApi.searchJournals(
+    ): PagedResult<JournalEntry> {
+        val response = journalApi.searchJournals(
             startDate = startDate,
             endDate = endDate,
             title = title,
             limit = limit,
             cursor = cursor
         )
+        return PagedResult(
+            items = response.items.map { mapper.toJournalEntry(it) },
+            nextCursor = response.nextCursor
+        )
     }
 
-    private fun getFileInfoFromUri(uri: Uri): Pair<String, String>? {
-        return context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                val fileName = cursor.getString(nameIndex)
-                val contentType = context.contentResolver.getType(uri)
-                if (fileName != null && contentType != null) {
-                    fileName to contentType
-                } else {
-                    null
-                }
-            } else {
-                null
-            }
-        }
-    }
 
     override suspend fun generateImage(style: String, content: String): String {
         try {
@@ -141,8 +135,9 @@ class JournalRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun extractKeywords(journalId: Int): KeywordListResponse {
-        return journalApi.extractKeywords(journalId = journalId)
+    override suspend fun extractKeywords(journalId: Int): List<Keyword> {
+        val response = journalApi.extractKeywords(journalId = journalId)
+        return response.data.map { mapper.toKeyword(it) }
     }
 }
 
