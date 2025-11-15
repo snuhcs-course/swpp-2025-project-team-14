@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import Depends
@@ -23,16 +24,16 @@ class UserService:
         password: str | None,
         username: str | None,
         gender: str | None,
-        age: int | None,
+        birthdate: date | None,
         appearance: str | None,
     ) -> None:
-        if not any([password, username, gender, age, appearance]):
+        if not any([password, username, gender, birthdate, appearance]):
             raise UserUpdateError()
         self.user_repository.update_me(
             user=user,
             password=password,
             username=username,
             gender=gender,
-            age=age,
+            birthdate=birthdate,
             appearance=appearance,
         )

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
@@ -24,7 +24,12 @@ class AuthService:
         self.blocked_token_repository = blocked_token_repository
 
     def signup(
-        self, login_id: str, password: str, username: str | None, gender: str, age: int
+        self,
+        login_id: str,
+        password: str,
+        username: str | None,
+        gender: str,
+        birthdate: date,
     ) -> tuple[str, str]:
         if username is None:
             username = login_id
@@ -34,7 +39,7 @@ class AuthService:
 
         hashed_password = hash_password(password)
         user = self.user_repository.add_user(
-            login_id, hashed_password, username, gender, age
+            login_id, hashed_password, username, gender, birthdate
         )
 
         access_token = create_token(user.login_id, token_type="access")

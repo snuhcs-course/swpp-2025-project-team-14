@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from typing import Annotated
 
 from pydantic import BaseModel
@@ -66,9 +67,12 @@ def validate_gender(value: str) -> str:
     return value
 
 
-def validate_age(value: int) -> int:
-    if value <= 0 or value >= 120:
-        raise InvalidFieldFormatError("age")
+def validate_birthdate(value: date) -> date:
+    today = date.today()
+    if value > today:
+        raise InvalidFieldFormatError("birthdate")
+    if value.year < 1900:
+        raise InvalidFieldFormatError("birthdate")
     return value
 
 
@@ -77,7 +81,7 @@ class SignupRequest(BaseModel):
     password: Annotated[str, AfterValidator(validate_password)]
     username: Annotated[str, AfterValidator(validate_username)]
     gender: Annotated[str, AfterValidator(validate_gender)]
-    age: Annotated[int, AfterValidator(validate_age)]
+    birthdate: Annotated[date, AfterValidator(validate_birthdate)]
 
 
 class LoginRequest(BaseModel):

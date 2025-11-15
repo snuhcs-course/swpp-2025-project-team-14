@@ -33,7 +33,7 @@ def signup(
         request.password,
         request.username,
         request.gender,
-        request.age,
+        request.birthdate,
     )
     return TokenResponse.from_token(access, refresh)
 

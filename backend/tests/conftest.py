@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from datetime import date
 from typing import Any
 
 import pytest
@@ -69,7 +70,7 @@ def test_user(db_session: Session) -> User:
         hashed_password=pwd_context.hash("ValidPass123!"),
         username="Test-User",
         gender="Female",
-        age=23,
+        birthdate=date(2002, 2, 2),
     )
     db_session.add(user)
     db_session.commit()

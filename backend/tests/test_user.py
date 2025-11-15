@@ -1,3 +1,5 @@
+from datetime import date
+
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -15,7 +17,7 @@ def test_signup_success(client: TestClient, db_session: Session):
         "password": "qwerQWER123!",
         "username": "new-user",
         "gender": "Female",
-        "age": 23,
+        "birthdate": date(2002, 2, 2).isoformat(),
     }
 
     # Act: API 엔드포인트를 호출합니다.
@@ -39,7 +41,7 @@ def test_signup_success(client: TestClient, db_session: Session):
     assert user_in_db.username == data["username"]
     assert user_in_db.hashed_password != data["password"]
     assert user_in_db.gender == data["gender"]
-    assert user_in_db.age == data["age"]
+    assert user_in_db.birthdate.isoformat() == data["birthdate"]
 
 
 def test_signup_duplicate_login_id(
@@ -54,7 +56,7 @@ def test_signup_duplicate_login_id(
         "password": "ValidPass123!",
         "username": "Test-User",
         "gender": "Female",
-        "age": 23,
+        "birthdate": date(2002, 2, 2).isoformat(),
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -73,7 +75,7 @@ def test_signup_invalid_password(client: TestClient, db_session: Session):
         "password": "short",  # 너무 짧은 비밀번호
         "username": "new-user2",
         "gender": "Female",
-        "age": 23,
+        "birthdate": date(2002, 2, 2).isoformat(),
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -92,7 +94,7 @@ def test_signup_invalid_username(client: TestClient, db_session: Session):
         "password": "ValidPass123!",
         "username": "Invalid Username!",  # 공백과 특수문자가 포함된 username
         "gender": "Female",
-        "age": 23,
+        "birthdate": date(2002, 2, 2).isoformat(),
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
@@ -110,7 +112,7 @@ def test_signup_missing_fields(client: TestClient, db_session: Session):
         "login_id": "new_user4",
         "password": "ValidPass123!",
         "gender": "Female",
-        "age": 23,
+        "birthdate": date(2002, 2, 2).isoformat(),
     }
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()

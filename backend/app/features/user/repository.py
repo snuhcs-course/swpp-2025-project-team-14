@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import Depends
@@ -15,14 +16,19 @@ class UserRepository:
         self.session = session
 
     def add_user(
-        self, login_id: str, hashed_password: str, username: str, gender: str, age: int
+        self,
+        login_id: str,
+        hashed_password: str,
+        username: str,
+        gender: str,
+        birthdate: date,
     ) -> User:
         user = User(
             login_id=login_id,
             hashed_password=hashed_password,
             username=username,
             gender=gender,
-            age=age,
+            birthdate=birthdate,
             appearance=None,
         )
         self.session.add(user)
@@ -37,7 +43,7 @@ class UserRepository:
         password: str | None,
         username: str | None,
         gender: str | None,
-        age: int | None,
+        birthdate: date | None,
         appearance: str | None,
     ) -> None:
         if password is not None:
@@ -46,8 +52,8 @@ class UserRepository:
             user.username = username
         if gender is not None:
             user.gender = gender
-        if age is not None:
-            user.age = age
+        if birthdate is not None:
+            user.birthdate = birthdate
         if appearance is not None:
             user.appearance = appearance
         self.session.flush()

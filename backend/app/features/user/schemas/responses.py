@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 from app.features.user.models import User
@@ -8,7 +10,7 @@ class ProfileResponse(BaseModel):
     login_id: str
     username: str
     gender: str
-    age: int
+    birthdate: date
     appearance: str | None
 
     @staticmethod
@@ -18,6 +20,6 @@ class ProfileResponse(BaseModel):
             login_id=user.login_id,
             username=user.username,
             gender=user.gender,
-            age=user.age,
+            birthdate=user.birthdate,
             appearance=user.appearance,
         )

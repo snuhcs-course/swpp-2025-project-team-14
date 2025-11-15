@@ -42,7 +42,7 @@ def update_me(
         request.password,
         request.username,
         request.gender,
-        request.age,
+        request.birthdate,
         request.appearance,
     )
     return "Update Success"
