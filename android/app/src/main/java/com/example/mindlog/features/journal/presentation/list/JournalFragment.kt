@@ -18,6 +18,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mindlog.R
@@ -108,6 +109,10 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private fun setupClickListeners() {
         val topBar = binding.topBarLayout
+
+        topBar.btnSettings.setOnClickListener {
+            findNavController().navigate(R.id.action_journalFragment_to_settingsFragment)
+        }
 
         topBar.btnSearch.setOnClickListener {
             toggleSearchView(true)
