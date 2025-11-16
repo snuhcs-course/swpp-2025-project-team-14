@@ -13,6 +13,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="30dp"
         app:title="일기 수정"
         app:titleCentered="true"
         app:navigationIcon="@drawable/ic_arrow_back"

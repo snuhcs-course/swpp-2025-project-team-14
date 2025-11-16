@@ -23,7 +23,7 @@
             android:textColor="@color/text_secondary"
             android:textSize="18sp"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent" />
 
         <!-- ✨ EditText -> TextView -->
         <TextView

@@ -9,6 +9,7 @@ from app.database.base import Base
 if TYPE_CHECKING:
     from app.features.journal.models import Journal
     from app.features.selfaware.models import Question, Answer, ValueMap
+    from app.features.analysis.models import Analysis
 
 
 class User(Base):
@@ -29,5 +30,8 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
     value_maps: Mapped[list[ValueMap]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    analysis: Mapped[list[Analysis]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )

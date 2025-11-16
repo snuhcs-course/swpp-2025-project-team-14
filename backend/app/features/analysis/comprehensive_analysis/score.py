@@ -31,7 +31,7 @@ def load_questions_with_keyed(path: str) -> list[str]:
     return results
 
 
-questions = load_questions_with_keyed("app/features/selfaware/personality_insight/data/ko/questions.ts")
+questions = load_questions_with_keyed("app/features/analysis/comprehensive_analysis/data/ko/questions.ts")
 
 choices = """
 각 문항에 대해 1부터 5까지의 5점 척도로 응답합니다.
@@ -80,7 +80,7 @@ template = """
 각 문항에 대해 사용자가 답할 것으로 예상되는 가장 가능성 높은 응답(1~5)을 하나씩 예측하세요.
 출력은 반드시 다음 구조를 따르세요:
 
-answers: 각 문항에 대한 1~5의 정수값 리스트 (길이는 문항 수와 동일)
+각 문항에 대한 1~5의 정수값 리스트 (길이는 문항 수와 동일)
 """
 
 prompt = ChatPromptTemplate.from_template(template)

@@ -14,7 +14,7 @@ import json
 import datetime
 import collections
 
-def evaluate(Q, Sex, Age, flag = True):
+def evaluate(Q, Sex, Age, flag = False):
     items = 31  # shortipipneo
 
     # Check sex and age
@@ -333,4 +333,4 @@ def evaluate(Q, Sex, Age, flag = True):
         for i in range(1, len(labels)):
             m[labels[i]] = SOFP[i]
 
-        return json.dumps(m, indent=4)
+        return m
