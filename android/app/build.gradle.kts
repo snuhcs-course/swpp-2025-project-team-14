@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mindlog"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -20,11 +20,23 @@ android {
         testInstrumentationRunner = "com.example.mindlog.HiltTestRunner"
 
         buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
+        buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
+    }
+
+    // 🔹 추가: Signing configuration
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "my-release-key.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
     }
 
     buildTypes {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
+            buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
             // buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/v1/\"")
 
             enableUnitTestCoverage = true
@@ -32,7 +44,9 @@ android {
         }
         release {
             buildConfigField("String", "API_BASE_URL", "\"http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/api/v1/\"")
+            buildConfigField("String", "S3_BUCKET_URL", "\"https://mindlog-s3.s3.ap-northeast-2.amazonaws.com\"")
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release") // 🔹 추가
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,6 +76,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation("androidx.activity:activity-ktx:1.9.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.fragment:fragment-ktx:1.7.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
@@ -77,7 +92,10 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.patrykandpatrick.vico:views:1.14.0")
     implementation("com.patrykandpatrick.vico:compose:1.14.0")
-    implementation("androidx.webkit:webkit:1.10.0")
+    implementation("com.github.jolenechong:androidWordCloud:1.0.0") {
+        exclude(group="com.sun.xml.bind", module="jaxb-core")
+        exclude(group="com.sun.xml.bind", module="jaxb-impl")
+    }
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -122,6 +140,10 @@ dependencies {
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 
     testImplementation(kotlin("test"))
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
 }
 
 kapt {

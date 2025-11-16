@@ -18,4 +18,39 @@
 
     <!-- 실제 앱에서 사용할 테마 -->
     <style name="Theme.MindLog" parent="Base.Theme.MindLog" />
+
+    <!-- ================= Text Styles ================= -->
+
+    <!-- Title: 굵게, ~20sp, 줄간격 28–30 -->
+    <style name="TextAppearance.Mindlog.Title" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item> <!-- 기본 텍스트 색상 사용 예시 -->
+        <!-- lineHeight(28sp) - textSize(20sp) = 8sp -->
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <!-- Subtitle: ~16sp, 줄간격 22–24 -->
+    <style name="TextAppearance.Mindlog.Subtitle" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item> <!-- 보조 텍스트 색상 사용 예시 -->
+        <!-- lineHeight(24sp) - textSize(16sp) = 8sp -->
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <!-- Body: ~14sp, 줄간격 20–22 -->
+    <style name="TextAppearance.Mindlog.Body" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <!-- lineHeight(22sp) - textSize(14sp) = 8sp -->
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <!-- Caption: ~12sp, 줄간격 16–18 -->
+    <style name="TextAppearance.Mindlog.Caption" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <!-- lineHeight(18sp) - textSize(12sp) = 6sp -->
+        <item name="android:lineSpacingExtra">6sp</item>
+    </style>
 </resources>

@@ -32,6 +32,20 @@ from app.features.selfaware.schemas.responses import (
 from app.features.selfaware.schemas.requests import (
     AnswerRequest
 )
+from app.features.analysis.schemas.responses import (
+    UserTypeResponse,
+    ComprehensiveAnalysisResponse,
+    PersonalizedAdviceResponse
+)
+from app.features.analysis.schemas.requests import (
+    UserTypeRequest,
+    ComprehensiveAnalysisRequest,
+    PersonalizedAdviceRequest
+)
+from app.features.analysis.service import (
+    AnalysisService
+)
+from app.features.analysis.di import get_analysis_service
 
 security = HTTPBearer()
 
@@ -66,6 +80,26 @@ def process_value_score_extraction(
             
     except Exception as e:
         print(f"Error processing value score for user {user_id}, question {question_id}, answer {answer_id}: {e}")
+        # 로깅을 위해 에러를 출력하지만 예외를 다시 발생시키지 않음
+
+def update_analysis_table(
+    user_id: int,
+    analysis_service: AnalysisService,
+):
+    try:
+        if analysis_service.get_analysis_by_user(user_id) == None:
+            analysis_service.create_analysis(user_id)
+            print(f"Analysis table for user {user_id} created")
+        print("Start updating neo_pi_score")
+        analysis_service.update_neo_pi_score(user_id)
+        print("Start updating user_id")
+        analysis_service.update_user_type(user_id)
+        print("Start updating comprehensive_analysis")
+        analysis_service.update_comprehensive_analysis(user_id)
+        print("Start updating personalized_advice")
+        analysis_service.update_personalized_advice(user_id)
+    except Exception as e:
+        print(f"Error processing updating analysis table for user {user_id}: {e}")
         # 로깅을 위해 에러를 출력하지만 예외를 다시 발생시키지 않음
 
 # -----------------------------
@@ -162,6 +196,7 @@ def submit_answer(
     answer_service: Annotated[AnswerService, Depends(get_answer_service)],
     value_score_service: Annotated[ValueScoreService, Depends(get_value_score_service)],
     value_map_service: Annotated[ValueMapService, Depends(get_value_map_service)],
+    analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
     user: User = Depends(get_current_user)
 ) -> AnswerResponse:
     """답변을 제출하고 백그라운드에서 value score를 추출하여 value map을 업데이트합니다."""
@@ -184,7 +219,16 @@ def submit_answer(
         value_score_service,
         value_map_service
     )
-    
+
+    # 3. 충분한 answers가 모였을 경우, analysis 업데이트
+    answers = answer_service.get_answer_by_user(user_id = user.id)
+    if len(answers) % 10 == 0:
+        background_tasks.add_task(
+            update_analysis_table,
+            user.id,
+            analysis_service
+        )
+
     return AnswerResponse.from_answer(answer)
     
 
