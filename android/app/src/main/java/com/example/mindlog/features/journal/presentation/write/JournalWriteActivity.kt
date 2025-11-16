@@ -1,5 +1,9 @@
 package com.example.mindlog.features.journal.presentation.write
 
+import android.app.Activity
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
@@ -73,6 +77,7 @@ class JournalWriteActivity : AppCompatActivity() {
             viewModel.saveResult.collect { result ->
                 when (result) {
                     is Result.Success -> {
+                        setResult(RESULT_OK)
                         Toast.makeText(this@JournalWriteActivity, "일기가 저장되었습니다.", Toast.LENGTH_SHORT).show()
                         finish()
                     }
@@ -83,12 +88,13 @@ class JournalWriteActivity : AppCompatActivity() {
 
                         // ✨ [핵심 수정] '감사한 일' 칸에 에러를 쓰는 대신, Log.e로 에러를 기록하고 사용자에게는 간단한 토스트만 보여줍니다.
                         Log.e("JournalWriteError", "일기 저장 실패: $errorMessage")
-                        Toast.makeText(this@JournalWriteActivity, "저장에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@JournalWriteActivity, errorMessage, Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
+
     private fun handleBackButton() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()

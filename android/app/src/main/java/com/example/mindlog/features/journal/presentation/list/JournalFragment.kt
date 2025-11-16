@@ -1,14 +1,17 @@
 package com.example.mindlog.features.journal.presentation.list
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.widget.addTextChangedListener
@@ -19,22 +22,69 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentJournalListBinding
+import com.example.mindlog.features.home.presentation.HomeActivity
 import com.example.mindlog.features.journal.presentation.adapter.JournalAdapter
+import com.example.mindlog.features.journal.presentation.detail.JournalDetailActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @AndroidEntryPoint
-class JournalFragment : Fragment() {
+// HomeActivity의 FAB 클릭 이벤트를 받기 위해 인터페이스 구현
+class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private var _binding: FragmentJournalListBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: JournalViewModel by viewModels()
     private lateinit var journalAdapter: JournalAdapter
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+
+    // 새 글 작성 후 또는 검색 조건 변경 후 맨 위로 스크롤하기 위한 플래그
+    private var scrollToTopOnNextSubmit = false
+
+    // HomeActivity의 FAB(작성 버튼)가 클릭되면 이 메서드가 호출됨
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        // 결과를 돌려받기 위해 반드시 launcher로 액티비티를 시작
+        activityResultLauncher.launch(intent)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 화면이 생성될 때 ActivityResultLauncher를 등록
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            // 다른 화면에서 돌아왔을 때, 결과 코드가 OK인 경우에만 처리
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                val updatedId = data?.getIntExtra(JournalDetailActivity.EXTRA_UPDATED_JOURNAL_ID, -1) ?: -1
+                val deletedId = data?.getIntExtra(JournalDetailActivity.EXTRA_DELETED_JOURNAL_ID, -1) ?: -1
+
+                when {
+                    // 케이스 1: 새 글 작성 후 메인으로 (Intent에 ID가 없음)
+                    updatedId == -1 && deletedId == -1 -> {
+                        scrollToTopOnNextSubmit = true // 다음 목록 업데이트 시 맨 위로 스크롤하도록 플래그 설정
+                        viewModel.clearSearchAndReload() // 검색 조건 초기화 후 `journal/me` API 호출
+                    }
+                    // 케이스 3: 수정 또는 삭제 후 메인으로 (Intent에 ID가 있음)
+                    else -> {
+                        // 스크롤 위치 유지를 위해 특정 아이템만 업데이트/삭제
+                        viewModel.updateOrRemoveJournalEntry(
+                            updatedId = if (updatedId == -1) null else updatedId,
+                            deletedId = if (deletedId == -1) null else deletedId
+                        )
+                    }
+                }
+            }
+            // 케이스 2: 단순 뒤로가기, 작성 취소 등 (RESULT_OK가 아님)
+            // -> 아무 작업도 하지 않으므로 스크롤 위치가 자동으로 유지됨
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,18 +96,17 @@ class JournalFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupWeeklyCalendar()
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
-    }
 
-    override fun onResume() {
-        super.onResume()
-        // 목록을 새로고침합니다.
+        // 최초 진입 시에만 목록을 로드 (onResume에서 제거)
         viewModel.loadJournals()
     }
+
+    // onResume()을 완전히 제거하여 불필요한 새로고침 방지
+    // override fun onResume() { ... }
 
     private fun setupClickListeners() {
         val topBar = binding.topBarLayout
@@ -68,9 +117,10 @@ class JournalFragment : Fragment() {
 
         topBar.btnSearchClose.setOnClickListener {
             toggleSearchView(false)
-
             if (viewModel.searchQuery.value?.isNotEmpty() == true) {
                 viewModel.searchQuery.value = ""
+                scrollToTopOnNextSubmit = true
+                viewModel.clearSearchConditions()
             }
         }
 
@@ -80,6 +130,7 @@ class JournalFragment : Fragment() {
             rootLayout.layoutTransition = null
 
             topBar.dateRangeBarContainer.visibility = View.GONE
+            scrollToTopOnNextSubmit = true
             viewModel.setDateRange(null, null)
 
             rootLayout.post {
@@ -97,6 +148,7 @@ class JournalFragment : Fragment() {
 
         topBar.etSearch.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                scrollToTopOnNextSubmit = true
                 val imm = ContextCompat.getSystemService(requireContext(), InputMethodManager::class.java)
                 imm?.hideSoftInputFromWindow(topBar.etSearch.windowToken, 0)
                 true
@@ -139,6 +191,7 @@ class JournalFragment : Fragment() {
             val apiFormat = SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN)
             val chipFormat = SimpleDateFormat("yyyy년 MM월 dd일 E요일", Locale.KOREAN)
 
+            scrollToTopOnNextSubmit = true
             viewModel.setDateRange(apiFormat.format(startDate), apiFormat.format(endDate))
 
             binding.topBarLayout.tvDateRange.text =
@@ -157,6 +210,7 @@ class JournalFragment : Fragment() {
 
         dateRangePicker.show(parentFragmentManager, "DATE_PICKER")
     }
+
     @SuppressLint("UseCompatLoadingForDrawables")
     private fun setupWeeklyCalendar() {
         val calendar = Calendar.getInstance()
@@ -166,8 +220,14 @@ class JournalFragment : Fragment() {
 
 
     private fun setupRecyclerView() {
-        journalAdapter = JournalAdapter()
-        val linearLayoutManager = LinearLayoutManager(requireContext())
+        // 어댑터 아이템 클릭 시, Launcher를 통해 DetailActivity 실행
+        journalAdapter = JournalAdapter { journalId ->
+            val intent = Intent(requireContext(), JournalDetailActivity::class.java).apply {
+                putExtra(JournalDetailActivity.EXTRA_JOURNAL_ID, journalId)
+            }
+            activityResultLauncher.launch(intent)
+        }
+        linearLayoutManager = LinearLayoutManager(requireContext())
         binding.rvDiaryFeed.apply {
             layoutManager = linearLayoutManager
             adapter = journalAdapter
@@ -190,7 +250,16 @@ class JournalFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.journals.observe(viewLifecycleOwner, Observer { journalList ->
-            journalAdapter.submitList(journalList.toList())
+            // submitList의 콜백에서 플래그를 확인하고 스크롤 처리
+            journalAdapter.submitList(journalList.toList()) {
+                if (scrollToTopOnNextSubmit) {
+                    binding.rvDiaryFeed.post {
+                        linearLayoutManager.scrollToPositionWithOffset(0, 0)
+                    }
+                    // 플래그를 다시 false로 바꿔서, 다음번 업데이트 시에는 실행되지 않도록 함
+                    scrollToTopOnNextSubmit = false
+                }
+            }
         })
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             // 로딩 처리

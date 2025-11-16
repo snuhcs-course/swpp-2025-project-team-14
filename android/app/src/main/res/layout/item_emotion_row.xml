@@ -13,7 +13,7 @@
         android:layout_weight="1"
         android:text="슬픔"
         android:textStyle="bold"
-        android:textColor="@color/emotion_sad_blue"/>
+        android:textColor="@color/emotion_sad"/>
 
     <RadioGroup
         android:id="@+id/radio_group_emotion"
@@ -59,6 +59,6 @@
         android:gravity="end"
         android:text="행복"
         android:textStyle="bold"
-        android:textColor="@color/emotion_happy_orange"/>
+        android:textColor="@color/emotion_happy"/>
 
 </LinearLayout>

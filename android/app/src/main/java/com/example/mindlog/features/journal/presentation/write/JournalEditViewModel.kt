@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.core.model.Keyword
+import com.example.mindlog.features.journal.data.dto.EmotionResponse
 import com.example.mindlog.features.journal.domain.usecase.DeleteJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.ExtractKeywordsUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
@@ -50,6 +51,7 @@ class JournalEditViewModel @Inject constructor(
     val gratitude = MutableLiveData<String>()
 
     val keywords = MutableLiveData<List<Keyword>>()
+    val emotions = MutableLiveData<List<EmotionResponse>>()
     val selectedImageUri = MutableStateFlow<Uri?>(null)
     val existingImageUrl = MutableStateFlow<String?>(null)
 
@@ -80,6 +82,7 @@ class JournalEditViewModel @Inject constructor(
                 } else {
                     existingImageUrl.value = null
                 }
+                emotions.value = journal.emotions
 
                 val uiKeywords = journal.keywords?.map { dto ->
                     Keyword(
@@ -129,7 +132,6 @@ class JournalEditViewModel @Inject constructor(
         if (uri != null) {
             selectedImageUri.value = uri
             generatedImageBitmap.value = null // AI 이미지 초기화
-            existingImageUrl.value = null   // 기존 서버 이미지 초기화
         }
     }
 
@@ -151,10 +153,10 @@ class JournalEditViewModel @Inject constructor(
 
                 generatedImageBitmap.value = decodedBitmap
                 selectedImageUri.value = null
-                existingImageUrl.value = null
 
             } catch (e: Exception) {
                 aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+                noImage.emit(true)
             } finally {
                 isLoading.value = false
             }
@@ -170,11 +172,19 @@ class JournalEditViewModel @Inject constructor(
         val newImageUri = selectedImageUri.value
         val aiGeneratedBitmap = generatedImageBitmap.value
 
-        if (newTitle.isBlank() || newContent.isBlank() || newGratitude.isBlank()) {
-            viewModelScope.launch {
-                _editResult.emit(Result.Error(message = "제목, 내용, 감사한 일을 모두 입력해주세요."))
+        when {
+            newTitle.isBlank() -> {
+                viewModelScope.launch {
+                    _editResult.emit(Result.Error(message = "제목을 입력해주세요."))
+                }
+                return
             }
-            return
+            newContent.isBlank() -> {
+                viewModelScope.launch {
+                    _editResult.emit(Result.Error(message = "오늘의 하루를 입력해주세요."))
+                }
+                return
+            }
         }
 
         val isTextChanged = originalData.title != newTitle ||
