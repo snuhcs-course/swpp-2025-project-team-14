@@ -1,25 +1,24 @@
 package com.example.mindlog.features.journal.presentation.detail
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.compose.ui.semantics.text
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
-import com.example.mindlog.BuildConfig
 import com.example.mindlog.R
 import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.model.Emotion
 import com.example.mindlog.core.model.Keyword
 import com.example.mindlog.databinding.FragmentJournalDetailBinding
-import com.example.mindlog.features.journal.data.dto.EmotionResponse
 import com.example.mindlog.features.journal.presentation.write.JournalEditViewModel
-import com.google.android.material.chip.Chip
+import com.example.mindlog.features.journal.presentation.list.JournalKeywordSearchActivity
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -30,7 +29,7 @@ class JournalDetailFragment : Fragment() {
     private var _binding: FragmentJournalDetailBinding? = null
     private val binding get() = _binding!!
 
-    // Activity와 ViewModel 공유 (데이터 로딩, 키워드 추출 등)
+    // Activity와 ViewModel 공유
     private val viewModel: JournalEditViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -56,21 +55,14 @@ class JournalDetailFragment : Fragment() {
                     binding.tvContent.text = journal.content
                     binding.tvGratitude.text = journal.gratitude
 
-                    // 날짜 형식 변환
-                    val serverDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    // 날짜 형식 변환 (JournalEntry는 이미 Date 객체를 가지고 있음)
                     val displayFormat = SimpleDateFormat("yyyy년 MM월 dd일 E요일", Locale.KOREAN)
-                    try {
-                        val date = serverDateFormat.parse(journal.createdAt)
-                        binding.tvDate.text = displayFormat.format(date!!)
-                    } catch (e: Exception) {
-                        binding.tvDate.text = "날짜 형식 오류"
-                    }
+                    binding.tvDate.text = displayFormat.format(journal.createdAt)
 
-                    // 이미지 표시
-                    if (!journal.imageS3Keys.isNullOrBlank()) {
+                    // ✨ [수정] 이미지 표시: 완성된 imageUrl을 바로 사용
+                    if (!journal.imageUrl.isNullOrBlank()) {
                         binding.ivImage.isVisible = true
-                        val imageUrl = "${BuildConfig.S3_BUCKET_URL}/${journal.imageS3Keys}"
-                        Glide.with(this).load(imageUrl).into(binding.ivImage)
+                        Glide.with(this).load(journal.imageUrl).into(binding.ivImage)
                     } else {
                         binding.ivImage.isVisible = false
                     }
@@ -91,7 +83,7 @@ class JournalDetailFragment : Fragment() {
         }
     }
 
-    private fun updateEmotionsUI(emotions: List<EmotionResponse>) {
+    private fun updateEmotionsUI(emotions: List<Emotion>) {
         val filteredEmotions = emotions
             .filter { it.intensity >= 3 }
             .sortedByDescending { it.intensity }
@@ -107,8 +99,7 @@ class JournalDetailFragment : Fragment() {
         }
     }
 
-    // ✨ [핵심 추가] 감정 TextView 생성 함수
-    private fun createEmotionView(emotion: EmotionResponse): TextView {
+    private fun createEmotionView(emotion: Emotion): TextView {
         val emotionView = layoutInflater.inflate(R.layout.item_keyword_chip, binding.flexboxEmotions, false) as TextView
         emotionView.text = getKoreanEmotionName(emotion.emotion)
         emotionView.setTextColor(getEmotionColor(emotion.emotion, emotion.intensity))
@@ -121,7 +112,6 @@ class JournalDetailFragment : Fragment() {
         return emotionView
     }
 
-    // ✨ [핵심 추가] API 이름을 한글로 변환하는 함수
     private fun getKoreanEmotionName(apiName: String): String {
         return when (apiName) {
             "happy" -> "행복"
@@ -138,7 +128,6 @@ class JournalDetailFragment : Fragment() {
         }
     }
 
-    // ✨ [핵심 추가] intensity를 파라미터로 받아 색상을 다르게 반환하는 함수
     private fun getEmotionColor(emotionName: String, intensity: Int): Int {
         val colorResId = when (emotionName.lowercase()) {
             "happy" -> R.color.emotion_happy
@@ -162,7 +151,6 @@ class JournalDetailFragment : Fragment() {
         return targetColor
     }
 
-    // ✨ [핵심 추가] 두 색상을 섞어주는 interpolateColor 함수
     private fun interpolateColor(color1: Int, color2: Int, ratio: Float): Int {
         val inverseRatio = 1 - ratio
         val a = (android.graphics.Color.alpha(color1) * inverseRatio + android.graphics.Color.alpha(color2) * ratio).toInt()
@@ -178,8 +166,8 @@ class JournalDetailFragment : Fragment() {
         binding.flexboxKeywords.removeAllViews()
 
         if (hasKeywords) {
-            keywords.forEach { keyword -> // 변수명을 keyword로 변경
-                val keywordChip = createKeywordChip(keyword) // 변경된 변수 전달
+            keywords.forEach { keyword ->
+                val keywordChip = createKeywordChip(keyword)
                 binding.flexboxKeywords.addView(keywordChip)
             }
         }
@@ -187,10 +175,12 @@ class JournalDetailFragment : Fragment() {
 
     private fun createKeywordChip(keyword: Keyword): View {
         val keywordView = layoutInflater.inflate(R.layout.item_keyword_chip, binding.flexboxKeywords, false) as android.widget.TextView
-        keywordView.text = "#${keyword.keyword}" // UI 모델의 필드 사용
+        keywordView.text = "#${keyword.keyword}"
         keywordView.setOnClickListener {
-            // TODO: 추후 키워드 검색 기능 구현
-            Toast.makeText(requireContext(), "'${keyword.keyword}' 키워드로 검색합니다.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), JournalKeywordSearchActivity::class.java).apply {
+                putExtra(JournalKeywordSearchActivity.EXTRA_KEYWORD, keyword.keyword)
+            }
+            startActivity(intent)
         }
         return keywordView
     }

@@ -18,6 +18,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mindlog.R
@@ -101,15 +102,17 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
         setupClickListeners()
         observeViewModel()
 
-        // 최초 진입 시에만 목록을 로드 (onResume에서 제거)
+        viewModel.startObservingSearchQuery()
+
         viewModel.loadJournals()
     }
 
-    // onResume()을 완전히 제거하여 불필요한 새로고침 방지
-    // override fun onResume() { ... }
-
     private fun setupClickListeners() {
         val topBar = binding.topBarLayout
+
+        topBar.btnSettings.setOnClickListener {
+            findNavController().navigate(R.id.action_journalFragment_to_settingsFragment)
+        }
 
         topBar.btnSearch.setOnClickListener {
             toggleSearchView(true)
@@ -121,6 +124,7 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
                 viewModel.searchQuery.value = ""
                 scrollToTopOnNextSubmit = true
                 viewModel.clearSearchConditions()
+                viewModel.loadJournals()
             }
         }
 
@@ -132,6 +136,7 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
             topBar.dateRangeBarContainer.visibility = View.GONE
             scrollToTopOnNextSubmit = true
             viewModel.setDateRange(null, null)
+            viewModel.loadJournals()
 
             rootLayout.post {
                 rootLayout.layoutTransition = originalTransition
@@ -193,6 +198,7 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
             scrollToTopOnNextSubmit = true
             viewModel.setDateRange(apiFormat.format(startDate), apiFormat.format(endDate))
+            viewModel.loadJournals()
 
             binding.topBarLayout.tvDateRange.text =
                 "${chipFormat.format(startDate)} ~ ${chipFormat.format(endDate)}"

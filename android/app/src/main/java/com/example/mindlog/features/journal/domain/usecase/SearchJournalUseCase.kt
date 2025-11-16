@@ -1,6 +1,7 @@
 package com.example.mindlog.features.journal.domain.usecase
 
-import com.example.mindlog.features.journal.data.dto.JournalListResponse
+import com.example.mindlog.core.model.JournalEntry
+import com.example.mindlog.core.model.PagedResult
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import javax.inject.Inject
 
@@ -13,7 +14,7 @@ class SearchJournalsUseCase @Inject constructor(
         title: String?,
         limit: Int,
         cursor: Int?
-    ): JournalListResponse {
+    ): PagedResult<JournalEntry> {
         return repository.searchJournals(startDate, endDate, title, limit, cursor)
     }
 }
