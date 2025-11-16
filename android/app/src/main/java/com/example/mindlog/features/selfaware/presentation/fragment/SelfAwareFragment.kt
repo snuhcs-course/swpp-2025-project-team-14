@@ -68,8 +68,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.state.collect { s ->
                     // Show spinner if loading question, submitting, or loading value map (if present)
-                    Log.d("SelfAwareFragment", "state: $s")
-
                     val isLoading = s.isLoading
                     val isQuestionError = s.isQuestionError
                     binding.progressValueMap.isVisible = isLoading
