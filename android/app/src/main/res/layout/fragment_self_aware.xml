@@ -77,6 +77,44 @@
                         android:textColor="#636779"
                         android:textSize="14sp" />
 
+                    <LinearLayout
+                        android:id="@+id/groupQuestionLoading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/progressQuestion"
+                            style="@style/Widget.Material3.CircularProgressIndicator"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:indicatorSize="24dp"
+                            app:trackThickness="3dp"
+                            app:indicatorColor="#64B5F6"
+                            android:indeterminate="true" />
+
+                        <ImageView
+                            android:id="@+id/ivQuestionError"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="4dp"
+                            android:visibility="gone"
+                            android:contentDescription="질문 생성 오류 아이콘"
+                            app:srcCompat="@drawable/ic_error" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvQuestionLoading"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="오늘의 질문을 생성하는 중이에요…"
+                            android:textColor="#2D3142"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
                     <!-- 질문/답변 입력 (기본 표시) -->
                     <LinearLayout
                         android:id="@+id/groupQuestion"

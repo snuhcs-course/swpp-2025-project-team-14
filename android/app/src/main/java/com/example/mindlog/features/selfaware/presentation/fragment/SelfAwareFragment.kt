@@ -34,7 +34,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
     private var answerWatcher: TextWatcher? = null
     private var suppressAnswerTextChange = false
-    private var forceOverlay: Boolean = false
     private var radarInitDone = false
     private var lastRadarCats: List<String>? = null
     private var lastRadarScores: List<Float>? = null
@@ -57,7 +56,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
         binding.btnSubmit.setOnClickListener {
             if (!binding.btnSubmit.isEnabled) return@setOnClickListener
-            forceOverlay = true
             vm.submit()
         }
 
@@ -72,22 +70,46 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                 vm.state.collect { s ->
                     // Show spinner if loading question, submitting, or loading value map (if present)
                     val isLoading = s.isLoading
+                    val isQuestionError = s.isQuestionError
                     binding.progressValueMap.isVisible = isLoading
 
-                    val shouldShowOverlay = forceOverlay || s.isSubmitting || s.isAnsweredToday
+                    val shouldShowOverlay = s.showCompletionOverlay || s.isSubmitting || s.isAnsweredToday
+                    val showQuestionLoading = (s.isLoadingQuestion || isQuestionError) && !shouldShowOverlay
+                    binding.groupQuestionLoading.isVisible = showQuestionLoading
                     binding.completionOverlay.isVisible = shouldShowOverlay
-                    binding.groupQuestion.isVisible = !shouldShowOverlay
 
                     if (shouldShowOverlay) {
                         binding.completionOverlay.bringToFront()
+                        binding.groupQuestion.isVisible = false
+                        binding.groupQuestionLoading.isVisible = false
                         binding.btnSubmit.isEnabled = false
                         binding.etAnswer.isEnabled = false
-                        // 제출 확정/종료되면 오버레이 강제 플래그 해제
-                        if (!s.isSubmitting) forceOverlay = false
                     } else {
-                        val isQuestionVisible = !s.isAnsweredToday && !s.isSubmitting
+                        val isQuestionVisible =
+                            !s.isAnsweredToday && !s.isSubmitting && !s.isLoadingQuestion && !isQuestionError
+
                         binding.groupQuestion.isVisible = isQuestionVisible
-                        binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion
+                        binding.groupQuestionLoading.isVisible = s.isLoadingQuestion || isQuestionError
+                        binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
+
+                        if (isQuestionError) {
+                            // ❌ 에러 상태: 스피너 숨기고 에러 아이콘 + 에러 문구
+                            binding.progressQuestion.isVisible = false
+                            binding.ivQuestionError.isVisible = true
+                            binding.tvQuestionLoading.text =
+                                s.questionErrorMessage ?: "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요."
+                        } else if (s.isLoadingQuestion) {
+                            // ⏳ 정상 로딩
+                            binding.progressQuestion.isVisible = true
+                            binding.ivQuestionError.isVisible = false
+                            binding.tvQuestionLoading.text = "오늘의 질문을 생성하는 중이에요…"
+                        } else {
+                            // 질문도 있고, 로딩/에러도 아님
+                            binding.progressQuestion.isVisible = false
+                            binding.ivQuestionError.isVisible = false
+                        }
+
+                        // 질문 텍스트: 질문이 있을 때만 의미 있음
                         binding.tvQuestion.text = s.questionText ?: "오늘의 질문을 불러오고 있어요…"
 
                         val desired = s.answerText

@@ -49,7 +49,10 @@ class SelfAwareViewModel @Inject constructor(
         val isLoadingQuestion: Boolean = true,
         val isSubmitting: Boolean = false,
         val isLoading: Boolean = true,
+        val showCompletionOverlay: Boolean = false,
 
+        val isQuestionError: Boolean = false,
+        val questionErrorMessage: String? = null,
         val error: String? = null
     )
 
@@ -61,7 +64,16 @@ class SelfAwareViewModel @Inject constructor(
     fun load() = viewModelScope.launch(dispatcher.io) {
         // 화면 전체 스피너는 해제, 질문 섹션만 로딩 상태 유지
         val date = _state.value.date
-        _state.update { it.copy(isLoadingQuestion = true, isLoading = true, error = null) }
+        _state.update {
+            it.copy(
+                isLoadingQuestion = true,
+                isLoading = true,
+                showCompletionOverlay = false,
+                isQuestionError = false,
+                questionErrorMessage = null,
+                error = null
+            )
+        }
 
         var errorMessage: String? = null
         pollJob?.cancel()
@@ -75,21 +87,20 @@ class SelfAwareViewModel @Inject constructor(
                 // 결과 병합
                 val valueMapRes = valueMap.await()
                 val topRes = topValues.await()
-                val todayQARes = todayQA.await()
+                _state.update {
+                    it.copy(
+                        valueMap = (valueMapRes as? Result.Success)?.data?.categoryScores ?: emptyList(),
+                        topValueScores = (topRes as? Result.Success)?.data?.valueScores ?: emptyList(),
+                        isLoading = false,
+                        // valueMap / topValues 관련 에러만 우선 반영
+                        error = listOfNotNull(
+                            (valueMapRes as? Result.Error)?.message,
+                            (topRes as? Result.Error)?.message,
+                        ).firstOrNull()
+                    )
+                }
 
-                val updated = _state.value.copy(
-                    valueMap = (valueMapRes as? Result.Success)?.data?.categoryScores ?: emptyList(),
-                    topValueScores = (topRes as? Result.Success)?.data?.valueScores ?: emptyList(),
-                    isLoading = false,
-                    error = listOfNotNull(
-                        (valueMapRes as? Result.Error)?.message,
-                        (topRes as? Result.Error)?.message,
-                    ).firstOrNull()
-                )
-
-                _state.value = updated
-
-                when (todayQARes) {
+                when (val todayQARes = todayQA.await()) {
                     is Result.Success -> {
                         val qaRes = todayQARes.data
                         if (qaRes?.question != null) {
@@ -98,12 +109,14 @@ class SelfAwareViewModel @Inject constructor(
                                     questionId = qaRes.question.id,
                                     questionText = qaRes.question.text,
                                     isAnsweredToday = qaRes.answer != null,
-                                    isLoadingQuestion = false
+                                    isLoadingQuestion = false,
+                                    showCompletionOverlay = qaRes.answer != null,
+                                    isQuestionError = false,
+                                    questionErrorMessage = null
                                 )
                             }
                         } else startPolling()
                     }
-
                     is Result.Error -> {
                         val code = todayQARes.code
                         if (code == null) {
@@ -115,6 +128,9 @@ class SelfAwareViewModel @Inject constructor(
                                     questionText = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
                                     isLoadingQuestion = false,
                                     isAnsweredToday = false,
+                                    showCompletionOverlay = false,
+                                    isQuestionError = true,
+                                    questionErrorMessage = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
                                     error = todayQARes.message
                                 )
                             }
@@ -137,7 +153,15 @@ class SelfAwareViewModel @Inject constructor(
         pollJob?.cancel()
         pollJob = viewModelScope.launch(dispatcher.io) {
             // 폴링 시작: 질문 섹션만 로딩 유지
-            _state.update { it.copy(isLoadingQuestion = true, error = null) }
+            _state.update {
+                it.copy(
+                    isLoadingQuestion = true,
+                    showCompletionOverlay = false,
+                    isQuestionError = false,
+                    questionErrorMessage = null,
+                    error = null
+                )
+            }
 
             try {
                 withTimeout(maxWaitMs) {
@@ -156,6 +180,9 @@ class SelfAwareViewModel @Inject constructor(
                                             questionText = qa.question.text,
                                             isAnsweredToday = qa.answer != null,
                                             isLoadingQuestion = false,
+                                            showCompletionOverlay = qa.answer != null,
+                                            isQuestionError = false,
+                                            questionErrorMessage = null,
                                             error = null
                                         )
                                     }
@@ -171,6 +198,9 @@ class SelfAwareViewModel @Inject constructor(
                                             questionText = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
                                             isLoadingQuestion = false,
                                             isAnsweredToday = false,
+                                            showCompletionOverlay = false,
+                                            isQuestionError = true,
+                                            questionErrorMessage = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
                                             error = res.message
                                         )
                                     }
@@ -187,6 +217,8 @@ class SelfAwareViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isLoadingQuestion = false,
+                        isQuestionError = true,
+                        questionErrorMessage = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요.",
                         error = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요."
                     )
                 }
@@ -212,7 +244,7 @@ class SelfAwareViewModel @Inject constructor(
             return@launch
         }
 
-        _state.update { it.copy(isSubmitting = true) }
+        _state.update { it.copy(isSubmitting = true, showCompletionOverlay = true) }
 
         when (val res = submitAnswerUseCase(s.questionId, s.answerText)) {
             is Result.Success -> {
@@ -222,12 +254,19 @@ class SelfAwareViewModel @Inject constructor(
                         isSubmitting = false,
                         isAnsweredToday = true,
                         isLoadingQuestion = false,
+                        showCompletionOverlay = true,
                         answerText = ""
                     )
                 }
             }
             is Result.Error -> {
-                _state.update { it.copy(isSubmitting = false, error = res.message) }
+                _state.update {
+                    it.copy(
+                        isSubmitting = false,
+                        showCompletionOverlay = false,
+                        error = res.message
+                    )
+                }
             }
         }
     }
