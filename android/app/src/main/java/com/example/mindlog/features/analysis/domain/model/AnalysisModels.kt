@@ -16,7 +16,7 @@ data class ComprehensiveAnalysis(
 )
 
 data class PersonalizedAdvice(
-    val adviceType: String,
+    val adviceType: String? = null,
     val personalizedAdvice: String,
     val updatedAt: String
 )
