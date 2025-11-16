@@ -235,6 +235,7 @@ class SelfAwareViewModel @Inject constructor(
 
     fun submit() = viewModelScope.launch(dispatcher.io) {
         val s = _state.value
+
         if (s.questionId == null) {
             _state.update { it.copy(error = "질문을 불러오는 중 입니다.") }
             return@launch
@@ -244,7 +245,12 @@ class SelfAwareViewModel @Inject constructor(
             return@launch
         }
 
-        _state.update { it.copy(isSubmitting = true, showCompletionOverlay = true) }
+        _state.update {
+            it.copy(
+                isSubmitting = true,
+                showCompletionOverlay = true
+            )
+        }
 
         when (val res = submitAnswerUseCase(s.questionId, s.answerText)) {
             is Result.Success -> {
@@ -253,12 +259,14 @@ class SelfAwareViewModel @Inject constructor(
                     it.copy(
                         isSubmitting = false,
                         isAnsweredToday = true,
+                        isLoading = false,
                         isLoadingQuestion = false,
                         showCompletionOverlay = true,
                         answerText = ""
                     )
                 }
             }
+
             is Result.Error -> {
                 _state.update {
                     it.copy(

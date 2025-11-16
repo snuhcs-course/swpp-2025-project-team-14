@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.inputmethod.BaseInputConnection
 
 @AndroidEntryPoint
@@ -63,12 +64,12 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             findNavController().navigate(R.id.selfAwareHistoryFragment)
         }
 
-        // observe state
-        // collect
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.state.collect { s ->
                     // Show spinner if loading question, submitting, or loading value map (if present)
+                    Log.d("SelfAwareFragment", "state: $s")
+
                     val isLoading = s.isLoading
                     val isQuestionError = s.isQuestionError
                     binding.progressValueMap.isVisible = isLoading
@@ -93,13 +94,11 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                         binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
 
                         if (isQuestionError) {
-                            // ❌ 에러 상태: 스피너 숨기고 에러 아이콘 + 에러 문구
                             binding.progressQuestion.isVisible = false
                             binding.ivQuestionError.isVisible = true
                             binding.tvQuestionLoading.text =
                                 s.questionErrorMessage ?: "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요."
                         } else if (s.isLoadingQuestion) {
-                            // ⏳ 정상 로딩
                             binding.progressQuestion.isVisible = true
                             binding.ivQuestionError.isVisible = false
                             binding.tvQuestionLoading.text = "오늘의 질문을 생성하는 중이에요…"
