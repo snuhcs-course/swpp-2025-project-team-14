@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mindlog"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -81,13 +81,17 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.patrykandpatrick.vico:views:1.14.0")
     implementation("com.patrykandpatrick.vico:compose:1.14.0")
-    implementation("androidx.webkit:webkit:1.10.0")
+    implementation("com.github.jolenechong:androidWordCloud:1.0.0") {
+        exclude(group="com.sun.xml.bind", module="jaxb-core")
+        exclude(group="com.sun.xml.bind", module="jaxb-impl")
+    }
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Hilt (버전 통일: 2.52 권장)
+    // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
     kapt("com.google.dagger:hilt-android-compiler:2.52")
 
@@ -118,15 +122,12 @@ dependencies {
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.52")
 
-    // Fragment Testing은 테스트 소스셋으로 이동 (런타임 X)
     androidTestImplementation(libs.androidx.fragment.testing)
     androidTestImplementation(libs.androidx.espresso.contrib)
 
     // Network Integration Test
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 
-    // Room in-memory Test (쓰는 경우만)
-    androidTestImplementation("androidx.room:room-testing:2.6.1")
     testImplementation(kotlin("test"))
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
