@@ -1,5 +1,6 @@
 package com.example.mindlog.features.journal.presentation.detail
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import com.example.mindlog.core.model.Emotion
 import com.example.mindlog.core.model.Keyword
 import com.example.mindlog.databinding.FragmentJournalDetailBinding
 import com.example.mindlog.features.journal.presentation.write.JournalEditViewModel
+import com.example.mindlog.features.journal.presentation.list.JournalKeywordSearchActivity
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -175,7 +177,10 @@ class JournalDetailFragment : Fragment() {
         val keywordView = layoutInflater.inflate(R.layout.item_keyword_chip, binding.flexboxKeywords, false) as android.widget.TextView
         keywordView.text = "#${keyword.keyword}"
         keywordView.setOnClickListener {
-            Toast.makeText(requireContext(), "'${keyword.keyword}' 키워드로 검색합니다.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), JournalKeywordSearchActivity::class.java).apply {
+                putExtra(JournalKeywordSearchActivity.EXTRA_KEYWORD, keyword.keyword)
+            }
+            startActivity(intent)
         }
         return keywordView
     }

@@ -122,6 +122,21 @@ class JournalRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun searchByKeyword(
+        keyword: String,
+        limit: Int,
+        cursor: Int?
+    ): PagedResult<JournalEntry> {
+        val response = journalApi.searchByKeyword(
+            keyword = keyword,
+            limit = limit,
+            cursor = cursor
+        )
+        return PagedResult(
+            items = response.items.map { mapper.toJournalEntry(it) },
+            nextCursor = response.nextCursor
+        )
+    }
 
     override suspend fun generateImage(style: String, content: String): String {
         try {

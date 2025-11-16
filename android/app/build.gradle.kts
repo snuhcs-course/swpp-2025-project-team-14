@@ -116,6 +116,7 @@ dependencies {
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("com.google.truth:truth:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
 }
 
 kapt {

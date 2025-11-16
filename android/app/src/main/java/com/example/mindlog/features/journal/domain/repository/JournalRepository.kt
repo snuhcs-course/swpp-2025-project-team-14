@@ -55,6 +55,12 @@ interface JournalRepository {
         cursor: Int?
     ): PagedResult<JournalEntry>
 
+    suspend fun searchByKeyword(
+        keyword: String,
+        limit: Int,
+        cursor: Int?
+    ): PagedResult<JournalEntry>
+
     /**
      * AI 이미지 생성을 요청합니다.
      * @param style 이미지 스타일
