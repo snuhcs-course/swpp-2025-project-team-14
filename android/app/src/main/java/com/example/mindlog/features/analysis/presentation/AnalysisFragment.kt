@@ -13,7 +13,6 @@ import com.example.mindlog.databinding.FragmentAnalysisBinding
 import com.example.mindlog.features.analysis.domain.model.ComprehensiveAnalysis
 import com.example.mindlog.features.analysis.domain.model.PersonalizedAdvice
 import com.example.mindlog.features.analysis.domain.model.UserType
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -88,28 +87,45 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis) {
         binding.ivUserTypeCharacter.setImageResource(drawableRes)
     }
 
+    // 🔥 여기 완전히 새로 교체
     private fun renderComprehensive(analysis: ComprehensiveAnalysis?) {
         val card = binding.cardComprehensive
         card.isVisible = true
-        if (analysis == null) {
-            binding.tvConscientiousness.text = "아직 데이터가 부족해요."
-            binding.tvNeuroticism.text = "조금 더 기록해주시면 분석을 제공할게요."
-            binding.tvExtraversion.text = "아직 데이터가 부족해요."
-            binding.tvOpenness.text = "조금 더 기록해주시면 분석을 제공할게요."
-            binding.tvAgreeableness.text = "아직 데이터가 부족해요."
-            return
-        }
 
-        binding.tvConscientiousness.text = analysis.conscientiousness
-        binding.tvNeuroticism.text = analysis.neuroticism
-        binding.tvExtraversion.text = analysis.extraversion
-        binding.tvOpenness.text = analysis.openness
-        binding.tvAgreeableness.text = analysis.agreeableness
+        val items: List<Pair<String, String>> =
+            if (analysis == null) {
+                listOf(
+                    "아직 분석이 준비되지 않았어요" to
+                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
+                    "아직 분석이 준비되지 않았어요" to
+                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
+                    "아직 분석이 준비되지 않았어요" to
+                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
+                    "아직 분석이 준비되지 않았어요" to
+                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
+                    "아직 분석이 준비되지 않았어요" to
+                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요."
+                )
+            } else {
+                listOf(
+                    "성실성 (Conscientiousness)" to analysis.conscientiousness,
+                    "정서 안정성 (Neuroticism)" to analysis.neuroticism,
+                    "외향성 (Extraversion)" to analysis.extraversion,
+                    "개방성 (Openness)" to analysis.openness,
+                    "수용성 (Agreeableness)" to analysis.agreeableness,
+                )
+            }
+
+        val useColorfulBackground = analysis != null
+        val adapter = FiveFactorAdapter(items, true)
+        binding.vpFiveFactor.adapter = adapter
+        binding.dotsIndicator.attachTo(binding.vpFiveFactor)
     }
 
     private fun renderAdvice(advice: PersonalizedAdvice?) {
         val card = binding.cardAdvice
         card.isVisible = true
+
         if (advice == null) {
             binding.tvAdviceEmoji.text = "✨"
             binding.tvAdviceType.text = "아직 개인화 조언이 없어요"

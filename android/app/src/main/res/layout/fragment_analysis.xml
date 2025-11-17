@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="#F8F6F0">
+    android:background="@color/bg">
 
     <!-- 제목 -->
     <com.google.android.material.textview.MaterialTextView
@@ -107,10 +107,9 @@
                 android:id="@+id/cardComprehensive"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="15dp"
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardCornerRadius="18dp"
-                app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -128,144 +127,23 @@
                         android:textStyle="bold"
                         android:textSize="15sp" />
 
-                    <!-- 책임성 -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvConscientiousnessTitle"
+                    <!-- 🔥 Five Factor 카드뉴스 ViewPager2 -->
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/vpFiveFactor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp" />
+
+                    <!-- 🔥 페이지 인디케이터 -->
+                    <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+                        android:id="@+id/dotsIndicator"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="성실성 (Conscientiousness)"
-                        android:textStyle="bold"
-                        android:textColor="#636779"
-                        android:textSize="13sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvConscientiousness"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="#2D3142"
-                        android:textSize="13sp"
-                        android:lineSpacingExtra="2dp"
-                        android:maxLines="3"
-                        android:ellipsize="end"
-                        tools:text="계획을 세우고 끝까지 밀어붙이는 힘이 강한 편이에요. 장기적인 목표를 향해 꾸준히 쌓아가는 스타일입니다." />
-
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        app:dividerColor="#E0E2EC" />
-
-                    <!-- 정서 안정성 -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvNeuroticismTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="안정성 (Neuroticism)"
-                        android:textStyle="bold"
-                        android:textColor="#636779"
-                        android:textSize="13sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvNeuroticism"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="#2D3142"
-                        android:textSize="13sp"
-                        android:lineSpacingExtra="2dp"
-                        android:maxLines="3"
-                        android:ellipsize="end"
-                        tools:text="감정 기복이 크지 않고, 스트레스 상황에서도 비교적 차분함을 유지하려는 경향이 있습니다." />
-
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        app:dividerColor="#E0E2EC" />
-
-                    <!-- 외향성 -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvExtraversionTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="외향성 (Extraversion)"
-                        android:textStyle="bold"
-                        android:textColor="#636779"
-                        android:textSize="13sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvExtraversion"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="#2D3142"
-                        android:textSize="13sp"
-                        android:lineSpacingExtra="2dp"
-                        android:maxLines="3"
-                        android:ellipsize="end"
-                        tools:text="필요할 때 사람들 사이로 들어가지만, 혼자만의 시간에서도 충분히 에너지를 회복하는 균형형 스타일이에요." />
-
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        app:dividerColor="#E0E2EC" />
-
-                    <!-- 개방성 -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvOpennessTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="개방성 (Openness)"
-                        android:textStyle="bold"
-                        android:textColor="#636779"
-                        android:textSize="13sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvOpenness"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="#2D3142"
-                        android:textSize="13sp"
-                        android:lineSpacingExtra="2dp"
-                        android:maxLines="3"
-                        android:ellipsize="end"
-                        tools:text="새로운 아이디어와 관점을 즐기며, 익숙한 것들 속에서도 색다른 가능성을 찾으려는 성향이 강합니다." />
-
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        app:dividerColor="#E0E2EC" />
-
-                    <!-- 우호성 -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvAgreeablenessTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="수용성 (Agreeableness)"
-                        android:textStyle="bold"
-                        android:textColor="#636779"
-                        android:textSize="13sp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvAgreeableness"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="#2D3142"
-                        android:textSize="13sp"
-                        android:lineSpacingExtra="2dp"
-                        android:maxLines="3"
-                        android:ellipsize="end"
-                        tools:text="타인의 감정을 잘 캐치하고, 관계의 균형을 중요하게 생각하는 편이에요." />
+                        app:dotsColor="#D1CFCA"
+                        app:selectedDotColor="#4C5061"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="8dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -275,7 +153,7 @@
                 android:id="@+id/cardAdvice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="15dp"
                 android:layout_marginBottom="96dp"
                 app:cardBackgroundColor="#FFF7E8"
                 app:cardCornerRadius="18dp"
@@ -286,7 +164,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:paddingTop="16dp"
+                    android:paddingHorizontal="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -322,8 +201,21 @@
                         android:textSize="13sp"
                         android:lineSpacingExtra="2dp"
                         tools:text="오늘은 '완벽한 답'보다 '충분히 좋은 시도'에 초점을 맞춰보세요. 지금의 선택이 다음 탐험의 단서를 만들어 줄 거예요." />
+
+                    <!-- 🧠 조언 캐릭터 애니메이션 -->
+                    <com.airbnb.lottie.LottieAnimationView
+                        android:id="@+id/lottieAdviceCharacter"
+                        android:layout_width="200dp"
+                        android:layout_height="160dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_gravity="center_horizontal"
+                        app:lottie_autoPlay="true"
+                        app:lottie_loop="true"
+                        app:lottie_rawRes="@raw/anim_advice"/>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

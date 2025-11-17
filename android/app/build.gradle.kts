@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation("com.google.android.material:material:1.12.0")
+    implementation("com.tbuonomo:dotsindicator:4.3")
+    implementation("com.airbnb.android:lottie:6.0.0")
     implementation("androidx.fragment:fragment-ktx:1.7.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
