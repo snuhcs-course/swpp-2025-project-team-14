@@ -173,10 +173,6 @@ class AnswerService:
 
 
     def create_answer(self, user_id: int, question_id: int, text: str) -> Answer:
-        """
-        해당 question이 실제 존재하는지 확인한 뒤,
-        answer를 DB에 생성한다.
-        """
         answer = self.answer_repository.create_answer(
             user_id=user_id,
             question_id=question_id,
