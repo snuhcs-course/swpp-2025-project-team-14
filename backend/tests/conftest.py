@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from datetime import date
 from typing import Any
 
 import pytest
@@ -64,11 +65,12 @@ def test_user(db_session: Session) -> User:
     """
     공용 테스트 사용자를 생성하고 DB에 저장하는 fixture
     """
-    # test_me_success에 있던 사용자 생성 로직
     user = User(
         login_id="test_user",
         hashed_password=pwd_context.hash("ValidPass123!"),
         username="Test-User",
+        gender="Female",
+        birthdate=date(2002, 2, 2),
     )
     db_session.add(user)
     db_session.commit()
@@ -83,11 +85,11 @@ def auth_headers(client: TestClient, test_user: User) -> dict[str, str]:
     """
     login_data = {
         "login_id": test_user.login_id,
-        "password": "ValidPass123!",  # test_user 생성 시 사용한 비밀번호
+        "password": "ValidPass123!",
     }
     login_response = client.post("/api/v1/auth/login", json=login_data)
     login_response_json = login_response.json()
-    access_token = login_response_json["data"]["access"]
+    access_token = login_response_json["access"]
 
     headers = {"Authorization": f"Bearer {access_token}"}
     return headers

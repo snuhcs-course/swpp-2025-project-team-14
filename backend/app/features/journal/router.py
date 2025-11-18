@@ -231,9 +231,10 @@ async def complete_image_upload(
 async def request_journal_image_generation(
     journal_openai_service: Annotated[JournalOpenAIService, Depends()],
     request: ImageGenerateRequest,
+    user: User = Depends(get_current_user),
 ) -> ImageGenerateResponse:
     image_base64 = await journal_openai_service.request_image_generation(
-        request=request
+        request=request, user=user
     )
     return ImageGenerateResponse(image_base64=image_base64)
 

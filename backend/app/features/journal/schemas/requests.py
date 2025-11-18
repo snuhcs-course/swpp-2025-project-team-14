@@ -88,14 +88,12 @@ def validate_content_type(content_type: str) -> str:
 
 
 def validate_emotions(value: dict[str, int]) -> dict[str, int]:
-    # 감정 키(key)가 허용된 10가지 종류인지 확인
     if not set(value.keys()).issubset(ALLOWED_EMOTIONS):
-        raise ValueError("Invalid emotion keys provided.")
+        raise InvalidFieldFormatError("emotions")
 
-    # 감정 강도(intensity)가 유효한 범위(0-4)인지 확인
     for intensity in value.values():
-        if not 0 <= intensity <= 4:  # 강도 범위를 0-4로 가정
-            raise ValueError("Emotion intensity must be between 0 and 4.")
+        if not 0 <= intensity <= 4:
+            raise InvalidFieldFormatError("emotions")
 
     return value
 
@@ -104,9 +102,7 @@ def validate_style(value: str) -> str:
     if value in ALLOWD_STYLE:
         return value
     else:
-        raise ValueError(
-            "Invalid style request: choose one in [natural, american-comics, abstract, impressionism-gogh]"
-        )
+        raise InvalidFieldFormatError("style")
 
 
 class JournalCreateRequest(BaseModel):
