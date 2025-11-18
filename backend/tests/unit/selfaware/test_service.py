@@ -37,7 +37,7 @@ def test_generate_selfaware_question(mocker):
     journal_repo.list_journals_by_user = mocker.MagicMock(return_value = [FakeJournal("오늘은 치킨을 먹었다.")])
     question_service = QuestionService(journal_repository=journal_repo,
                                        question_repository=question_repo)
-    result = question_service.generate_single_category_question(1)
+    result = question_service.generate_selfaware_question(1)
     
     assert type(result) == str
     question_repo.create_question.assert_called_once()
