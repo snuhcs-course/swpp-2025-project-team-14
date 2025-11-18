@@ -43,8 +43,8 @@ emotion_prompt = ChatPromptTemplate.from_template(
 )
 
 category_prompt = ChatPromptTemplate.from_template(
-    """다음 일기 요약을 분석하여:
-    1. 주요 감정과 그 이유를 분석해주세요
+    """다음 일기 요약을 토대로:
+    1. 주요 감정과 그 이유를 포함한 두 문장 내외의 분석글을 작성해주세요.
     2. 다음 가치 카테고리 중 일기 내용과 가장 관련이 깊은 1-2개를 선택해주세요:
        - 불안정성 (Neuroticism)
        - 외향성 (Extraversion)
@@ -56,7 +56,7 @@ category_prompt = ChatPromptTemplate.from_template(
     {summary}
     
     Return JSON:
-    - analysis: 주요 감정과 그 이유
+    - analysis: 주요 감정과 그 이유를 포함한 두 문장 내외의 분석
     - categories: 관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태
     """
 )
