@@ -11,6 +11,11 @@ from app.database.session import get_db_session
 from app.features.user.models import User  # noqa: F401 # 사용하는 모든 모델 임포트
 from app.main import app
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv(".env.local")
+
 # --- 1. 테스트 전용 In memory DB 엔진 설정 ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(
