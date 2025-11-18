@@ -26,6 +26,7 @@ class StatisticsRepository:
                 JournalEmotion.emotion,
                 func.count(JournalEmotion.intensity).label("count"),
             )
+            .join(Journal)
             .filter(
                 Journal.user_id == user_id,
                 Journal.created_at >= start_datetime,
