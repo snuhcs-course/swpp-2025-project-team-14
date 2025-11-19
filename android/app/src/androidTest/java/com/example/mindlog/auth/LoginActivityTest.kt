@@ -50,10 +50,8 @@ class LoginActivityTest {
         // when: 입력 + 로그인 버튼
         onView(withId(com.example.mindlog.R.id.etLoginId))
             .perform(typeText("test_id"), closeSoftKeyboard())
-
         onView(withId(com.example.mindlog.R.id.etPassword))
             .perform(typeText("password123"), closeSoftKeyboard())
-
         onView(withId(com.example.mindlog.R.id.btnLogin)).perform(click())
 
         // then: MainActivity로 이동 인텐트 확인
@@ -68,15 +66,16 @@ class LoginActivityTest {
         // given
         testAuthRepository.shouldLoginSucceed = false
 
+        Intents.init()
         val scenario = ActivityScenario.launch(LoginActivity::class.java)
 
         onView(withId(com.example.mindlog.R.id.etLoginId))
             .perform(typeText("wrong_id"), closeSoftKeyboard())
-
         onView(withId(com.example.mindlog.R.id.etPassword))
             .perform(typeText("wrong_pass"), closeSoftKeyboard())
-
         onView(withId(com.example.mindlog.R.id.btnLogin)).perform(click())
+
+        Intents.intended(hasComponent(MainActivity::class.java.name), Intents.times(0))
 
         // then: 여전히 로그인 화면에 머물러 있는지 확인
         onView(withId(com.example.mindlog.R.id.etLoginId))

@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalDate
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
+@Singleton
 class TestAuthRepository @Inject constructor() : AuthRepository {
 
     private val loggedInState = MutableStateFlow(false)

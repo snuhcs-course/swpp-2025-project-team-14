@@ -17,7 +17,6 @@ class TestAuthDispatcher : Dispatcher() {
         val method = request.method ?: "GET"
 
         return when {
-            // 회원가입: /auth/signup (POST)
             path.startsWith("/auth/signup") && method == "POST" -> {
                 if (shouldSignupSucceed) {
                     MockResponse()
@@ -39,7 +38,6 @@ class TestAuthDispatcher : Dispatcher() {
                 }
             }
 
-            // 로그인: /auth/login (POST)
             path.startsWith("/auth/login") && method == "POST" -> {
                 if (shouldLoginSucceed) {
                     MockResponse()
@@ -61,7 +59,6 @@ class TestAuthDispatcher : Dispatcher() {
                 }
             }
 
-            // 토큰 리프레시: /auth/refresh (POST)
             path.startsWith("/auth/refresh") && method == "POST" -> {
                 if (shouldRefreshSucceed) {
                     MockResponse()
@@ -83,7 +80,6 @@ class TestAuthDispatcher : Dispatcher() {
                 }
             }
 
-            // 토큰 검증: /auth/verify (POST)
             path.startsWith("/auth/verify") && method == "POST" -> {
                 MockResponse()
                     .setResponseCode(200)
@@ -91,7 +87,6 @@ class TestAuthDispatcher : Dispatcher() {
                     .setBody("""{"detail": "ok"}""")
             }
 
-            // 로그아웃: /auth/logout (POST)
             path.startsWith("/auth/logout") && method == "POST" -> {
                 MockResponse()
                     .setResponseCode(200)
