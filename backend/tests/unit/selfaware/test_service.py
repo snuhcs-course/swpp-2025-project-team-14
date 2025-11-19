@@ -1,6 +1,7 @@
 from app.features.selfaware.service import (
     QuestionService,
-    ValueScoreService
+    ValueScoreService,
+    ValueMapService
 )
 
 def test_generate_single_category_question(mocker):
@@ -74,7 +75,46 @@ def test_extract_value_score_from_answer(mocker):
         assert type(result_element.evidence) == str
 
 def test_get_top_value_scores(mocker):
-    return
+    class FakeValueScore:
+        def __init__(self, polarity, value, intensity, category):
+            self.polarity = polarity
+            self.value = value
+            self.intensity = intensity
+            self.category = category
+    question_repo = mocker.stub("QuestionRepository")
+    answer_repo = mocker.stub("AnswerRepository")
+    value_score_repo = mocker.stub("ValueScoreRepository")
+    value_score_repo.get_top_5_value_scores = mocker.MagicMock(return_value = [FakeValueScore(1,"친절",90,"Neuroticism"), FakeValueScore(1,"사교성",90,"Extraversion"), FakeValueScore(-1,"이기성",85,"Openness to Experience"), FakeValueScore(1,"진취성",80,"Agreeableness"), FakeValueScore(0,"공상",75,"성실성")])
+    value_map_repo = mocker.stub("ValueMapRepository")
+    value_score_service = ValueScoreService(question_repository=question_repo,
+                                            answer_repository=answer_repo,
+                                            value_score_repository=value_score_repo,
+                                            value_map_repository=value_map_repo)
+    
+    result = value_score_service.get_top_value_scores(1)
+
+    for result_element in result:
+        assert type(result_element["value"]) == str
+        assert type(result_element["intensity"]) == int
+    assert len(result) == 4
 
 def test_generate_comment(mocker):
-    return
+    class FakeValuemap:
+        def __init__(self,score_0,score_1,score_2,score_3,score_4):
+            self.score_0 = score_0
+            self.score_1 = score_1
+            self.score_2 = score_2
+            self.score_3 = score_3
+            self.score_4 = score_4
+    value_score_repo = mocker.stub("ValueScoreRepository")
+    value_map_repo = mocker.stub("ValueMapRepository")
+    value_map_repo.get_by_user = mocker.MagicMock(return_value = FakeValuemap(11.1, 22.2, 33.3, 44.4, 55.5))
+    value_map_repo.generate_comment = mocker.MagicMock(side_effect=lambda user_id, personality_insight, comment: (personality_insight, comment))
+    answer_repo = mocker.stub("AnswerRepository")
+    value_map_service = ValueMapService(value_map_repository=value_map_repo,
+                                        value_score_repository=value_score_repo,
+                                        answer_repository=answer_repo)
+
+    result = value_map_service.generate_comment(1)
+    assert type(result[0]) == str # type: ignore
+    assert type(result[1]) == str # type: ignore
