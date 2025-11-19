@@ -79,37 +79,31 @@ class SignupActivityTest {
 
     @Test
     fun signup_fail_stays_on_signup_screen() {
-        // given
         testAuthRepository.shouldSignupSucceed = false
 
+        Intents.init()
         val scenario = ActivityScenario.launch(SignupActivity::class.java)
 
-        onView(withId(R.id.etUsername))
-            .perform(typeText("test_username"), closeSoftKeyboard())
-
-        onView(withId(R.id.etLoginId))
-            .perform(typeText("test_id"), closeSoftKeyboard())
-
-        onView(withId(R.id.etPassword))
-            .perform(typeText("password123"), closeSoftKeyboard())
-
-        onView(withId(R.id.etConfirmPassword))
-            .perform(typeText("password123"), closeSoftKeyboard())
-
+        // 입력
+        onView(withId(R.id.etUsername)).perform(typeText("test_username"), closeSoftKeyboard())
+        onView(withId(R.id.etLoginId)).perform(typeText("test_id"), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
+        onView(withId(R.id.etConfirmPassword)).perform(typeText("password123"), closeSoftKeyboard())
         onView(withId(R.id.rbMale)).perform(click())
+        onView(withId(R.id.actBirthYear)).perform(replaceText("2000"), closeSoftKeyboard())
+        onView(withId(R.id.actBirthMonth)).perform(replaceText("1"), closeSoftKeyboard())
+        onView(withId(R.id.actBirthDay)).perform(replaceText("1"), closeSoftKeyboard())
 
-        onView(withId(R.id.actBirthYear))
-            .perform(replaceText("2000"), closeSoftKeyboard())
-        onView(withId(R.id.actBirthMonth))
-            .perform(replaceText("1"), closeSoftKeyboard())
-        onView(withId(R.id.actBirthDay))
-            .perform(replaceText("1"), closeSoftKeyboard())
-
+        // 클릭
         onView(withId(R.id.btnSignup)).perform(click())
 
-        // then: 여전히 회원가입 화면에 머물러 있는지 (ID 입력 필드가 보이는지) 확인
-        onView(withId(R.id.etLoginId)).check(matches(isDisplayed()))
+        // MainActivity로 이동하면 안 됨
+        Intents.intended(hasComponent(MainActivity::class.java.name), Intents.times(0))
+
+        // 여전히 Signup 화면이어야 함
+        onView(withId(R.id.btnSignup)).check(matches(isDisplayed()))
 
         scenario.close()
+        Intents.release()
     }
 }

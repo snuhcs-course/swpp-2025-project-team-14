@@ -9,5 +9,5 @@ import retrofit2.http.POST
 interface RefreshApi {
     @Headers("No-Auth: true")
     @POST("auth/refresh")
-    fun refresh(@Body refreshTokenRequest: RefreshTokenRequest): TokenResponse
+    suspend fun refresh(@Body refreshTokenRequest: RefreshTokenRequest): TokenResponse
 }

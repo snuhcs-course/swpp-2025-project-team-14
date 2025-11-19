@@ -16,5 +16,5 @@ data class LoginRequest(
 )
 
 data class RefreshTokenRequest(
-    @SerializedName("refreshToken") val refreshToken: String
+    @SerializedName("refresh_token") val refreshToken: String
 )

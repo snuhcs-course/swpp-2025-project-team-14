@@ -58,7 +58,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun refresh(): Result<Boolean> = withContext(Dispatchers.IO) {
         runCatching {
-            val refresh = tokenManager.getRefreshToken() ?: return@runCatching false
+            val refresh = tokenManager.getRefreshToken() ?: throw IllegalStateException("Refresh token missing")
             val res: TokenResponse = refreshApi.refresh(RefreshTokenRequest(refresh))
             tokenManager.saveTokens(res.access, res.refresh)
             true
@@ -67,7 +67,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun verify(): Result<Boolean> = withContext(Dispatchers.IO) {
         runCatching {
-            val access = tokenManager.getAccessToken() ?: return@runCatching false
+            val access = tokenManager.getAccessToken() ?: throw IllegalStateException("Refresh token missing")
             val res = authApi.verify("Bearer $access")
             true
         }.toResult()
