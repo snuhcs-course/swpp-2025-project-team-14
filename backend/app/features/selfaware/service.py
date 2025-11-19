@@ -267,7 +267,7 @@ class ValueScoreService:
                     get_opposite_value_chain = get_opposite_value_prompt | llm
                     response = get_opposite_value_chain.invoke({"value":top_value_score.value, "category":top_value_score.category})
                     value_scores.append({
-                    "value": response['opposite_value'],
+                    "value": response.opposite_value, # type: ignore
                     "intensity": top_value_score.intensity
                     })
                 else:
