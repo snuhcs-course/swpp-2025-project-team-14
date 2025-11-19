@@ -10,24 +10,20 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentSettingsBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class SettingsFragment : Fragment(), LogoutDialogFragment.ConfirmDialogListener {
+class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
-    // 'by viewModels()'를 통해 SettingsViewModel을 가져옵니다.
     private val viewModel: SettingsViewModel by viewModels()
-
-    // 다이얼로그에서 '로그아웃' 버튼을 누르면 이 함수가 호출됩니다.
-    override fun onConfirm() {
-        viewModel.logout()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +47,14 @@ class SettingsFragment : Fragment(), LogoutDialogFragment.ConfirmDialogListener 
     }
 
     private fun setupClickListeners() {
+        binding.btnChangePassword.setOnClickListener {
+            findNavController().navigate(R.id.action_settingsFragment_to_changePasswordFragment)
+        }
+
+        binding.btnChangeId.setOnClickListener {
+            findNavController().navigate(R.id.action_settingsFragment_to_changeIdFragment)
+        }
+
         binding.btnLogout.setOnClickListener {
             showLogoutConfirmDialog()
         }
@@ -73,9 +77,14 @@ class SettingsFragment : Fragment(), LogoutDialogFragment.ConfirmDialogListener 
     }
 
     private fun showLogoutConfirmDialog() {
-        val dialog = LogoutDialogFragment.newInstance()
-        dialog.setConfirmDialogListener(this)
-        dialog.show(parentFragmentManager, "LogoutDialogFragment")
+        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_MindLog_AlertDialog)
+            .setTitle("로그아웃")
+            .setMessage("정말로 로그아웃 하시겠습니까?")
+            .setNegativeButton("취소", null)
+            .setPositiveButton("로그아웃") { _, _ ->
+                viewModel.logout()
+            }
+            .show()
     }
 
     override fun onDestroyView() {
