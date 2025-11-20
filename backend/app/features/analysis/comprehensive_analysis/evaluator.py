@@ -10,10 +10,6 @@ This version corresponds to IPIPlinux.zip which I got from Dr. John in June
 Based on shortipipneo3.cgi 100%.
 """
 
-import json
-import datetime
-import collections
-
 def evaluate(Q, Sex, Age, flag = False):
     items = 31  # shortipipneo
 
