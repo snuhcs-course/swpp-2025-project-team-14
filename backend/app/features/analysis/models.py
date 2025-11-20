@@ -1,19 +1,12 @@
 from __future__ import annotations
-
-from datetime import datetime, timezone, date
-from typing import TYPE_CHECKING, List, Optional
-
-from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON, Float, Date, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from app.common.utilities import get_korea_time
 from app.database.base import Base
+from datetime import datetime
+from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from app.features.user.models import User
-
-from app.common.utilities import get_korea_time
-
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 
 class Analysis(Base):
     __tablename__ = "analysis"
