@@ -1,6 +1,5 @@
 package com.example.mindlog.core.model
 
-import com.example.mindlog.features.journal.data.dto.EmotionResponse
 import java.util.Date
 
 data class JournalEntry(
@@ -10,5 +9,6 @@ data class JournalEntry(
     val createdAt: Date,
     val imageUrl: String?,
     val keywords: List<Keyword>,
-    val emotions: List<EmotionResponse>
+    val emotions: List<Emotion>,
+    val gratitude: String?
 )

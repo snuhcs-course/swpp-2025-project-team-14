@@ -7,6 +7,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
+import okhttp3.HttpUrl.Companion.toHttpUrl // HttpUrl import
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockWebServer
 import retrofit2.Retrofit
@@ -20,20 +21,35 @@ import javax.inject.Singleton
 )
 object TestNetworkModule {
 
-    @Provides @Singleton
-    fun provideMockWebServer(): MockWebServer = MockWebServer().apply { start() }
+    private const val MOCK_BASE_URL = "http://127.0.0.1:8080/"
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
+    fun provideMockWebServer(): MockWebServer {
+        return MockWebServer()
+    }
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
 
-    @Provides @Singleton
-    fun provideRetrofit(server: MockWebServer, client: OkHttpClient, gson: Gson): Retrofit =
-        Retrofit.Builder()
-            .baseUrl(server.url("/"))
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        client: OkHttpClient,
+        gson: Gson
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(MOCK_BASE_URL.toHttpUrl())
             .client(client)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
+    }
 
-    @Provides @Singleton
-    fun provideGson(): Gson = GsonBuilder().setLenient().create()
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = GsonBuilder()
+        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+        .setLenient()
+        .create()
 }
