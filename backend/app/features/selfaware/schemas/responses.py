@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 
-from app.features.selfaware.models import Question, Answer, ValueScore, ValueMap
+from app.features.selfaware.models import Question, Answer, ValueMap
 from app.features.selfaware.prompt import CAT_EN, CAT_KO
 
 class QuestionResponse(BaseModel):
