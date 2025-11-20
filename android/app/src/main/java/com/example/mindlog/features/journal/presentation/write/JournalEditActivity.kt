@@ -23,7 +23,6 @@ class JournalEditActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityJournalEditBinding
     private val viewModel: JournalEditViewModel by viewModels()
-    private var loadingDialog: Dialog? = null
 
     companion object {
         const val EXTRA_JOURNAL_ID = "EXTRA_JOURNAL_ID"
@@ -47,7 +46,6 @@ class JournalEditActivity : AppCompatActivity() {
         setupFragment()
         setupClickListeners()
         observeViewModel()
-        setupLoadingDialog()
 
         viewModel.loadJournalDetails(journalId)
     }
@@ -72,14 +70,6 @@ class JournalEditActivity : AppCompatActivity() {
 
         binding.btnEditDelete.setOnClickListener {
             showDeleteConfirmDialog()
-        }
-    }
-
-    private fun setupLoadingDialog() {
-        loadingDialog = Dialog(this).apply {
-            setContentView(R.layout.dialog_loading)
-            setCancelable(false) // 뒤로가기 버튼으로 닫히지 않게 설정
-            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
 
@@ -110,18 +100,8 @@ class JournalEditActivity : AppCompatActivity() {
                         finish()
                     }
                     is Result.Error -> {
-                        Toast.makeText(this@JournalEditActivity, result.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@JournalEditActivity, result.message, Toast.LENGTH_LONG).show()
                     }
-                }
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.isLoading.collect { isLoading ->
-                if (isLoading) {
-                    loadingDialog?.show()
-                } else {
-                    loadingDialog?.dismiss()
                 }
             }
         }
@@ -143,11 +123,5 @@ class JournalEditActivity : AppCompatActivity() {
         if (hasFocus) {
             SystemUiHelper.hideSystemUI(this)
         }
-    }
-
-    override fun onDestroy() {
-        loadingDialog?.dismiss()
-        loadingDialog = null
-        super.onDestroy()
     }
 }

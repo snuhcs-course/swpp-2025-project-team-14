@@ -26,16 +26,24 @@ class JournalDetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_JOURNAL_ID = "EXTRA_JOURNAL_ID"
+        // ✨ 결과를 반환할 때 사용할 새로운 상수 정의
+        const val EXTRA_UPDATED_JOURNAL_ID = "EXTRA_UPDATED_JOURNAL_ID"
+        const val EXTRA_DELETED_JOURNAL_ID = "EXTRA_DELETED_JOURNAL_ID"
     }
 
-    // 수정 화면에서 돌아왔을 때 목록을 새로고침하기 위한 ActivityResultLauncher
     private val editJournalLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            setResult(Activity.RESULT_OK) // JournalFragment(목록)에 변경사항 알림
-            viewModel.loadJournalDetails(viewModel.journalId!!, forceRefresh = true) // 현재 화면도 새로고침
+            // 수정이 완료되면, 수정된 ID를 결과 Intent에 담아 설정
+            val resultIntent = Intent().apply {
+                putExtra(EXTRA_UPDATED_JOURNAL_ID, viewModel.journalId!!)
+            }
+            setResult(Activity.RESULT_OK, resultIntent)
+            // 현재 화면의 내용도 새로고침
+            viewModel.loadJournalDetails(viewModel.journalId!!, forceRefresh = true)
         }
+        // 단순 뒤로가기(RESULT_OK가 아님)의 경우 아무것도 하지 않음
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +69,7 @@ class JournalDetailActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
+        // 뒤로가기 버튼은 아무런 result도 설정하지 않고 그냥 종료만 함
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
@@ -73,27 +82,27 @@ class JournalDetailActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        // 수정 버튼 클릭
         binding.btnDetailEdit.setOnClickListener {
             val intent = Intent(this, JournalEditActivity::class.java).apply {
                 putExtra(JournalEditActivity.EXTRA_JOURNAL_ID, viewModel.journalId)
             }
             editJournalLauncher.launch(intent)
         }
-
-        // 삭제 버튼 클릭
         binding.btnDetailDelete.setOnClickListener {
             showDeleteConfirmDialog()
         }
     }
 
     private fun observeViewModel() {
-        // 삭제 결과 관찰
         lifecycleScope.launch {
             viewModel.editResult.collect { result ->
                 if (result is Result.Success && result.data == "삭제 완료") {
                     Toast.makeText(this@JournalDetailActivity, "삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                    setResult(Activity.RESULT_OK)
+                    // 삭제가 완료되면, 삭제된 ID를 결과 Intent에 담아 설정하고 종료
+                    val resultIntent = Intent().apply {
+                        putExtra(EXTRA_DELETED_JOURNAL_ID, viewModel.journalId!!)
+                    }
+                    setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 } else if (result is Result.Error) {
                     Toast.makeText(this@JournalDetailActivity, result.message, Toast.LENGTH_SHORT).show()

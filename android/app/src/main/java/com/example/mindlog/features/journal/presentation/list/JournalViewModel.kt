@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.BuildConfig
 import com.example.mindlog.core.model.JournalEntry
+import com.example.mindlog.features.journal.data.dto.JournalItemResponse
+import com.example.mindlog.features.journal.domain.usecase.GetJournalByIdUseCase
 import com.example.mindlog.features.journal.domain.usecase.GetJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.SearchJournalsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class JournalViewModel @Inject constructor(
     private val getJournalsUseCase: GetJournalUseCase,
-    private val searchJournalsUseCase: SearchJournalsUseCase
+    private val searchJournalsUseCase: SearchJournalsUseCase,
+    private val getJournalByIdUseCase: GetJournalByIdUseCase
 ) : ViewModel() {
 
     private val _journals = MutableLiveData<List<JournalEntry>>(emptyList())
@@ -62,12 +65,44 @@ class JournalViewModel @Inject constructor(
         loadMoreJournals()
     }
 
+    fun clearSearchAndReload() {
+        searchQuery.value = null
+        startDate.value = null
+        endDate.value = null
+        loadJournals()
+    }
+
+    fun updateOrRemoveJournalEntry(updatedId: Int?, deletedId: Int?) {
+        viewModelScope.launch {
+            val currentList = _journals.value?.toMutableList() ?: return@launch
+
+            if (deletedId != null) {
+                val listAfterRemoval = currentList.filterNot { it.id == deletedId }
+                if (listAfterRemoval.size < currentList.size) {
+                    _journals.value = listAfterRemoval
+                }
+            } else if (updatedId != null) {
+                try {
+                    val updatedItemResponse = getJournalByIdUseCase(updatedId)
+                    val index = currentList.indexOfFirst { it.id == updatedId }
+                    if (index != -1) {
+                        currentList[index] = updatedItemResponse.toJournalEntry()
+                        _journals.value = currentList
+                    }
+                } catch (e: Exception) {
+                    Log.e("JournalViewModel", "Failed to update journal entry (ID: $updatedId)", e)
+                    loadJournals()
+                }
+            }
+        }
+    }
+
     fun loadMoreJournals() {
         if (isLoading.value == true || isLastPage) return
 
         viewModelScope.launch {
             isLoading.value = true
-            errorMessage.value = null // 에러 메시지 초기화
+            errorMessage.value = null
             try {
                 val response = if (isSearching()) {
                     searchJournalsUseCase(
@@ -81,46 +116,7 @@ class JournalViewModel @Inject constructor(
                     getJournalsUseCase(limit = PAGE_SIZE, cursor = nextCursor)
                 }
 
-                val newEntries = response.items.map { item ->
-                    val imageUrl = try {
-                        item.imageS3Keys?.let { s3Key ->
-                        if (s3Key.isNotBlank()) {
-                            "${BuildConfig.S3_BUCKET_URL}/$s3Key"
-                        } else {
-                            null
-                        }
-                    }
-                    } catch (e: Exception) {
-                        Log.e("JournalViewModel", "Image URL generation failed for item ${item.id}", e)
-                        null
-                    }
-
-                    val createdAt = try {
-                        serverDateFormat.parse(item.createdAt)!!
-                    } catch (e: Exception) {
-                        Log.e("JournalViewModel", "Date parsing failed for item ${item.id}. Defaulting to now.", e)
-                        Date()
-                    }
-
-                    val keywords = item.keywords?.map { dto ->
-                        com.example.mindlog.core.model.Keyword(
-                            keyword = dto.keyword,
-                            emotion = dto.emotion,
-                            summary = dto.summary,
-                            weight = dto.weight
-                        )
-                    } ?: emptyList()
-
-                    JournalEntry(
-                        id = item.id,
-                        title = item.title,
-                        content = item.content,
-                        createdAt = createdAt,
-                        imageUrl = imageUrl,
-                        keywords = keywords,
-                        emotions = item.emotions
-                    )
-                }
+                val newEntries = response.items.map { item -> item.toJournalEntry() }
 
                 val currentList = _journals.value ?: emptyList()
                 _journals.value = currentList + newEntries
@@ -138,6 +134,35 @@ class JournalViewModel @Inject constructor(
                 isLoading.value = false
             }
         }
+    }
+
+    private fun JournalItemResponse.toJournalEntry(): JournalEntry {
+        val imageUrl = this.imageS3Keys?.let { s3Key ->
+            if (s3Key.isNotBlank()) "${BuildConfig.S3_BUCKET_URL}/$s3Key" else null
+        }
+        val createdAtDate = try {
+            serverDateFormat.parse(this.createdAt)!!
+        } catch (e: Exception) {
+            Date()
+        }
+        val keywordsList = this.keywords?.map { dto ->
+            com.example.mindlog.core.model.Keyword(
+                keyword = dto.keyword,
+                emotion = dto.emotion,
+                summary = dto.summary,
+                weight = dto.weight
+            )
+        } ?: emptyList()
+
+        return JournalEntry(
+            id = this.id,
+            title = this.title,
+            content = this.content,
+            createdAt = createdAtDate,
+            imageUrl = imageUrl,
+            keywords = keywordsList,
+            emotions = this.emotions
+        )
     }
 
     fun isSearching(): Boolean {
