@@ -120,7 +120,7 @@ class AuthRepositoryTest {
 
         // then
         // 코드 상 runCatching 블록에서 false를 반환 → Result.Success(false)
-        assertTrue(result is Result.Success && !result.data)
+        assertTrue(result is Result.Error)
         verify(tokenManager, never()).saveTokens(any(), any())
         verifyNoInteractions(refreshApi)
     }
@@ -171,7 +171,7 @@ class AuthRepositoryTest {
         val result = repo.verify()
 
         // then
-        assertTrue(result is Result.Success && !result.data)
+        assertTrue(result is Result.Error)
         verify(tokenManager).getAccessToken()
         verifyNoMoreInteractions(tokenManager)
         verifyNoInteractions(authApi)

@@ -52,9 +52,10 @@ class TokenAuthenticatorTest {
         }
 
         whenever(tokenManager.getRefreshToken()).thenReturn("oldRefresh")
-        whenever(refreshApi.refresh(any<RefreshTokenRequest>()))
-            .thenReturn(TokenResponse(access = "newAccess", refresh = "newRefresh"))
-
+        refreshApi.stub {
+            onBlocking { refresh(any<RefreshTokenRequest>()) } doReturn
+                    TokenResponse(access = "newAccess", refresh = "newRefresh")
+        }
         val result = authenticator.authenticate(mock(), response)
 
         verify(tokenManager).saveTokens("newAccess", "newRefresh")
@@ -67,8 +68,9 @@ class TokenAuthenticatorTest {
         }
 
         whenever(tokenManager.getRefreshToken()).thenReturn("refreshToken")
-        whenever(refreshApi.refresh(any())).thenThrow(RuntimeException("Network error"))
-
+        refreshApi.stub {
+            onBlocking { refresh(any()) } doThrow RuntimeException("Network error")
+        }
         val result = authenticator.authenticate(mock(), response)
         assertNull(result)
     }
