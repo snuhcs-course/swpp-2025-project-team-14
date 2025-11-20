@@ -61,7 +61,7 @@ jobs:
       # 2. 테스트 (Pytest)
       # ----------------------------------------
       - name: 🧪 Run Pytest
-        run: poetry run pytest
+        run: poetry run pytest --cov=app --cov-report=term-missing tests/
         working-directory: ${{ env.working-directory }}
 
       # ----------------------------------------

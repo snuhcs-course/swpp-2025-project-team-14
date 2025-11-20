@@ -30,7 +30,9 @@ jobs:
           git pull origin main
 
           docker-compose -f docker-compose.prod.yml down
-          docker-compose -f docker-compose.prod.yml up -d --build
+          docker-compose -f docker-compose.prod.yml build --no-cache
+          docker-compose -f docker-compose.prod.yml up -d
+          docker image prune -f
 
           echo "🚀 배포 완료! 컨테이너 로그:"
           docker logs mindlog-backend --tail 30
