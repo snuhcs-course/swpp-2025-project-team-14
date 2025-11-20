@@ -82,5 +82,6 @@ class LoginActivityTest {
             .check(matches(isDisplayed()))
 
         scenario.close()
+        Intents.release()
     }
 }
