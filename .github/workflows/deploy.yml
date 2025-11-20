@@ -33,4 +33,4 @@ jobs:
           docker-compose -f docker-compose.prod.yml up -d --build
 
           echo "🚀 배포 완료! 컨테이너 로그:"
-          docker logs mindlog-backend --tail 29
+          docker logs mindlog-backend --tail 30
