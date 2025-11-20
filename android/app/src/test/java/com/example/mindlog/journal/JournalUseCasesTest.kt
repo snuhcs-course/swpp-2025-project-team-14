@@ -210,7 +210,6 @@ class JournalUseCasesTest {
         verify(mockRepository, times(1)).uploadJournalImage(1, imageBytes, "image/jpeg", "file.jpg")
     }
 
-    // --- SearchByKeywordUseCase Test ---
     @Test
     fun `SearchByKeywordUseCase - repository의 searchByKeyword를 호출하고 PagedResult를 반환한다`() = runTest {
         // Given
@@ -219,9 +218,6 @@ class JournalUseCasesTest {
         val cursor = null
         val dummyPagedResult = PagedResult(items = listOf(dummyJournalEntry), nextCursor = 2)
 
-        // Mocking: Repository가 예상된 결과를 반환하도록 설정
-        // (Note: setup()에서 searchByKeywordUseCase가 이미 초기화되어 있어야 합니다.
-        //  만약 초기화되지 않았다면 setup() 메서드에 초기화 코드를 추가해야 합니다.)
         val searchByKeywordUseCase = SearchByKeywordUseCase(mockRepository)
         whenever(mockRepository.searchByKeyword(any(), any(), anyOrNull())).thenReturn(dummyPagedResult)
 

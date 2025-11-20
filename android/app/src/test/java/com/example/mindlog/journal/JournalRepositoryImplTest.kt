@@ -302,12 +302,10 @@ class JournalRepositoryImplTest {
         journalRepository.uploadJournalImage(journalId, "test-data".toByteArray(), "image/jpeg", "image.jpg")
     }
 
-    // --- searchByKeyword Tests ---
     @Test
     fun `searchByKeyword - API를 호출하고 PagedResult(JournalEntry)를 반환한다`() = runTest {
         // Given
         val keyword = "행복"
-        // Mock Server 응답 설정
         mockWebServer.enqueue(
             MockResponse().setResponseCode(200).setBody(
                 """
@@ -336,22 +334,13 @@ class JournalRepositoryImplTest {
         // Then
         val request = mockWebServer.takeRequest()
 
-        // 1. 요청 메서드 및 경로 확인
         assertEquals("GET", request.method)
-        // URL 인코딩 처리 확인 (한글 '행복' -> %ED%96%89%EB%B3%B5)
-        // 실제 요청 URL은 /journal/search-keyword?keyword=...&limit=10 처럼 됨
         assertTrue(request.path!!.startsWith("/journal/search-keyword"))
         assertTrue(request.path!!.contains("limit=10"))
-        // 키워드가 포함되어 있는지 확인 (URL 인코딩된 형태일 수 있음)
-        // Retrofit/OkHttp 버전에 따라 인코딩 방식이 다를 수 있으나,
-        // MockWebServer는 받은 요청 그대로를 보여주므로 보통 인코딩된 문자열을 확인합니다.
-        // 여기서는 단순히 파라미터 키가 있는지만 확인하거나, 인코딩된 값을 비교합니다.
 
-        // 2. 매핑 결과 확인
         assertEquals(1, result.items.size)
         assertEquals(10, result.items[0].id)
         assertEquals("키워드 일기", result.items[0].title)
-        // 키워드 데이터가 잘 매핑되었는지 확인
         assertEquals("행복", result.items[0].keywords.first().keyword)
         assertEquals(5, result.nextCursor)
     }
