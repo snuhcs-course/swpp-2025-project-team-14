@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Annotated
 import asyncio
 from sqlalchemy.exc import IntegrityError
@@ -31,16 +31,6 @@ from app.features.selfaware.schemas.responses import (
 )
 from app.features.selfaware.schemas.requests import (
     AnswerRequest
-)
-from app.features.analysis.schemas.responses import (
-    UserTypeResponse,
-    ComprehensiveAnalysisResponse,
-    PersonalizedAdviceResponse
-)
-from app.features.analysis.schemas.requests import (
-    UserTypeRequest,
-    ComprehensiveAnalysisRequest,
-    PersonalizedAdviceRequest
 )
 from app.features.analysis.service import (
     AnalysisService
