@@ -1,14 +1,10 @@
 from typing import Annotated, Optional, List, Sequence
 from datetime import date, datetime, time, timedelta, timezone
-
 from fastapi import Depends
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
-
 from app.database.session import get_db_session
-from app.features.journal.models import Journal
 from app.features.selfaware.models import Question, Answer, ValueMap, ValueScore
-
 from app.common.utilities import get_korea_time
 
 # -------------------------------
