@@ -159,7 +159,6 @@ def update_journal_entry(
         journal_id=journal_id,
         title=journal.title,
         content=journal.content,
-        summary=journal.summary,
         gratitude=journal.gratitude,
     )
     return "Update Success"
