@@ -2,7 +2,7 @@ name: Deploy to EC2 with Local Docker Build
 
 on:
   push:
-    branches: [ heuristic-evaluation ]
+    branches: [ main ]
 
 env:
   AWS_HOST: ${{ secrets.AWS_HOST }}

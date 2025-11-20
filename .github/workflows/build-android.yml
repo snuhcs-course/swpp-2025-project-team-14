@@ -2,7 +2,7 @@ name: Build Android App
 
 on:
   push:
-    branches: [ heuristic-evaluation ]
+    branches: [ main ]
 
 jobs:
   build:
