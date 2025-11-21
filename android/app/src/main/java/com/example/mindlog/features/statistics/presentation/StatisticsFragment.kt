@@ -3,6 +3,7 @@ package com.example.mindlog.features.statistics.presentation
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -31,6 +32,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @AndroidEntryPoint
 class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
@@ -155,7 +157,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
             horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
             orientation = Legend.LegendOrientation.HORIZONTAL
-            textColor = Color.parseColor("#636779")
+            textColor = "#636779".toColorInt()
             textSize = 12f
             isWordWrapEnabled = true
         }
@@ -182,19 +184,19 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         }
 
         val palette = listOf(
-            Color.parseColor("#D36B6B"), Color.parseColor("#FFD700"),
-            Color.parseColor("#00BFA5"), Color.parseColor("#F06292"),
-            Color.parseColor("#9575CD"), Color.parseColor("#FFB74D"),
-            Color.parseColor("#81C784"), Color.parseColor("#7986CB"),
-            Color.parseColor("#FF7043"), Color.parseColor("#4DD0E1"),
-            Color.parseColor("#AED581"), Color.parseColor("#BA68C8"),
-            Color.parseColor("#FBC02D")
+            "#D36B6B".toColorInt(), "#FFD700".toColorInt(),
+            "#00BFA5".toColorInt(), "#F06292".toColorInt(),
+            "#9575CD".toColorInt(), "#FFB74D".toColorInt(),
+            "#81C784".toColorInt(), "#7986CB".toColorInt(),
+            "#FF7043".toColorInt(), "#4DD0E1".toColorInt(),
+            "#AED581".toColorInt(), "#BA68C8".toColorInt(),
+            "#FBC02D".toColorInt()
         )
         val colors = List(entries.size) { i -> palette[i % palette.size] }
 
         val dataSet = PieDataSet(entries, "").apply {
             setColors(colors)
-            valueTextColor = Color.parseColor("#2D3142")
+            valueTextColor = "#2D3142".toColorInt()
             valueTextSize = 12f
             sliceSpace = 2.5f
             yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
@@ -203,7 +205,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             valueLinePart2Length = 0.5f
             valueLineWidth = 1.2f
             isValueLineVariableLength = true
-            valueLineColor = Color.parseColor("#636779")
+            valueLineColor = "#636779".toColorInt()
         }
 
         val pieData = PieData(dataSet).apply {
@@ -211,7 +213,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
                 override fun getPieLabel(value: Float, pe: PieEntry?): String {
                     if (value < 3f) return ""
                     val label = pe?.label ?: ""
-                    return "$label ${String.format("%.0f%%", value)}"
+                    return "$label ${String.format(Locale.US, "%.0f%%", value)}"
                 }
             })
         }
@@ -231,7 +233,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         val title = com.google.android.material.textview.MaterialTextView(context).apply {
             val emo = toKo(selectedEmotion) ?: "감정"
             text = "최근 ${emo}했던 이유는?"
-            setTextColor(Color.parseColor("#636779"))
+            setTextColor("#636779".toColorInt())
             textSize = 13f
             setPadding(0, 0, 0, 10)
         }
@@ -240,7 +242,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         events.forEachIndexed { idx, event ->
             val tv = com.google.android.material.textview.MaterialTextView(context).apply {
                 text = "${idx + 1}. $event"
-                setTextColor(Color.parseColor("#2D3142"))
+                setTextColor("#2D3142".toColorInt())
                 textSize = 14f
                 setPadding(0, 0, 0, 7)
             }
@@ -295,11 +297,11 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         }
 
         val colors = listOf(
-            Color.parseColor("#6074F9"),
-            Color.parseColor("#FF8C42"),
-            Color.parseColor("#4CAF50"),
-            Color.parseColor("#E57373"),
-            Color.parseColor("#BA68C8")
+            "#6074F9".toColorInt(),
+            "#FF8C42".toColorInt(),
+            "#4CAF50".toColorInt(),
+            "#E57373".toColorInt(),
+            "#BA68C8".toColorInt()
         )
 
         val sets = data.mapIndexed { idx, trend ->
