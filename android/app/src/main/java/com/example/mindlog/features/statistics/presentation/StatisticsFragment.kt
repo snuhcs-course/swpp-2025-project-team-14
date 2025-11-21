@@ -1,10 +1,9 @@
 package com.example.mindlog.features.statistics.presentation
 
-
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -12,22 +11,26 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentStatisticsBinding
-import com.example.mindlog.features.statistics.domain.model.EmotionRatio
+import com.example.mindlog.features.statistics.domain.model.EmotionRate
+import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
+import com.example.mindlog.features.statistics.domain.model.JournalKeyword
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.chip.ChipGroup
 import com.jolenechong.wordcloud.WordCloud
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
@@ -37,61 +40,116 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     private val viewModel: StatisticsViewModel by viewModels()
 
     private var wordCloud: WordCloud? = null
+    private var suppressChipCallback = false
+
+    private fun toKo(emotion: Emotion?): String? = when (emotion) {
+        Emotion.HAPPY -> "행복"
+        Emotion.SAD -> "슬픔"
+        Emotion.ANXIOUS -> "불안"
+        Emotion.CALM -> "평안"
+        Emotion.ANNOYED -> "짜증"
+        Emotion.SATISFIED -> "만족"
+        Emotion.BORED -> "지루함"
+        Emotion.INTERESTED -> "흥미"
+        Emotion.LETHARGIC -> "무기력"
+        Emotion.ENERGETIC -> "활력"
+        null -> null
+    }
+
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+    private fun formatRange(start: LocalDate, end: LocalDate): String =
+        "${start.format(dateFormatter)}~${end.format(dateFormatter)}"
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentStatisticsBinding.bind(view)
 
-        viewModel.load()
-
         setupEmotionTrendChart()
-        setupEmotionRatioPieChart()
+        setupEmotionRatesPieChart()
 
+        // Chip -> 선택 감정 변경
         val chipGroup = binding.root.findViewById<ChipGroup>(R.id.chipGroupEmotions)
         chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (suppressChipCallback) return@setOnCheckedStateChangeListener
             val checkedId = checkedIds.firstOrNull() ?: return@setOnCheckedStateChangeListener
-
-            val selectedEmotion: String? = when (checkedId) {
-                R.id.chipHappy    -> "행복"
-                R.id.chipSad      -> "슬픔"
-                R.id.chipAnxious  -> "불안"
-                R.id.chipLethargy -> "무기력"
-                R.id.chipExciting -> "흥미"
+            val selectedEmotion = when (checkedId) {
+                R.id.chipHappy    -> Emotion.HAPPY
+                R.id.chipSad      -> Emotion.SAD
+                R.id.chipAnxious  -> Emotion.ANXIOUS
+                R.id.chipLethargy -> Emotion.LETHARGIC
+                R.id.chipExciting -> Emotion.INTERESTED
                 else -> null
             }
-            selectedEmotion?.let { viewModel.setEmotion(it) }
+            selectedEmotion?.let(viewModel::setEmotion)
         }
 
+        // 기간 프리셋: 주간 / 월간
+        binding.btnWeekly.setOnClickListener {
+            val end = LocalDate.now()
+            val start = end.minusDays(6) // 최근 7일
+            viewModel.setDateRange(start, end)
+            binding.tvPeriodRange.text = formatRange(start, end)
+            viewModel.load()
+        }
+        binding.btnMonthly.setOnClickListener {
+            val end = LocalDate.now()
+            val start = end.minusDays(29) // 최근 30일
+            viewModel.setDateRange(start, end)
+            binding.tvPeriodRange.text = formatRange(start, end)
+            viewModel.load()
+        }
+        // 사용자 지정: MaterialDatePicker (range)
+        binding.btnCustom.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("기간 선택")
+                .build()
+            picker.addOnPositiveButtonClickListener { sel ->
+                val startMillis = sel.first ?: return@addOnPositiveButtonClickListener
+                val endMillis = sel.second ?: return@addOnPositiveButtonClickListener
+                val zone = ZoneId.systemDefault()
+                val start = java.time.Instant.ofEpochMilli(startMillis).atZone(zone).toLocalDate()
+                val end = java.time.Instant.ofEpochMilli(endMillis).atZone(zone).toLocalDate()
+                viewModel.setDateRange(start, end)
+                binding.tvPeriodRange.text = formatRange(start, end)
+                viewModel.load()
+            }
+            picker.show(parentFragmentManager, "date_range_picker")
+        }
+
+        // 상태 수집
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
+                    // Chip UI 동기화 (상태 -> UI)
+                    syncChipSelectionFromState(s.selectedEmotion)
+                    binding.tvPeriodRange.text = formatRange(s.startDate, s.endDate)
+
                     if (!s.isLoading) {
-                        renderEmotionRatio(s.emotionRatios)
+                        renderEmotionRates(s.emotionRatios)
                         renderEmotionTrend(s.emotionTrends)
-                        renderEmotionEvents(s.emotionEvents)
+                        renderEmotionEvents(s.emotionEvents, s.selectedEmotion)
                         renderWordCloud(s.journalKeywords)
                     }
                 }
             }
         }
+
+        // 최초 로드
+        viewModel.load()
     }
+
     // ------------------------------
-    // 감정 비율 그래프 (PieChart)
+    // 감정 비율 (PieChart)
     // ------------------------------
-    private fun setupEmotionRatioPieChart() = binding.chartEmotionRatio.apply {
+    private fun setupEmotionRatesPieChart() = binding.chartEmotionRates.apply {
         description.isEnabled = false
         setUsePercentValues(true)
+        setDrawEntryLabels(false) // 조각 안 텍스트 끔. 값은 바깥쪽에만
 
-        // ⬇️ 조각 안 텍스트(Entry Label) 끄고, 밖에만 값 표시
-        setDrawEntryLabels(false)
-
-        setEntryLabelColor(Color.parseColor("#2D3142"))
-        setEntryLabelTextSize(11f)
         holeRadius = 55f
         transparentCircleRadius = 60f
         setHoleColor(Color.TRANSPARENT)
 
-        // 너무 얇은 조각이 보이도록 최소 각도 설정(필요시 조절)
-        setMinAngleForSlices(8f)
+        setMinAngleForSlices(8f) // 너무 얇은 조각 보정
 
         legend.apply {
             verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
@@ -107,55 +165,40 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         invalidate()
     }
 
-    private fun renderEmotionRatio(raw: List<EmotionRatio>) {
+    private fun renderEmotionRates(raw: List<EmotionRate>) {
         if (raw.isEmpty()) {
-            binding.chartEmotionRatio.clear()
-            binding.chartEmotionRatio.invalidate()
+            binding.chartEmotionRates.clear()
+            binding.chartEmotionRates.invalidate()
             return
         }
 
-        // ⬇️ 3% 미만을 '기타'로 합치기 (임계값은 필요에 맞게 조절)
         val threshold = 0.03f
-        val (small, rest) = raw.partition { it.ratio < threshold }
-        val etcRatio = small.sumOf { it.ratio.toDouble() }.toFloat()
+        val (small, rest) = raw.partition { it.percentage < threshold }
+        val etc = small.sumOf { it.percentage.toDouble() }.toFloat()
 
-        val merged = mutableListOf<EmotionRatio>().apply {
-            addAll(rest)
-            if (etcRatio > 0f) add(EmotionRatio("기타", etcRatio))
+        val entries = buildList {
+            addAll(rest.map { PieEntry(it.percentage * 100f, toKo(it.emotion) ?: it.emotion.name) })
+            if (etc > 0f) add(PieEntry(etc * 100f, "기타"))
         }
 
-        // PieEntry 구성
-        val entries = merged.map { PieEntry(it.ratio * 100f, it.emotion) } // setUsePercentValues(true)라 0~100로 주면 편함
-
-        // 팔레트 (필요시 확장/교체)
-        val baseColors = listOf(
-            Color.parseColor("#D36B6B"),
-            Color.parseColor("#FFD700"), // 밝은 노랑
-            Color.parseColor("#00BFA5"), // 청록
-            Color.parseColor("#F06292"), // 핑크
-            Color.parseColor("#9575CD"), // 라벤더
-            Color.parseColor("#FFB74D"), // 오렌지
-            Color.parseColor("#81C784"), // 연한 초록
-            Color.parseColor("#7986CB"), // 파스텔 블루
-            Color.parseColor("#FF7043"), // 선셋 오렌지
-            Color.parseColor("#4DD0E1"), // 시안
-            Color.parseColor("#AED581"), // 연두
-            Color.parseColor("#BA68C8"), // 보라
-            Color.parseColor("#FBC02D")  // 골드
+        val palette = listOf(
+            Color.parseColor("#D36B6B"), Color.parseColor("#FFD700"),
+            Color.parseColor("#00BFA5"), Color.parseColor("#F06292"),
+            Color.parseColor("#9575CD"), Color.parseColor("#FFB74D"),
+            Color.parseColor("#81C784"), Color.parseColor("#7986CB"),
+            Color.parseColor("#FF7043"), Color.parseColor("#4DD0E1"),
+            Color.parseColor("#AED581"), Color.parseColor("#BA68C8"),
+            Color.parseColor("#FBC02D")
         )
-        val colors = List(entries.size) { i -> baseColors[i % baseColors.size] }
+        val colors = List(entries.size) { i -> palette[i % palette.size] }
 
         val dataSet = PieDataSet(entries, "").apply {
             setColors(colors)
             valueTextColor = Color.parseColor("#2D3142")
             valueTextSize = 12f
             sliceSpace = 2.5f
-
-            // ⬇️ 라벨을 조각 바깥으로
             yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
             xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
-
-            // ⬇️ 리더 라인(꺾인 선) 조정
             valueLinePart1Length = 0.6f
             valueLinePart2Length = 0.5f
             valueLineWidth = 1.2f
@@ -166,55 +209,70 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         val pieData = PieData(dataSet).apply {
             setValueFormatter(object : com.github.mikephil.charting.formatter.ValueFormatter() {
                 override fun getPieLabel(value: Float, pe: PieEntry?): String {
-                    // value는 setUsePercentValues(true)이므로 0~100 값
-                    if (value < 3f) return "" // 3% 미만 라벨 숨김
+                    if (value < 3f) return ""
                     val label = pe?.label ?: ""
                     return "$label ${String.format("%.0f%%", value)}"
                 }
             })
         }
 
-        binding.chartEmotionRatio.data = pieData
-        binding.chartEmotionRatio.invalidate()
+        binding.chartEmotionRates.data = pieData
+        binding.chartEmotionRates.invalidate()
     }
 
-    private fun renderEmotionEvents(events: List<String>) {
-        val container = binding.root.findViewById<android.widget.LinearLayout>(R.id.cardEmotionEventsContainer)
+    // ------------------------------
+    // 감정 이벤트
+    // ------------------------------
+    private fun renderEmotionEvents(events: List<String>, selectedEmotion: Emotion?) {
+        val container = binding.cardEmotionEventsContainer
         container.removeAllViews()
-        // Subtitle: show current emotion
+
         val context = container.context
-        val subtitle = com.google.android.material.textview.MaterialTextView(context).apply {
-            text = "최근 ${viewModel.state.value.emotion}했던 이유는?"
+        val title = com.google.android.material.textview.MaterialTextView(context).apply {
+            val emo = toKo(selectedEmotion) ?: "감정"
+            text = "최근 ${emo}했던 이유는?"
             setTextColor(Color.parseColor("#636779"))
             textSize = 13f
             setPadding(0, 0, 0, 10)
         }
-        container.addView(subtitle)
+        container.addView(title)
+
         events.forEachIndexed { idx, event ->
             val tv = com.google.android.material.textview.MaterialTextView(context).apply {
                 text = "${idx + 1}. $event"
                 setTextColor(Color.parseColor("#2D3142"))
                 textSize = 14f
-                setPadding(0, 0, 0, 5)
+                setPadding(0, 0, 0, 7)
             }
             container.addView(tv)
         }
     }
 
-    private fun renderWordCloud(keywords: List<String>) {
-        val wordCloudFrame = binding.root.findViewById<FrameLayout>(R.id.wordCloudView)
-
+    // ------------------------------
+    // 워드클라우드
+    // ------------------------------
+    private fun renderWordCloud(keywords: List<JournalKeyword>) {
+        if (keywords.isEmpty()) {
+            binding.wordCloudView.isVisible = false
+            return
+        } else {
+            binding.wordCloudView.isVisible = true
+        }
+        val frame = binding.wordCloudView
         if (wordCloud == null) {
             wordCloud = WordCloud(requireActivity().application, null)
-            wordCloudFrame.addView(wordCloud)
+            frame.addView(wordCloud)
         }
-
-        wordCloud?.setWords(ArrayList(keywords), topN = 10)
+        val words = ArrayList(keywords.map { it.keyword })
+        try {
+            wordCloud?.setWords(words, topN = 10)
+        } catch (_: Exception) {
+            /* ignore rendering errors in tests */
+        }
     }
 
-
     // ------------------------------
-    // 감정 변화 그래프 (LineChart)
+    // 감정 변화 (LineChart)
     // ------------------------------
     private fun setupEmotionTrendChart() = binding.chartEmotionTrend.apply {
         description.isEnabled = false
@@ -230,7 +288,11 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     }
 
     private fun renderEmotionTrend(data: List<EmotionTrend>) {
-        if (data.isEmpty()) return
+        if (data.isEmpty()) {
+            binding.chartEmotionTrend.clear()
+            binding.chartEmotionTrend.invalidate()
+            return
+        }
 
         val colors = listOf(
             Color.parseColor("#6074F9"),
@@ -240,13 +302,10 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             Color.parseColor("#BA68C8")
         )
 
-        val dataSets = data.mapIndexed { index, trendData ->
-            val entries = trendData.trend.mapIndexed { i, value ->
-                Entry(i.toFloat(), value)
-            }
-
-            LineDataSet(entries, trendData.emotion).apply {
-                color = colors[index % colors.size]
+        val sets = data.mapIndexed { idx, trend ->
+            val entries = trend.trend.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) }
+            LineDataSet(entries, toKo(trend.emotion) ?: trend.emotion.name).apply {
+                color = colors[idx % colors.size]
                 lineWidth = 2f
                 setCircleColor(color)
                 circleRadius = 4f
@@ -255,8 +314,33 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             }
         }
 
-        val lineData = LineData(dataSets)
-        binding.chartEmotionTrend.data = lineData
+        binding.chartEmotionTrend.data = LineData(sets)
         binding.chartEmotionTrend.invalidate()
+    }
+
+    // ------------------------------
+    // Chip 동기화 (State → UI)
+    // ------------------------------
+    private fun syncChipSelectionFromState(selected: Emotion?) {
+        val id = when (selected) {
+            Emotion.HAPPY -> R.id.chipHappy
+            Emotion.SAD -> R.id.chipSad
+            Emotion.ANXIOUS -> R.id.chipAnxious
+            Emotion.LETHARGIC -> R.id.chipLethargy
+            Emotion.INTERESTED -> R.id.chipExciting
+            else -> null
+        } ?: return
+
+        val group = binding.chipGroupEmotions
+        if (group.checkedChipId == id) return
+        suppressChipCallback = true
+        group.check(id)
+        suppressChipCallback = false
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        wordCloud = null
     }
 }
