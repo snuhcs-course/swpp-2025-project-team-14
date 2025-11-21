@@ -26,6 +26,7 @@ import android.text.Spannable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.inputmethod.BaseInputConnection
+import androidx.core.graphics.toColorInt
 
 @AndroidEntryPoint
 class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
@@ -186,12 +187,12 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         // 1) 데이터 생성
         val entries = scores.map { RadarEntry(it) }
         val set = RadarDataSet(entries, "").apply {
-            color = Color.parseColor("#64B5F6")
+            color = "#64B5F6".toColorInt()
             lineWidth = 2f
             setDrawValues(false)
             setDrawHighlightIndicators(false)
             setDrawFilled(true)
-            fillColor = Color.parseColor("#64B5F6")
+            fillColor = "#64B5F6".toColorInt()
             fillAlpha = 85
         }
 
@@ -207,15 +208,15 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             description.isEnabled = false
             legend.isEnabled = false
 
-            webColor = Color.parseColor("#E3E5EC")
-            webColorInner = Color.parseColor("#A5A5A5")
+            webColor = "#E3E5EC".toColorInt()
+            webColorInner = "#A5A5A5".toColorInt()
             webLineWidth = 1.2f
             webLineWidthInner = 1f
             webAlpha = 180
 
             xAxis.apply {
                 valueFormatter = IndexAxisValueFormatter(categories)
-                textColor = Color.parseColor("#636779")
+                textColor = "#636779".toColorInt()
                 textSize = 12f
                 yOffset = 12f
                 xOffset = 4f
