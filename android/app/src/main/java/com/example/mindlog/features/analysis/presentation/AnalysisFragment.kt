@@ -97,14 +97,6 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis) {
                 listOf(
                     "아직 분석이 준비되지 않았어요" to
                             "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
-                    "아직 분석이 준비되지 않았어요" to
-                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
-                    "아직 분석이 준비되지 않았어요" to
-                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
-                    "아직 분석이 준비되지 않았어요" to
-                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요.",
-                    "아직 분석이 준비되지 않았어요" to
-                            "자기 인식 질문과 일기를 조금 더 기록해주시면, Five Factor 기반 심층 분석을 카드 형식으로 보여드릴게요."
                 )
             } else {
                 listOf(
@@ -117,7 +109,7 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis) {
             }
 
         val useColorfulBackground = analysis != null
-        val adapter = FiveFactorAdapter(items, true)
+        val adapter = FiveFactorAdapter(items, useColorfulBackground)
         binding.vpFiveFactor.adapter = adapter
         binding.dotsIndicator.attachTo(binding.vpFiveFactor)
     }
