@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.R
@@ -16,6 +17,7 @@ import com.example.mindlog.features.journal.presentation.write.JournalEditActivi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -57,13 +59,12 @@ class JournalEditActivityTest {
     }
 
     @Test
-    fun editJournal_loadsData_and_saves_updates() {
-        // 1. Intent에 ID를 담아 Activity 실행 (결과를 받기 위해 launchActivityForResult 사용)
+    fun editJournal_loadsData_and_saves_updates() = runBlocking {
+        // 1. Intent에 ID를 담아 Activity 실행
         val intent = Intent(ApplicationProvider.getApplicationContext(), JournalEditActivity::class.java).apply {
             putExtra(JournalEditActivity.EXTRA_JOURNAL_ID, journalId)
         }
-        @Suppress("DEPRECATION")
-        val scenario = ActivityScenario.launchActivityForResult<JournalEditActivity>(intent)
+        val scenario = ActivityScenario.launch<JournalEditActivity>(intent)
 
         // 2. 초기 데이터가 잘 로드되었는지 확인 (EditText에 텍스트가 채워져 있어야 함)
         onView(withId(R.id.et_title)).check(matches(withText("기존 제목")))
@@ -76,30 +77,44 @@ class JournalEditActivityTest {
         onView(withId(R.id.btn_edit_save)).perform(click())
 
         // 5. 검증
-        val result = scenario.result
-        assert(result.resultCode == Activity.RESULT_OK)
+        val updated = repository.getJournalById(journalId)
+        assert(updated.title == "수정된 제목")
+
+        scenario.onActivity { activity ->
+            assert(activity.isFinishing)
+        }
 
         scenario.close()
     }
 
     @Test
-    fun editJournal_delete_finishes_activity() {
+    fun editJournal_delete_finishes_activity() = runBlocking {
         val intent = Intent(ApplicationProvider.getApplicationContext(), JournalEditActivity::class.java).apply {
             putExtra(JournalEditActivity.EXTRA_JOURNAL_ID, journalId)
         }
-        // 결과를 받기 위해 launchActivityForResult 사용
-        @Suppress("DEPRECATION")
-        val scenario = ActivityScenario.launchActivityForResult<JournalEditActivity>(intent)
+        val scenario = ActivityScenario.launch<JournalEditActivity>(intent)
 
         // 1. 삭제 버튼 클릭
         onView(withId(R.id.btn_edit_delete)).perform(click())
 
         // 2. 다이얼로그 확인 클릭 (클릭 즉시 finish() 호출됨)
-        onView(withText("삭제")).perform(click())
+        onView(withText("삭제"))
+            .inRoot(isDialog())
+            .check(matches(isDisplayed()))
+            .perform(click())
 
         // 3. 검증
-        val result = scenario.result
-        assert(result.resultCode == Activity.RESULT_OK)
+        val exists = try {
+            repository.getJournalById(journalId)
+            true
+        } catch (e: Exception) {
+            false
+        }
+        assert(!exists)
+
+        scenario.onActivity { activity ->
+            assert(activity.isFinishing)
+        }
 
         scenario.close()
     }

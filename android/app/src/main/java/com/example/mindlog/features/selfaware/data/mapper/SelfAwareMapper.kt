@@ -11,7 +11,7 @@ import javax.inject.Inject
 // feature/selfaware/data/mapper/SelfAwareMapper.kt
 class SelfAwareMapper @Inject constructor() {
 
-    private fun parseToLocalDate(raw: String?): LocalDate {
+    fun parseToLocalDate(raw: String?): LocalDate {
         if (raw.isNullOrBlank()) return LocalDate.now()
 
         return try {

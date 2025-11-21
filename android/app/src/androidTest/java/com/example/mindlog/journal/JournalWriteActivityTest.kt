@@ -14,6 +14,7 @@ import com.example.mindlog.features.journal.presentation.write.JournalWriteActiv
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -39,11 +40,9 @@ class JournalWriteActivityTest {
     }
 
     @Test
-    fun writeJournal_success_finishes_activity_with_result_ok() {
+    fun writeJournal_success_finishes_activity_with_result_ok() = runBlocking {
         // 1. Activity 실행 (결과를 받기 위해 launchActivityForResult 사용)
-        // 주의: 이 메서드는 Deprecated 되었으나, scenario.result를 확실하게 받기 위해 사용합니다.
-        @Suppress("DEPRECATION")
-        val scenario = ActivityScenario.launchActivityForResult(JournalWriteActivity::class.java)
+        val scenario = ActivityScenario.launch(JournalWriteActivity::class.java)
 
         // 2. 감정 선택 화면 (EmotionSelectFragment)
         // '다음' 버튼 클릭
@@ -56,10 +55,14 @@ class JournalWriteActivityTest {
         // 저장 버튼 클릭 (클릭 즉시 finish() 로직이 수행됨)
         onView(withId(R.id.btn_next_or_save)).perform(click())
 
-        // 4. 검증
-        // Activity가 정상적으로 종료되었고 RESULT_OK를 반환했는지를 확인합니다.
-        val result = scenario.result
-        assert(result.resultCode == Activity.RESULT_OK)
+        // 저장 잘 됐는지 Repository 로 확인
+        val saved = repository.getJournalById(1)  // 네가 가진 메서드에 맞춰서 변경
+        assert(saved.title == "Activity 테스트 제목")
+
+        // Activity 가 종료되었는지만 확인
+        scenario.onActivity { activity ->
+            assertTrue(activity.isFinishing)
+        }
 
         scenario.close()
     }

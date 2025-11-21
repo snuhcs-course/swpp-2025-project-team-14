@@ -20,7 +20,7 @@ class SelfAwareMapperTest {
     @Test
     fun `parseLocalDateTime correctly parses ISO string to LocalDate`() {
         val dateStr = "2025-03-18T10:30:00"
-        val result = mapper.parseLocalDateTime(dateStr)
+        val result = mapper.parseToLocalDate(dateStr)
         assertEquals(LocalDate.of(2025, 3, 18), result)
     }
 
