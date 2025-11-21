@@ -56,8 +56,9 @@ class QuestionService:
             
             최근 일기 내용:
             {journal_text}
-            
-            {format_instructions}
+
+            Return JSON:
+            - summary
             """
         )
 
@@ -65,7 +66,6 @@ class QuestionService:
 
         summary_response = summary_chain.invoke({
             "journal_text": combined_content,
-            "format_instructions": summary_parser.get_format_instructions()
         })
         summary = summary_response.summary
 
@@ -102,7 +102,7 @@ class QuestionService:
         selected_category = random.choice(CATEGORIES)
         category_en = selected_category[0]
         category_ko = selected_category[1]
-        category = "{}({})".format(category_en, category_ko)
+        category = f"{category_en}({category_ko})"
 
         single_category_chain = single_category_prompt | llm | output_parser
         response: QuestionGenerationResponse = single_category_chain.invoke({"category": category})
@@ -173,10 +173,6 @@ class AnswerService:
 
 
     def create_answer(self, user_id: int, question_id: int, text: str) -> Answer:
-        """
-        해당 question이 실제 존재하는지 확인한 뒤,
-        answer를 DB에 생성한다.
-        """
         answer = self.answer_repository.create_answer(
             user_id=user_id,
             question_id=question_id,
@@ -271,7 +267,7 @@ class ValueScoreService:
                     get_opposite_value_chain = get_opposite_value_prompt | llm
                     response = get_opposite_value_chain.invoke({"value":top_value_score.value, "category":top_value_score.category})
                     value_scores.append({
-                    "value": response['opposite_value'],
+                    "value": response.opposite_value, # type: ignore
                     "intensity": top_value_score.intensity
                     })
                 else:

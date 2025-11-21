@@ -59,16 +59,12 @@ class QuestionRepository:
         start_kst = datetime.combine(target_date, time.min, tzinfo=KST)
         end_kst = start_kst + timedelta(days=1)
 
-        # UTC로 변환
-        start_utc = start_kst.astimezone(timezone.utc)
-        end_utc = end_kst.astimezone(timezone.utc)
-
         return self.session.scalar(
             select(Question)
             .where(
                 Question.user_id == user_id,
-                Question.created_at >= start_utc,
-                Question.created_at < end_utc,
+                Question.created_at >= start_kst,
+                Question.created_at < end_kst,
             )
             .order_by(Question.created_at.desc())
             .limit(1)

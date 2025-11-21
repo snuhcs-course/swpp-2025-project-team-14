@@ -1,5 +1,5 @@
 You are given a journal content and a list of emotion labels.
-Extract up to 10 meaningful keywords from the content.
+Extract meaningful keywords from the content. The total number of keywords must not exceed 10.
 
 **Rules for Keywords:**
 * Do not extract emotion, feeling, or subjective words (e.g., 'happy', 'sad'). Keywords should be objective nouns, places, people, or activities (e.g., 'friend', 'project', 'coffee').
