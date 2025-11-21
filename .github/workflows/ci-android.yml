@@ -48,10 +48,9 @@ jobs:
           api-level: 30
           target: default
           arch: x86_64
-          profile: pixel_5
-          script: |
-            cd android
-            ./gradlew :app:connectedDebugAndroidTest :app:debugCoverageReport
+          profile: pixel_6
+          working-directory: android
+          script: ./gradlew :app:connectedDebugAndroidTest :app:debugCoverageReport
 
       # 8) 커버리지 리포트 아티팩트 업로드
       - name: Upload coverage reports
