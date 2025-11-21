@@ -2,9 +2,9 @@ name: Android CI (lint + test + coverage)
 
 on:
   push:
-    branches: [ main, develop, heuristic-evaluation ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop, heuristic-evaluation ]
+    branches: [ main ]
 
 jobs:
   lint-test-coverage:
@@ -28,7 +28,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       # 4) gradlew 실행권한
-      - name: Grant execute permission for gradlew
+      - name: Set executable on gradlew
         run: chmod +x android/gradlew
 
       # 5) Lint 검사
