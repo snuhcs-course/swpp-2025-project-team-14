@@ -117,6 +117,7 @@ class AnswerRepository:
                 Answer.user_id == user_id,
                 Answer.question_id.in_(question_ids)
             )
+            .order_by(Answer.id.desc())
             .all()
         )
 
