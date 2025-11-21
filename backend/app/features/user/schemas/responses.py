@@ -4,6 +4,7 @@ from app.common.schemas import ResponseEnvelope
 
 
 class ProfileResponse(BaseModel):
+    id: int
     login_id: str
     username: str
 
