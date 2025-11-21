@@ -212,7 +212,7 @@ def submit_answer(
 
     # 3. 충분한 answers가 모였을 경우, analysis 업데이트
     answers = answer_service.get_answer_by_user(user_id = user.id)
-    if len(answers) % 10 == 0:
+    if len(answers) > 0 and len(answers) % 10 == 0:
         background_tasks.add_task(
             update_analysis_table,
             user.id,
