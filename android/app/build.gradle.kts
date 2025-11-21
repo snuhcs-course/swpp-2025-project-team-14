@@ -169,7 +169,7 @@ configurations.all {
 }
 
 jacoco {
-    toolVersion = "0.8.10"   // 또는 최신 권장 버전
+    toolVersion = "0.8.12"   // 또는 최신 권장 버전
 }
 
 tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
