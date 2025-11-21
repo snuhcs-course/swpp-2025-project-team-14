@@ -5,8 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="30dp"
-    android:paddingTop="@dimen/screen_padding_top"
     android:fillViewport="true"
     android:background="@color/bg"
     tools:context=".features.journal.presentation.write.ContentWriteFragment">
@@ -21,7 +19,6 @@
             android:id="@+id/label_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
             android:text="제목"
             android:textColor="@color/text_secondary"
             android:textSize="18sp"
