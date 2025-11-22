@@ -24,7 +24,9 @@ import kotlinx.coroutines.launch
 import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.inputmethod.BaseInputConnection
+import androidx.core.graphics.toColorInt
 
 @AndroidEntryPoint
 class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
@@ -34,7 +36,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
     private var answerWatcher: TextWatcher? = null
     private var suppressAnswerTextChange = false
-    private var forceOverlay: Boolean = false
     private var radarInitDone = false
     private var lastRadarCats: List<String>? = null
     private var lastRadarScores: List<Float>? = null
@@ -57,7 +58,6 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
         binding.btnSubmit.setOnClickListener {
             if (!binding.btnSubmit.isEnabled) return@setOnClickListener
-            forceOverlay = true
             vm.submit()
         }
 
@@ -65,29 +65,49 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             findNavController().navigate(R.id.selfAwareHistoryFragment)
         }
 
-        // observe state
-        // collect
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.state.collect { s ->
                     // Show spinner if loading question, submitting, or loading value map (if present)
                     val isLoading = s.isLoading
+                    val isQuestionError = s.isQuestionError
                     binding.progressValueMap.isVisible = isLoading
 
-                    val shouldShowOverlay = forceOverlay || s.isSubmitting || s.isAnsweredToday
+                    val shouldShowOverlay = s.showCompletionOverlay || s.isSubmitting || s.isAnsweredToday
+                    val showQuestionLoading = (s.isLoadingQuestion || isQuestionError) && !shouldShowOverlay
+                    binding.groupQuestionLoading.isVisible = showQuestionLoading
                     binding.completionOverlay.isVisible = shouldShowOverlay
-                    binding.groupQuestion.isVisible = !shouldShowOverlay
 
                     if (shouldShowOverlay) {
                         binding.completionOverlay.bringToFront()
+                        binding.groupQuestion.isVisible = false
+                        binding.groupQuestionLoading.isVisible = false
                         binding.btnSubmit.isEnabled = false
                         binding.etAnswer.isEnabled = false
-                        // 제출 확정/종료되면 오버레이 강제 플래그 해제
-                        if (!s.isSubmitting) forceOverlay = false
                     } else {
-                        val isQuestionVisible = !s.isAnsweredToday && !s.isSubmitting
+                        val isQuestionVisible =
+                            !s.isAnsweredToday && !s.isSubmitting && !s.isLoadingQuestion && !isQuestionError
+
                         binding.groupQuestion.isVisible = isQuestionVisible
-                        binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion
+                        binding.groupQuestionLoading.isVisible = s.isLoadingQuestion || isQuestionError
+                        binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
+
+                        if (isQuestionError) {
+                            binding.progressQuestion.isVisible = false
+                            binding.ivQuestionError.isVisible = true
+                            binding.tvQuestionLoading.text =
+                                s.questionErrorMessage ?: "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요."
+                        } else if (s.isLoadingQuestion) {
+                            binding.progressQuestion.isVisible = true
+                            binding.ivQuestionError.isVisible = false
+                            binding.tvQuestionLoading.text = "오늘의 질문을 생성하는 중이에요…"
+                        } else {
+                            // 질문도 있고, 로딩/에러도 아님
+                            binding.progressQuestion.isVisible = false
+                            binding.ivQuestionError.isVisible = false
+                        }
+
+                        // 질문 텍스트: 질문이 있을 때만 의미 있음
                         binding.tvQuestion.text = s.questionText ?: "오늘의 질문을 불러오고 있어요…"
 
                         val desired = s.answerText
@@ -167,12 +187,12 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         // 1) 데이터 생성
         val entries = scores.map { RadarEntry(it) }
         val set = RadarDataSet(entries, "").apply {
-            color = Color.parseColor("#64B5F6")
+            color = "#64B5F6".toColorInt()
             lineWidth = 2f
             setDrawValues(false)
             setDrawHighlightIndicators(false)
             setDrawFilled(true)
-            fillColor = Color.parseColor("#64B5F6")
+            fillColor = "#64B5F6".toColorInt()
             fillAlpha = 85
         }
 
@@ -188,15 +208,15 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
             description.isEnabled = false
             legend.isEnabled = false
 
-            webColor = Color.parseColor("#E3E5EC")
-            webColorInner = Color.parseColor("#A5A5A5")
+            webColor = "#E3E5EC".toColorInt()
+            webColorInner = "#A5A5A5".toColorInt()
             webLineWidth = 1.2f
             webLineWidthInner = 1f
             webAlpha = 180
 
             xAxis.apply {
                 valueFormatter = IndexAxisValueFormatter(categories)
-                textColor = Color.parseColor("#636779")
+                textColor = "#636779".toColorInt()
                 textSize = 12f
                 yOffset = 12f
                 xOffset = 4f

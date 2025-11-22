@@ -3,6 +3,7 @@ package com.example.mindlog.features.auth.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
+import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,10 +30,10 @@ class TokenManager @Inject constructor(
 
     // 토큰 저장
     fun saveTokens(access: String, refresh: String) {
-        prefs.edit()
-            .putString(ACCESS_TOKEN, access)
-            .putString(REFRESH_TOKEN, refresh)
-            .apply()
+        prefs.edit {
+                putString(ACCESS_TOKEN, access)
+                .putString(REFRESH_TOKEN, refresh)
+            }
 
         loggedInState.value = isLoggedIn()
     }
@@ -66,7 +67,7 @@ class TokenManager @Inject constructor(
 
     // 토큰 삭제
     fun clearTokens() {
-        prefs.edit().clear().apply()
+        prefs.edit {clear()}
         loggedInState.value = false
     }
 

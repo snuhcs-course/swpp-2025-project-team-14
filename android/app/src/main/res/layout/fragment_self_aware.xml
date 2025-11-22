@@ -1,44 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/scroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:background="#F8F6F0"
     android:clipToPadding="false"
-    android:paddingBottom="96dp">
+    android:padding="24dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="#F8F6F0"
-        android:layout_width="match_parent"
+    <!-- 제목 -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:layout_marginTop="30dp"
+        android:text="나 알아보기"
+        android:textColor="#2D3142"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- 제목 -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:text="나 알아보기"
-                android:textColor="#2D3142"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                app:layout_constrainedWidth="true"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+    <!-- 제목 하단 구분선 -->
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/dividerTop"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        app:dividerColor="#636779"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
-            <!-- 제목 하단 구분선 -->
-            <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/dividerTop"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_marginTop="5dp"
-                app:dividerColor="#636779"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/dividerTop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/contentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="96dp">
 
             <!-- 카드 1 : 오늘의 질문 -->
             <com.google.android.material.card.MaterialCardView
@@ -49,10 +61,7 @@
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/dividerTop"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -67,6 +76,44 @@
                         android:text="오늘의 질문"
                         android:textColor="#636779"
                         android:textSize="14sp" />
+
+                    <LinearLayout
+                        android:id="@+id/groupQuestionLoading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/progressQuestion"
+                            style="@style/Widget.Material3.CircularProgressIndicator"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:indicatorSize="24dp"
+                            app:trackThickness="3dp"
+                            app:indicatorColor="#64B5F6"
+                            android:indeterminate="true" />
+
+                        <ImageView
+                            android:id="@+id/ivQuestionError"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="4dp"
+                            android:visibility="gone"
+                            android:contentDescription="질문 생성 오류 아이콘"
+                            app:srcCompat="@drawable/ic_error" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvQuestionLoading"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="오늘의 질문을 생성하는 중이에요…"
+                            android:textColor="#2D3142"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
                     <!-- 질문/답변 입력 (기본 표시) -->
                     <LinearLayout
@@ -167,16 +214,13 @@
             <!-- 카드 2 : 나의 가치 지도 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardValueMap"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardQuestion"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -224,16 +268,13 @@
             <!-- 카드 4 : 핵심 가치 키워드 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTopValueScores"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 app:cardBackgroundColor="#F3F1EB"
                 app:cardUseCompatPadding="false"
                 app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent"
-                app:layout_constraintTop_toBottomOf="@id/cardValueMap"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -355,17 +396,15 @@
             <!-- 하단: 답변 기록 보기 버튼 (카드 느낌 버튼) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnOpenHistory"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="15dp"
                 android:text="나의 답변 기록 보기 →"
                 android:textStyle="bold"
                 android:textColor="#2D3142"
                 app:backgroundTint="#F3F1EB"
-                app:cornerRadius="16dp"
-                app:layout_constraintTop_toBottomOf="@id/cardTopValueScores"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:cornerRadius="16dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

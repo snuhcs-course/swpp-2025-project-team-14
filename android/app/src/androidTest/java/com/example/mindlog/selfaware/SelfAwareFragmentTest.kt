@@ -1,6 +1,8 @@
 package com.example.mindlog.selfaware
 
-import android.util.Log
+import androidx.navigation.Navigation
+import androidx.navigation.testing.TestNavHostController
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareFragment
 import com.example.mindlog.R
@@ -12,33 +14,39 @@ import org.junit.runner.RunWith
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
-import com.example.mindlog.features.selfaware.domain.repository.SelfAwareRepository
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isEnabled
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import com.example.mindlog.core.dispatcher.DispatcherModule
+import com.example.mindlog.features.selfaware.di.SelfAwareBindModule
 import com.example.mindlog.utils.launchFragmentInHiltContainer
-import dagger.hilt.android.testing.BindValue
+import com.google.common.truth.Truth.assertThat
+import dagger.hilt.android.testing.UninstallModules
+import org.junit.Before
 
 @HiltAndroidTest
+@UninstallModules(SelfAwareBindModule::class, DispatcherModule::class)
 @RunWith(AndroidJUnit4::class)
 class SelfAwareFragmentTest {
 
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
 
-    @Test
-    fun showsQuestion_and_SubmitFlow_showsOverlay() {
+    @Before
+    fun setup() {
         hiltRule.inject()
+    }
 
-        launchFragmentInHiltContainer<SelfAwareFragment>(
-            factory = { SelfAwareFragment() }
-        )
-
+    @Test
+    fun showsQuestion_and_submitFlow_showsOverlay() {
+        launchFragmentInHiltContainer<SelfAwareFragment>()
 
         // 1) “오늘의 질문” 섹션 보임
         onView(withId(R.id.cardQuestion))
             .check(matches(isDisplayed()))
         onView(withId(R.id.groupQuestion))
             .check(matches(isDisplayed()))
-        Thread.sleep(2000)
         // 2) FakeRepo가 즉시 질문을 제공 → 질문 TextView 표시
         onView(withId(R.id.tvQuestion))
             .check(matches(withText("오늘 하루 가장 의미 있었던 순간은?")))
@@ -66,16 +74,25 @@ class SelfAwareFragmentTest {
         onView(withId(R.id.chipValueFirst))
             .check(matches(withText("성장")))
 
-        onView(withId(R.id.cardPersonalityInsight))
-            .check(matches(isDisplayed()))
-        onView(withId(R.id.tvPersonalityInsight))
-            .check(matches(withText("호기심과 성취동기가 강해요.")))
-
-        onView(withId(R.id.tvComment))
-            .check(matches(withText("작은 성공을 빠르게 반복할 때 동기가 오래 유지됩니다.")))
-
         onView(withId(R.id.btnOpenHistory))
             .check(matches(isDisplayed()))
             .check(matches(isEnabled()))
+    }
+
+    @Test
+    fun clickHistoryButton_navigatesToSelfAwareHistory() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val navController = TestNavHostController(context)
+
+        launchFragmentInHiltContainer<SelfAwareFragment> {
+            navController.setGraph(R.navigation.nav_graph_home)
+            navController.setCurrentDestination(R.id.selfAwareFragment)
+            Navigation.setViewNavController(requireView(), navController)
+        }
+
+        onView(withId(R.id.btnOpenHistory))
+            .perform(scrollTo(), click())
+
+        assertThat(navController.currentDestination?.id).isEqualTo(R.id.selfAwareHistoryFragment)
     }
 }

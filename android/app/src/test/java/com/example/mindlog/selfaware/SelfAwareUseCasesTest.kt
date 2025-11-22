@@ -20,7 +20,6 @@ class SelfAwareUseCasesTest {
     private lateinit var getQAHistoryUseCase: GetQAHistoryUseCase
     private lateinit var getTopValueScoresUseCase: GetTopValueScoresUseCase
     private lateinit var getValueMapUseCase: GetValueMapUseCase
-    private lateinit var getPersonalityInsightUseCase: GetPersonalityInsightUseCase
 
     @Before
     fun setup() {
@@ -31,7 +30,6 @@ class SelfAwareUseCasesTest {
         getQAHistoryUseCase = GetQAHistoryUseCase(repo)
         getTopValueScoresUseCase = GetTopValueScoresUseCase(repo)
         getValueMapUseCase = GetValueMapUseCase(repo)
-        getPersonalityInsightUseCase = GetPersonalityInsightUseCase(repo)
     }
 
     // ------------------------------
@@ -118,23 +116,6 @@ class SelfAwareUseCasesTest {
 
         assertSame(expected, result)
         verify(repo).getValueMap()
-        verifyNoMoreInteractions(repo)
-    }
-
-    // ------------------------------
-    // getPersonalityInsight
-    // ------------------------------
-    @Test
-    fun `getPersonalityInsightUseCase delegates to repository`() = runTest {
-        val expected = Result.Success(
-            PersonalityInsight("comment", "insight", LocalDate.now())
-        )
-        `when`(repo.getPersonalityInsight()).thenReturn(expected)
-
-        val result = getPersonalityInsightUseCase(Unit)
-
-        assertSame(expected, result)
-        verify(repo).getPersonalityInsight()
         verifyNoMoreInteractions(repo)
     }
 }

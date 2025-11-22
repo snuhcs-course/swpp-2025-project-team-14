@@ -4,13 +4,11 @@ import app.cash.turbine.test
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.CategoryScore
-import com.example.mindlog.features.selfaware.domain.model.PersonalityInsight
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 import com.example.mindlog.features.selfaware.domain.model.Question
 import com.example.mindlog.features.selfaware.domain.model.TopValueScores
 import com.example.mindlog.features.selfaware.domain.model.ValueMap
 import com.example.mindlog.features.selfaware.domain.model.ValueScore
-import com.example.mindlog.features.selfaware.domain.usecase.GetPersonalityInsightUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTodayQAUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTopValueScoresUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetValueMapUseCase
@@ -52,7 +50,6 @@ class SelfAwareViewModelTest {
     private lateinit var submitAnswerUseCase: SubmitAnswerUseCase
     private lateinit var getValueMapUseCase: GetValueMapUseCase
     private lateinit var getTopValueScoresUseCase: GetTopValueScoresUseCase
-    private lateinit var getPersonalityInsightUseCase: GetPersonalityInsightUseCase
     private lateinit var vm: SelfAwareViewModel
 
     @Before
@@ -63,13 +60,12 @@ class SelfAwareViewModelTest {
         submitAnswerUseCase = mock()
         getValueMapUseCase = mock()
         getTopValueScoresUseCase = mock()
-        getPersonalityInsightUseCase = mock()
+
         vm = SelfAwareViewModel(
             getTodayQAUseCase,
             submitAnswerUseCase,
             getValueMapUseCase,
             getTopValueScoresUseCase,
-            getPersonalityInsightUseCase,
             testDispatcherProvider
         )
     }
@@ -97,7 +93,6 @@ class SelfAwareViewModelTest {
 
         whenever(getValueMapUseCase.invoke(Unit)).thenReturn(Result.Success(testValueMap()))
         whenever(getTopValueScoresUseCase.invoke(Unit)).thenReturn(Result.Success(testTopValueScores()))
-        whenever(getPersonalityInsightUseCase.invoke(Unit)).thenReturn(Result.Success(testPersonalityInsight()))
         whenever(getTodayQAUseCase.invoke(any())).thenReturn(Result.Success(testQA))
 
         // when
@@ -109,9 +104,8 @@ class SelfAwareViewModelTest {
         assertFalse(s.isLoadingQuestion)
         assertFalse(s.isLoading)
         assertFalse(s.isAnsweredToday)
-        assertEquals(7, s.categoryScores.size)
+        assertEquals(5, s.valueMap.size)
         assertEquals(5, s.topValueScores.size)
-        assertEquals("성장 중심형", s.personalityInsight)
     }
 
     @Test
@@ -136,7 +130,6 @@ class SelfAwareViewModelTest {
 
         whenever(getValueMapUseCase.invoke(Unit)).thenReturn(Result.Success(testValueMap()))
         whenever(getTopValueScoresUseCase.invoke(Unit)).thenReturn(Result.Success(testTopValueScores()))
-        whenever(getPersonalityInsightUseCase.invoke(Unit)).thenReturn(Result.Success(testPersonalityInsight()))
         whenever(getTodayQAUseCase.invoke(any())).thenReturn(Result.Success(testQA))
 
         // when
@@ -148,9 +141,8 @@ class SelfAwareViewModelTest {
         assertFalse(s.isLoadingQuestion)
         assertFalse(s.isLoading)
         assertTrue(s.isAnsweredToday)
-        assertEquals(7, s.categoryScores.size)
+        assertEquals(5, s.valueMap.size)
         assertEquals(5, s.topValueScores.size)
-        assertEquals("성장 중심형", s.personalityInsight)
     }
 
     // ---------------------------
@@ -227,7 +219,6 @@ class SelfAwareViewModelTest {
 
         whenever(getValueMapUseCase.invoke(Unit)).thenReturn(Result.Success(testValueMap()))
         whenever(getTopValueScoresUseCase.invoke(Unit)).thenReturn(Result.Success(testTopValueScores()))
-        whenever(getPersonalityInsightUseCase.invoke(Unit)).thenReturn(Result.Success(testPersonalityInsight()))
         // MP: SelfAwareViewModel의 pollTodayQuestion 기본 타이밍
         // initialDelayMs = 1500ms, interval = 2000ms (다음은 3000ms ...)
 
@@ -287,8 +278,7 @@ class SelfAwareViewModelTest {
     fun `polling times out when question never arrives`() = runTest {
         whenever(getValueMapUseCase.invoke(Unit)).thenReturn(Result.Success(testValueMap()))
         whenever(getTopValueScoresUseCase.invoke(Unit)).thenReturn(Result.Success(testTopValueScores()))
-        whenever(getPersonalityInsightUseCase.invoke(Unit)).thenReturn(Result.Success(testPersonalityInsight()))
-        // 모든 호출이 "없음"
+         // 모든 호출이 "없음"
         whenever(getTodayQAUseCase.invoke(any()))
             .thenReturn(Result.Error(code = null, message="timeout"))
 
@@ -311,7 +301,6 @@ class SelfAwareViewModelTest {
     fun `load() and fail to get today's question by some error`() = runTest {
         whenever(getValueMapUseCase.invoke(Unit)).thenReturn(Result.Success(testValueMap()))
         whenever(getTopValueScoresUseCase.invoke(Unit)).thenReturn(Result.Success(testTopValueScores()))
-        whenever(getPersonalityInsightUseCase.invoke(Unit)).thenReturn(Result.Success(testPersonalityInsight()))
         // 모든 호출이 "없음"
         whenever(getTodayQAUseCase.invoke(any()))
             .thenReturn(Result.Error(code = 500, message="network error"))
@@ -331,7 +320,6 @@ class SelfAwareViewModelTest {
     fun `load() and polling and fail to get today's question by some error`() = runTest {
         whenever(getValueMapUseCase.invoke(Unit)).thenReturn(Result.Success(testValueMap()))
         whenever(getTopValueScoresUseCase.invoke(Unit)).thenReturn(Result.Success(testTopValueScores()))
-        whenever(getPersonalityInsightUseCase.invoke(Unit)).thenReturn(Result.Success(testPersonalityInsight()))
         // 모든 호출이 "없음"
         whenever(getTodayQAUseCase.invoke(any()))
             .thenReturn(Result.Error(code = null, message="timeout"))
@@ -360,14 +348,11 @@ class SelfAwareViewModelTest {
 
     private fun testValueMap() = ValueMap(
         categoryScores = listOf(
-            CategoryScore("Growth", "성장", 80),
-            CategoryScore("RelationgShip", "관계", 60),
-            CategoryScore("Safe","안정", 50),
-            CategoryScore("Free","자유", 70),
-            CategoryScore("Achievement","성취", 55),
-
-            CategoryScore("Exciting","재미", 65),
-            CategoryScore("Ethics", "윤리", 75),
+            CategoryScore("Neuroticism", "불안정성", 80),
+            CategoryScore("Extroversion", "외향성", 60),
+            CategoryScore("Openness","개방성", 50),
+            CategoryScore("Agreeableness","수용성", 70),
+            CategoryScore("Conscientiousness","성실성", 55),
         ),
         updatedAt = LocalDate.now()
     )
@@ -380,11 +365,5 @@ class SelfAwareViewModelTest {
             ValueScore("휴식", 60f),
             ValueScore("결혼",70f )
         )
-    )
-
-    private fun testPersonalityInsight() = PersonalityInsight(
-        comment = "좋아요",
-        personalityInsight = "성장 중심형",
-        updatedAt = LocalDate.now()
     )
 }

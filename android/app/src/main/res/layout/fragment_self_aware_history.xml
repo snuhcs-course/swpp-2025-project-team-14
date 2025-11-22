@@ -35,7 +35,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
-    <!-- 필터 영역 -->
+<!--    &lt;!&ndash; 필터 영역 &ndash;&gt;-->
 <!--    <LinearLayout-->
 <!--        android:id="@+id/filterContainer"-->
 <!--        android:layout_width="0dp"-->
@@ -57,7 +57,7 @@
 <!--            android:layout_marginEnd="8dp"-->
 <!--            android:text="기간 설정"-->
 <!--            android:textColor="#2D3142"-->
-<!--            app:icon="@drawable/ic_calendar"-->
+<!--            app:icon="@drawable/ic_calender"-->
 <!--            app:iconGravity="textStart"-->
 <!--            app:iconPadding="6dp"-->
 <!--            app:cornerRadius="12dp"-->
@@ -90,7 +90,7 @@
 
     <!-- 답변 목록 -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerAnswers"
+        android:id="@+id/recyclerHistory"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"

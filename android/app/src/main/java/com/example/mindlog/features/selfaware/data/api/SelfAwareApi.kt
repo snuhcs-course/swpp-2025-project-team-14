@@ -2,7 +2,6 @@ package com.example.mindlog.features.selfaware.data.api
 
 import com.example.mindlog.features.selfaware.data.dto.AnswerRequest
 import com.example.mindlog.features.selfaware.data.dto.AnswerResponse
-import com.example.mindlog.features.selfaware.data.dto.PersonalityInsightResponse
 import com.example.mindlog.features.selfaware.data.dto.QACursorResponse
 import com.example.mindlog.features.selfaware.data.dto.QAResponse
 import com.example.mindlog.features.selfaware.data.dto.TopValueScoresResponse
@@ -28,7 +27,4 @@ interface SelfAwareApi {
 
     @GET("self-aware/top-value-scores")
     suspend fun getTopValueScores(): TopValueScoresResponse
-
-    @GET("self-aware/personality-insight")
-    suspend fun getPersonalityInsight(): PersonalityInsightResponse
 }
