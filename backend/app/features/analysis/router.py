@@ -1,11 +1,9 @@
-from datetime import date, datetime, timezone
 from typing import Annotated
-from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, status, BackgroundTasks
 from fastapi.security import HTTPBearer
 from app.common.utilities import get_korea_time
 from app.common.authorization import get_current_user
 from app.features.user.models import User
-
 from app.features.selfaware.service import (
     AnswerService,
 )

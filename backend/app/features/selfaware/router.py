@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Annotated
 import asyncio
 from sqlalchemy.exc import IntegrityError
@@ -31,16 +31,6 @@ from app.features.selfaware.schemas.responses import (
 )
 from app.features.selfaware.schemas.requests import (
     AnswerRequest
-)
-from app.features.analysis.schemas.responses import (
-    UserTypeResponse,
-    ComprehensiveAnalysisResponse,
-    PersonalizedAdviceResponse
-)
-from app.features.analysis.schemas.requests import (
-    UserTypeRequest,
-    ComprehensiveAnalysisRequest,
-    PersonalizedAdviceRequest
 )
 from app.features.analysis.service import (
     AnalysisService
@@ -222,7 +212,7 @@ def submit_answer(
 
     # 3. 충분한 answers가 모였을 경우, analysis 업데이트
     answers = answer_service.get_answer_by_user(user_id = user.id)
-    if len(answers) % 10 == 0:
+    if len(answers) > 0 and len(answers) % 10 == 0:
         background_tasks.add_task(
             update_analysis_table,
             user.id,

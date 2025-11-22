@@ -1,6 +1,4 @@
 from __future__ import annotations
-from typing import Literal, List
-from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 
 agreeableness_summary = 'Agreeableness reflects individual differences in concern with cooperation and social harmony. Agreeable individuals value getting along with others.'
