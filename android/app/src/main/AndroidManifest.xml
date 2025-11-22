@@ -55,7 +55,7 @@
 
         <activity android:name=".features.auth.presentation.login.LoginActivity" />
         <activity android:name=".features.auth.presentation.signup.SignupActivity" />
-
+        <activity android:name=".features.tutorial.TutorialActivity" />
         <activity android:name=".features.home.presentation.HomeActivity" />
 
     </application>

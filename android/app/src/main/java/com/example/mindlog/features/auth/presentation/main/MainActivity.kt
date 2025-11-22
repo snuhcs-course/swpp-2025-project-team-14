@@ -19,6 +19,7 @@ import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.tutorial.TutorialActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -55,7 +56,11 @@ class MainActivity : AppCompatActivity() {
                 // 토큰 만료 → refresh 시도
                 refresh.let { token ->
                     if (authRepository.refresh(token)) {
-                        goToJournal()
+                        if (hasCompletedTutorial()) {
+                            goToJournal()
+                        } else {
+                            goToTutorial()
+                        }
                     } else {
                         tokenManager.clearTokens()
                         goToLogin()
@@ -64,13 +69,27 @@ class MainActivity : AppCompatActivity() {
             }
             else -> {
                 if (authRepository.verify()) {
-                    goToJournal()
+                    if (hasCompletedTutorial()) {
+                        goToJournal()
+                    } else {
+                        goToTutorial()
+                    }
                 } else {
                     tokenManager.clearTokens()
                     goToLogin()
                 }
             }
         }
+    }
+
+    private fun hasCompletedTutorial(): Boolean {
+        val prefs = getSharedPreferences("tutorial_prefs", MODE_PRIVATE)
+        return prefs.getBoolean("completed", false)
+    }
+
+    private fun goToTutorial() {
+        startActivity(Intent(this, TutorialActivity::class.java))
+        finish()
     }
 
     private fun goToLogin() {
