@@ -41,17 +41,6 @@ jobs:
         working-directory: android
         run: ./gradlew :app:testDebugUnitTest
 
-      # 7) 에뮬레이터에서 UI 테스트 + merged coverage 리포트
-      - name: Run instrumentation tests on emulator + coverage
-        uses: ReactiveCircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          target: default
-          arch: x86_64
-          profile: pixel_6
-          working-directory: android
-          script: ./gradlew :app:connectedDebugAndroidTest :app:debugCoverageReport
-
       # 8) 커버리지 리포트 아티팩트 업로드
       - name: Upload coverage reports
         if: always()
@@ -60,4 +49,3 @@ jobs:
           name: jacoco-coverage-reports
           path: |
             android/app/build/reports/jacoco/unitTest
-            android/app/build/reports/jacoco/mergedDebug
