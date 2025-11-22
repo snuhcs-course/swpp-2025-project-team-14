@@ -1,3 +1,4 @@
+// path: android/app/src/main/java/com/example/mindlog/features/settings/presentation/SettingsFragment.kt
 package com.example.mindlog.features.settings.presentation
 
 import android.content.Intent
@@ -6,11 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.mindlog.R
+import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.FragmentSettingsBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -38,11 +43,13 @@ class SettingsFragment : Fragment() {
         setupToolbar()
         setupClickListeners()
         observeViewModel()
+
+        viewModel.loadUserInfo()
     }
 
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp() // 뒤로가기
+            findNavController().navigateUp()
         }
     }
 
@@ -51,8 +58,8 @@ class SettingsFragment : Fragment() {
             findNavController().navigate(R.id.action_settingsFragment_to_changePasswordFragment)
         }
 
-        binding.btnChangeId.setOnClickListener {
-            findNavController().navigate(R.id.action_settingsFragment_to_changeIdFragment)
+        binding.btnEditProfile.setOnClickListener {
+            findNavController().navigate(R.id.action_settingsFragment_to_editProfileFragment)
         }
 
         binding.btnLogout.setOnClickListener {
@@ -62,15 +69,45 @@ class SettingsFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.logoutEvent.collect { result ->
-                result.onSuccess {
-                    val intent = Intent(requireActivity(), LoginActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.logoutEvent.collect { result ->
+                    when (result) {
+                        is Result.Success -> {
+                            val intent = Intent(requireActivity(), LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            startActivity(intent)
+                            requireActivity().finish()
+                        }
+                        is Result.Error -> {
+                            Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    startActivity(intent)
-                    requireActivity().finish()
-                }.onFailure {
-                    Toast.makeText(requireContext(), "로그아웃에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        viewModel.userInfo.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is Result.Success -> {
+                    val user = result.data
+                    binding.tvUsername.text = user.username
+
+                    binding.tvLoginId.text = "ID: ${user.loginId}"
+
+                    val infoParts = mutableListOf<String>()
+                    user.birthdate?.let { infoParts.add(it) }
+                    user.gender?.let { infoParts.add(it) }
+
+                    if (infoParts.isNotEmpty()) {
+                        binding.tvAdditionalInfo.text = infoParts.joinToString(" · ")
+                        binding.tvAdditionalInfo.isVisible = true
+                    } else {
+                        binding.tvAdditionalInfo.isVisible = false
+                    }
+                }
+                is Result.Error -> {
+                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }

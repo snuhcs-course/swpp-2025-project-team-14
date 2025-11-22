@@ -45,8 +45,8 @@
             android:id="@+id/action_settingsFragment_to_changePasswordFragment"
             app:destination="@id/changePasswordFragment" />
         <action
-            android:id="@+id/action_settingsFragment_to_changeIdFragment"
-            app:destination="@id/changeIdFragment" />
+            android:id="@+id/action_settingsFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
     </fragment>
 
     <fragment
@@ -56,8 +56,8 @@
         tools:layout="@layout/fragment_change_password" />
 
     <fragment
-        android:id="@+id/changeIdFragment"
-        android:name="com.example.mindlog.features.settings.presentation.ChangeIdFragment"
-        android:label="fragment_change_id"
-        tools:layout="@layout/fragment_change_id" />
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.mindlog.features.settings.presentation.EditProfileFragment"
+        android:label="fragment_edit_profile"
+        tools:layout="@layout/fragment_edit_profile" />
 </navigation>
