@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 
+from app.features.user.repository import (
+    UserRepository, 
+)
 from app.features.selfaware.repository import (
     AnswerRepository, 
 )
@@ -27,12 +30,24 @@ from app.features.analysis.prompt import personalized_advice_prompt
 
 load_dotenv()
 
+def get_age_and_gender_by_user_id(user_id: int, user_repository: UserRepository)
+    try:
+        user = user_repository.get_user_by_user_id(user_id)
+        age = age(user)
+        gender = user.gender
+    except:
+        age = 23
+        gender = "Male"
+    return age, gender
+
 class AnalysisService:
     def __init__(
         self,
+        user_repository: UserRepository,
         answer_repository: AnswerRepository,
         analysis_repository: AnalysisRepository,
     ) -> None:
+        self.user_repository = user_repository
         self.answer_repository = answer_repository
         self.analysis_repository = analysis_repository
 
@@ -93,7 +108,8 @@ class AnalysisService:
         return evaluate(neo_pi, sex, age, flag)
     
     def update_neo_pi_score(self, user_id: int):
-        neo_pi_score = self.evaluate_big_5_score(user_id, 23, "Male", flag = False)
+        age, gender = get_age_and_gender_by_user_id(user_id, self.user_repository)
+        neo_pi_score = self.evaluate_big_5_score(user_id, age, gender, flag = False)
         self.analysis_repository.update_analysis(user_id=user_id, neo_pi_score=neo_pi_score)
     
     def evaluate_user_type(self, user_id):
@@ -146,7 +162,8 @@ class AnalysisService:
         return a_response, c_response, e_response, n_response, o_response
     
     def update_comprehensive_analysis(self, user_id: int):
-        a_response, c_response, e_response, n_response, o_response = self.get_comment_from_big_5_score(user_id, 23, "Male")
+        age, gender = get_age_and_gender_by_user_id(user_id, self.user_repository)
+        a_response, c_response, e_response, n_response, o_response = self.get_comment_from_big_5_score(user_id, age, gender)
         self.analysis_repository.update_analysis(user_id=user_id, conscientiousness=c_response, neuroticism=n_response, extraversion=e_response, openness=o_response, agreeableness=a_response)
 
     def extract_personalized_advice(self, user_id: int, age, sex):
@@ -167,5 +184,6 @@ class AnalysisService:
         return response
     
     def update_personalized_advice(self, user_id: int):
-        personalized_advice = self.extract_personalized_advice(user_id, 23, "Male")
+        age, gender = get_age_and_gender_by_user_id(user_id, self.user_repository)
+        personalized_advice = self.extract_personalized_advice(user_id, age, gender)
         self.analysis_repository.update_analysis(user_id=user_id, personalized_advice=personalized_advice)
