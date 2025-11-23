@@ -2,6 +2,7 @@ package com.example.mindlog.features.tutorial
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mindlog.R
@@ -9,7 +10,9 @@ import com.example.mindlog.databinding.ActivityTutorialBinding
 import com.example.mindlog.features.home.presentation.HomeActivity
 import com.example.mindlog.features.tutorial.domain.model.TutorialPage
 import com.example.mindlog.features.tutorial.presentation.TutorialAdapter
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TutorialActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTutorialBinding
@@ -63,6 +66,7 @@ class TutorialActivity : AppCompatActivity() {
             addAll(pagesFrom("tutorial_selfaware", "나 알아가기"))
             addAll(pagesFrom("tutorial_statistic", "통계"))
             addAll(pagesFrom("tutorial_analysis", "분석"))
+            addAll(pagesFrom("tutorial_setting", "튜토리얼 완료"))
         }
     }
 
@@ -117,10 +121,14 @@ class TutorialActivity : AppCompatActivity() {
     private fun finishTutorial() {
         // 튜토리얼 완료 플래그 저장
         val prefs = getSharedPreferences("tutorial_prefs", MODE_PRIVATE)
-        prefs.edit().putBoolean("completed", true).apply()
+        prefs.edit().putBoolean("completed", true).commit()
 
         // 홈 화면으로 이동
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
+    }
+
+    fun completeTutorialForTest() {
+        finishTutorial()
     }
 }
