@@ -16,5 +16,4 @@ interface SelfAwareRepository {
 
     suspend fun getTopValueScores(): Result<TopValueScores>
     suspend fun getValueMap(): Result<ValueMap>
-    suspend fun getPersonalityInsight(): Result<PersonalityInsight>
 }

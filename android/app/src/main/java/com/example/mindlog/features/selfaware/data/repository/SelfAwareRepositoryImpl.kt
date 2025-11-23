@@ -52,11 +52,4 @@ class SelfAwareRepositoryImpl @Inject constructor(
             mapper.toValueMap(res)
         }.toResult()
     }
-
-    override suspend fun getPersonalityInsight() = withContext(dispatcher.io) {
-        runCatching {
-            val res = api.getPersonalityInsight()
-            mapper.toPersonalityInsight(res)
-        }.toResult()
-    }
 }

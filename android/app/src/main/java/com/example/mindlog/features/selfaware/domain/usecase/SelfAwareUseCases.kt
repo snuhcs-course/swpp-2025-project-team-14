@@ -21,7 +21,3 @@ class GetTopValueScoresUseCase @Inject constructor(private val repo: SelfAwareRe
 class GetValueMapUseCase @Inject constructor(private val repo: SelfAwareRepository) {
     suspend operator fun invoke(@Suppress("UNUSED_PARAMETER") unit: Unit = Unit) = repo.getValueMap()
 }
-
-class GetPersonalityInsightUseCase @Inject constructor(private val repo: SelfAwareRepository) {
-    suspend operator fun invoke(@Suppress("UNUSED_PARAMETER") unit: Unit = Unit) = repo.getPersonalityInsight()
-}

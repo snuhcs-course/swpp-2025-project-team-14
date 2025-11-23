@@ -13,9 +13,6 @@ data class UpdateJournalRequest(
     @SerializedName("content")
     val content: String?,
 
-    @SerializedName("summary")
-    val summary: String?,
-
     @SerializedName("gratitude")
     val gratitude: String?
 )

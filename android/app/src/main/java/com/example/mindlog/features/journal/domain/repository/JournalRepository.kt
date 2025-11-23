@@ -1,10 +1,9 @@
 package com.example.mindlog.features.journal.domain.repository
 
-import com.example.mindlog.features.journal.data.dto.JournalItemResponse
-import com.example.mindlog.features.journal.data.dto.JournalResponse
-import com.example.mindlog.features.journal.data.dto.KeywordListResponse
+import com.example.mindlog.core.model.JournalEntry
+import com.example.mindlog.core.model.Keyword
+import com.example.mindlog.core.model.PagedResult
 import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
-import com.example.mindlog.features.journal.data.dto.JournalListResponse
 
 interface JournalRepository {
 
@@ -13,14 +12,14 @@ interface JournalRepository {
         content: String,
         emotions: Map<String, Int>,
         gratitude: String
-    ): JournalResponse
+    ): Int
 
-    suspend fun getJournals(limit: Int, cursor: Int?): JournalListResponse
+    suspend fun getJournals(limit: Int, cursor: Int?): PagedResult<JournalEntry>
 
     /**
      * ID로 특정 일기를 조회한다.
      */
-    suspend fun getJournalById(journalId: Int): JournalItemResponse
+    suspend fun getJournalById(journalId: Int): JournalEntry
 
     /**
      * 일기를 수정한다.
@@ -54,7 +53,13 @@ interface JournalRepository {
         title: String?,
         limit: Int,
         cursor: Int?
-    ): JournalListResponse
+    ): PagedResult<JournalEntry>
+
+    suspend fun searchByKeyword(
+        keyword: String,
+        limit: Int,
+        cursor: Int?
+    ): PagedResult<JournalEntry>
 
     /**
      * AI 이미지 생성을 요청합니다.
@@ -67,6 +72,5 @@ interface JournalRepository {
     /**
      * 특정 일기의 키워드를 추출합니다.
      */
-    suspend fun extractKeywords(journalId: Int): KeywordListResponse
+    suspend fun extractKeywords(journalId: Int): List<Keyword>
 }
-

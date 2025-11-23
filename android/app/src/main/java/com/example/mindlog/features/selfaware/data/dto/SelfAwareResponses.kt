@@ -49,9 +49,3 @@ data class ValueMapResponse(
     @SerializedName("category_scores") val categoryScores: List<CategoryResponse>,
     @SerializedName("updated_at") val updatedAt: String // ISO8601
 )
-
-data class PersonalityInsightResponse(
-    @SerializedName("comment")              val comment: String,
-    @SerializedName("personality_insight")  val personalityInsight: String,
-    @SerializedName("updated_at")           val updatedAt: String
-)
