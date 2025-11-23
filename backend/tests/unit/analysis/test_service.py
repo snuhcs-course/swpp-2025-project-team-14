@@ -58,7 +58,12 @@ def test_evaluate_big_5_score(service, mocker):
     assert result == {"O": 60}
 
 def test_get_comment_from_big_5_score(service, mocker):
-    pass
+    response = service.get_comment_from_big_5_score(user_id=1, age=23, sex="Male")
+    assert type(response[0]) == str
+    assert type(response[1]) == str
+    assert type(response[2]) == str
+    assert type(response[3]) == str
+    assert type(response[4]) == str
 
 def test_extract_personalized_advice(service, mocker, mock_analysis_repo):
     response = service.extract_personalized_advice(user_id=1, age=23, sex="Male")
