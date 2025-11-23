@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,13 +14,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.FragmentEditProfileBinding
-import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
+import java.util.Calendar
 
 @AndroidEntryPoint
 class EditProfileFragment : Fragment() {
@@ -41,7 +38,7 @@ class EditProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupToolbar()
-        setupDatePicker()
+        setupBirthDateDropdowns() // 년/월/일 드롭다운 설정
         setupSaveButton()
 
         // 데이터 관찰 및 로드
@@ -55,21 +52,24 @@ class EditProfileFragment : Fragment() {
         }
     }
 
-    private fun setupDatePicker() {
-        binding.etBirthdate.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("생년월일 선택")
-                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                .build()
+    private fun setupBirthDateDropdowns() {
+        val calendar = Calendar.getInstance()
+        val currentYear = calendar.get(Calendar.YEAR)
 
-            datePicker.addOnPositiveButtonClickListener { selection ->
-                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                sdf.timeZone = TimeZone.getTimeZone("UTC") // 선택된 값은 UTC 기준
-                val dateString = sdf.format(Date(selection))
-                binding.etBirthdate.setText(dateString)
-            }
-            datePicker.show(parentFragmentManager, "BIRTHDATE_PICKER")
-        }
+        // 년도: 현재 년도부터 1900년까지 역순
+        val years = (currentYear downTo 1900).map { it.toString() }
+        val yearAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, years)
+        binding.actBirthYear.setAdapter(yearAdapter)
+
+        // 월: 1~12
+        val months = (1..12).map { it.toString().padStart(2, '0') }
+        val monthAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, months)
+        binding.actBirthMonth.setAdapter(monthAdapter)
+
+        // 일: 1~31
+        val days = (1..31).map { it.toString().padStart(2, '0') }
+        val dayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, days)
+        binding.actBirthDay.setAdapter(dayAdapter)
     }
 
     private fun setupSaveButton() {
@@ -85,11 +85,20 @@ class EditProfileFragment : Fragment() {
             val gender = when (binding.rgGender.checkedRadioButtonId) {
                 binding.rbMale.id -> "M"
                 binding.rbFemale.id -> "F"
-                binding.rbOther.id -> "O"
                 else -> null
             }
 
-            val birthdate = binding.etBirthdate.text.toString().trim().ifBlank { null }
+            // 생년월일 합치기
+            val year = binding.actBirthYear.text.toString()
+            val month = binding.actBirthMonth.text.toString()
+            val day = binding.actBirthDay.text.toString()
+
+            val birthdate = if (year.isNotBlank() && month.isNotBlank() && day.isNotBlank()) {
+                "$year-$month-$day"
+            } else {
+                null
+            }
+
             val appearance = binding.etAppearance.text.toString().trim().ifBlank { null }
 
             viewModel.updateProfile(username, gender, birthdate, appearance)
@@ -101,16 +110,22 @@ class EditProfileFragment : Fragment() {
         viewModel.userInfo.observe(viewLifecycleOwner) { result ->
             if (result is Result.Success) {
                 val user = result.data
-                // 사용자가 아직 수정하지 않은 경우에만 데이터를 채움 (혹은 로딩 완료 시점 체크)
                 if (binding.etUsername.text.isNullOrBlank()) {
                     binding.etUsername.setText(user.username)
-                    binding.etBirthdate.setText(user.birthdate ?: "")
                     binding.etAppearance.setText(user.appearance ?: "")
 
                     when (user.gender) {
                         "M" -> binding.rbMale.isChecked = true
                         "F" -> binding.rbFemale.isChecked = true
-                        "O" -> binding.rbOther.isChecked = true
+                    }
+
+                    user.birthdate?.let { dateStr ->
+                        val parts = dateStr.split("-")
+                        if (parts.size == 3) {
+                            binding.actBirthYear.setText(parts[0], false)
+                            binding.actBirthMonth.setText(parts[1], false)
+                            binding.actBirthDay.setText(parts[2], false)
+                        }
                     }
                 }
             } else if (result is Result.Error) {

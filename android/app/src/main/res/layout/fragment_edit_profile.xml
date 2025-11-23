@@ -6,8 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
-    android:paddingBottom="16dp">
+    android:paddingTop="@dimen/screen_padding_top"
+    android:paddingBottom="100dp"> <!-- 내비게이션 바 공간 확보 -->
 
+    <!-- 툴바 -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
@@ -21,6 +23,7 @@
         app:titleCentered="true"
         app:titleTextColor="@color/text_primary"/>
 
+    <!-- 스크롤 영역 -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -34,93 +37,215 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="24dp">
 
             <!-- 이름 (Username) -->
+            <TextView
+                android:id="@+id/tvUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이름"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_username"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="이름">
+                android:layout_marginTop="8dp"
+                app:hintEnabled="false"
+                app:endIconMode="clear_text"
+                app:boxStrokeWidth="0dp"
+                app:boxBackgroundColor="@android:color/transparent">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPersonName" />
+                    android:minHeight="56dp"
+                    android:background="@drawable/edittext_bg"
+                    android:hint="이름을 입력하세요"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:inputType="textPersonName"
+                    android:textCursorDrawable="@drawable/edittext_cursor" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 생년월일 -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_birthdate"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="생년월일 (YYYY-MM-DD)"
-                app:endIconDrawable="@drawable/ic_journal"
-                app:endIconMode="custom">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_birthdate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="date"
-                    android:focusable="false"
-                    android:clickable="true"/>
-            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- 성별 -->
             <TextView
+                android:id="@+id/tvGender"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:text="성별"
-                android:layout_marginTop="16dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"/>
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
 
             <RadioGroup
                 android:id="@+id/rg_gender"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="8dp">
 
-                <RadioButton
+                <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_male"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="남성"
-                    android:layout_marginEnd="16dp"/>
+                    android:textColor="@color/text_primary"
+                    app:buttonTint="@color/text_primary"/>
 
-                <RadioButton
+                <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_female"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="여성"
-                    android:layout_marginEnd="16dp"/>
-
-                <RadioButton
-                    android:id="@+id/rb_other"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="기타"/>
+                    android:layout_marginStart="24dp"
+                    android:textColor="@color/text_primary"
+                    app:buttonTint="@color/text_primary"/>
             </RadioGroup>
 
+
+            <!-- 생년월일 (년/월/일 분리) -->
+            <TextView
+                android:id="@+id/tvBirth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="생년월일"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:baselineAligned="false">
+
+                <!-- 년 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_birth_year"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.2"
+                    android:layout_marginEnd="8dp"
+                    app:hintEnabled="false"
+                    app:boxStrokeWidth="0dp"
+                    app:boxBackgroundColor="@android:color/transparent">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/act_birth_year"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:background="@drawable/edittext_bg"
+                        android:hint="년"
+                        android:inputType="none"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 월 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_birth_month"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:hintEnabled="false"
+                    app:boxStrokeWidth="0dp"
+                    app:boxBackgroundColor="@android:color/transparent">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/act_birth_month"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:background="@drawable/edittext_bg"
+                        android:hint="월"
+                        android:inputType="none"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 일 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_birth_day"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:hintEnabled="false"
+                    app:boxStrokeWidth="0dp"
+                    app:boxBackgroundColor="@android:color/transparent">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/act_birth_day"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:background="@drawable/edittext_bg"
+                        android:hint="일"
+                        android:inputType="none"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+
             <!-- 외모 묘사 (Appearance) -->
+            <TextView
+                android:id="@+id/tvAppearance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="나의 외모 묘사"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_appearance"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="나의 외모 묘사 (AI 일기 생성용)">
+                android:layout_marginTop="8dp"
+                app:hintEnabled="false"
+                app:boxStrokeWidth="0dp"
+                app:boxBackgroundColor="@android:color/transparent">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_appearance"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:minHeight="100dp"
+                    android:background="@drawable/edittext_bg"
+                    android:gravity="top|start"
+                    android:padding="16dp"
+                    android:hint="AI 일기 생성용 외모 묘사"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
                     android:inputType="textMultiLine"
                     android:minLines="3"
-                    android:gravity="top" />
+                    android:textCursorDrawable="@drawable/edittext_cursor" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -134,15 +259,18 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- 저장 버튼 -->
-    <Button
+    <!-- 저장 버튼 (하단 고정) -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_save"
         android:layout_width="0dp"
         android:layout_height="56dp"
-        android:layout_margin="16dp"
+        android:layout_margin="24dp"
         android:text="저장"
-        android:backgroundTint="@color/text_secondary"
         android:textColor="@color/bg"
+        android:textSize="18sp"
+        android:fontFamily="sans-serif-medium"
+        app:backgroundTint="@color/text_secondary"
+        app:cornerRadius="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
