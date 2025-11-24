@@ -248,15 +248,15 @@
                         app:indicatorColor="#64B5F6"
                         android:visibility="gone"/>
 
-                    <ImageView
-                        android:id="@+id/ivValueMapEmpty"
-                        android:layout_width="150dp"
-                        android:layout_height="150dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_gravity="center_horizontal"
-                        android:contentDescription="가치 지도 없음 안내 이미지"
+                    <com.airbnb.lottie.LottieAnimationView
+                        android:id="@+id/lottieSelfAwareEmpty"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
                         android:visibility="gone"
-                        app:srcCompat="@drawable/ic_empty_selfaware" />
+                        app:lottie_rawRes="@raw/anim_empty_selfaware"
+                        android:layout_gravity="center_horizontal"
+                        app:lottie_autoPlay="true"
+                        app:lottie_loop="true" />
 
                     <com.github.mikephil.charting.charts.RadarChart
                         android:id="@+id/radar"

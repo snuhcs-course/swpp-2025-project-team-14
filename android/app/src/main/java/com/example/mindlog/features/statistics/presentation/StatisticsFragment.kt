@@ -171,8 +171,17 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         if (raw.isEmpty()) {
             binding.chartEmotionRates.clear()
             binding.chartEmotionRates.invalidate()
+
+            binding.chartEmotionRates.isVisible = false
+            binding.emptyEmotionRates.isVisible = true
+            binding.lottieEmotionRatesEmpty.playAnimation()
             return
+        } else {
+            binding.emptyEmotionRates.isVisible = false
+            binding.lottieEmotionRatesEmpty.cancelAnimation()
+            binding.chartEmotionRates.isVisible = true
         }
+
 
         val threshold = 0.03f
         val (small, rest) = raw.partition { it.percentage < threshold }
@@ -225,19 +234,45 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     // ------------------------------
     // 감정 이벤트
     // ------------------------------
+    private fun toReasonPhrase(emotion: Emotion?): String = when (emotion) {
+        Emotion.HAPPY      -> "행복했던"
+        Emotion.SAD        -> "슬펐던"
+        Emotion.ANXIOUS    -> "불안했던"
+        Emotion.CALM       -> "평안했던"
+        Emotion.ANNOYED    -> "짜증났던"
+        Emotion.SATISFIED  -> "만족했던"
+        Emotion.BORED      -> "지루했던"
+        Emotion.INTERESTED -> "흥미로웠던"
+        Emotion.LETHARGIC  -> "무기력했던"
+        Emotion.ENERGETIC  -> "에너지가 넘쳤던"
+        null               -> "그렇게 느꼈던"
+    }
+
     private fun renderEmotionEvents(events: List<String>, selectedEmotion: Emotion?) {
         val container = binding.cardEmotionEventsContainer
         container.removeAllViews()
 
         val context = container.context
+        val emoReason = toReasonPhrase(selectedEmotion)
+
         val title = com.google.android.material.textview.MaterialTextView(context).apply {
-            val emo = toKo(selectedEmotion) ?: "감정"
-            text = "최근 ${emo}했던 이유는?"
+            text = "최근 ${emoReason} 이유는?"
             setTextColor("#636779".toColorInt())
             textSize = 13f
             setPadding(0, 0, 0, 10)
         }
         container.addView(title)
+
+        if (events.isEmpty()) {
+            val emptyText = com.google.android.material.textview.MaterialTextView(context).apply {
+                text = "해당 기간 동안 ${emoReason} 사건이 없어요."
+                setTextColor("#2D3142".toColorInt())
+                textSize = 14f
+                setPadding(0, 0, 0, 4)
+            }
+            container.addView(emptyText)
+            return
+        }
 
         events.forEachIndexed { idx, event ->
             val tv = com.google.android.material.textview.MaterialTextView(context).apply {
@@ -256,10 +291,15 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     private fun renderWordCloud(keywords: List<JournalKeyword>) {
         if (keywords.isEmpty()) {
             binding.wordCloudView.isVisible = false
+            binding.emptyWordCloud.isVisible = true
+            binding.lottieWordCloudEmpty.playAnimation()
             return
         } else {
+            binding.emptyWordCloud.isVisible = false
+            binding.lottieWordCloudEmpty.cancelAnimation()
             binding.wordCloudView.isVisible = true
         }
+
         val frame = binding.wordCloudView
         if (wordCloud == null) {
             wordCloud = WordCloud(requireActivity().application, null)
@@ -293,7 +333,15 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
         if (data.isEmpty()) {
             binding.chartEmotionTrend.clear()
             binding.chartEmotionTrend.invalidate()
+
+            binding.chartEmotionTrend.isVisible = false
+            binding.emptyEmotionTrend.isVisible = true
+            binding.lottieEmotionTrendEmpty.playAnimation()
             return
+        } else {
+            binding.emptyEmotionTrend.isVisible = false
+            binding.lottieEmotionTrendEmpty.cancelAnimation()
+            binding.chartEmotionTrend.isVisible = true
         }
 
         val colors = listOf(

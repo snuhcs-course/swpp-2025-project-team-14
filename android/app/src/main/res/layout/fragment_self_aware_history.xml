@@ -49,18 +49,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/ivHistoryEmpty"
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieSelfAwareHistoryEmpty"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:layout_marginBottom="16dp"
-            android:contentDescription="자기 인식 답변 기록 없음 안내 이미지"
-            app:srcCompat="@drawable/ic_empty_selfaware" />
+            app:lottie_rawRes="@raw/anim_empty_selfaware_happy"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
 
         <TextView
             android:id="@+id/tvHistoryEmpty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
             android:text="아직 나 알아보기 질문에 답변하지 않았어요.\n스스로를 더 알아가기 위해 질문에 답변해 보세요!"
             android:textColor="#636779"
             android:textSize="14sp"

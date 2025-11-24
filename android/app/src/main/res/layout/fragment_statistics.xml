@@ -163,10 +163,36 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/chartEmotionRates"
+                    <!-- 감정 비율 데이터 없음 상태 -->
+                    <LinearLayout
+                        android:id="@+id/emptyEmotionRates"
                         android:layout_width="match_parent"
-                        android:layout_height="220dp" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/lottieEmotionRatesEmpty"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            app:lottie_rawRes="@raw/anim_empty_ratio"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvEmotionRatesEmpty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="작성한 일기 데이터가 없어요. 일기를 작성해 보세요!"
+                            android:textColor="#636779"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -194,10 +220,47 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
+                    <!-- 감정 변화 그래프 데이터 없음 상태 -->
+                    <LinearLayout
+                        android:id="@+id/emptyEmotionTrend"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/lottieEmotionTrendEmpty"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            app:lottie_rawRes="@raw/anim_empty_emotiontrend"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvEmotionTrendEmpty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="작성한 일기 데이터가 없어요. 일기를 작성해 보세요!"
+                            android:textColor="#636779"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/chartEmotionTrend"
                         android:layout_width="match_parent"
-                        android:layout_height="220dp" />
+                        android:layout_height="220dp" >
+
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/chartEmotionRates"
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp" />
+                    </com.github.mikephil.charting.charts.LineChart>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -362,7 +425,7 @@
                 android:id="@+id/cardWordCloud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="120dp">
+                android:layout_marginBottom="170dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -378,6 +441,37 @@
                         android:textStyle="bold"
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
+
+                    <!-- 워드클라우드 데이터 없음 상태 -->
+                    <LinearLayout
+                        android:id="@+id/emptyWordCloud"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/lottieWordCloudEmpty"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            app:lottie_rawRes="@raw/anim_empty_worldcloud"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvWordCloudEmpty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="작성한 일기 데이터가 없어요. 일기를 작성해 보세요!"
+                            android:textColor="#636779"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:textAlignment="center" />
+                    </LinearLayout>
 
                     <FrameLayout
                         android:id="@+id/wordCloudView"

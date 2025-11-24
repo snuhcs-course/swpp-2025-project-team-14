@@ -140,7 +140,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                             lastRadarScores = scores.toList()
                         }
                         binding.radar.isVisible = true
-                        binding.ivValueMapEmpty.isVisible = false
+                        binding.lottieSelfAwareEmpty.isVisible = false
                         binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
                     } else {
                         // 데이터 없을 때는 차트 숨기고 플레이스홀더 이미지와 안내 문구 노출
@@ -148,7 +148,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                             binding.radar.clear()
                         }
                         binding.radar.isVisible = false
-                        binding.ivValueMapEmpty.isVisible = true
+                        binding.lottieSelfAwareEmpty.isVisible = true
                         binding.tvValueSummary.text = "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
                     }
 

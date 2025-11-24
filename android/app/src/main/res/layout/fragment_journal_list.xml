@@ -45,17 +45,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/iv_empty_journal"
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieEmotionRatesEmpty"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:src="@drawable/ic_empty_journal" />
+            app:lottie_rawRes="@raw/anim_empty_journals"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
 
         <TextView
             android:id="@+id/tv_empty_journal_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:textAlignment="center"
             android:text="아직 작성한 일기가 없어요.\n일기를 작성해 보세요!"
             android:textAppearance="?attr/textAppearanceBody1"
