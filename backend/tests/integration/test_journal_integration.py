@@ -184,7 +184,7 @@ def test_search_journals_by_title_success(
 def test_search_journals_by_date_success(
     client: TestClient,
     auth_headers: dict[str, str],
-    test_journal: Journal,  # conftest에서 생성됨
+    test_journal: Journal,
 ):
     """
     일지 검색 (GET /api/v1/journal/search) (기간) 성공 테스트

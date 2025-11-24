@@ -23,7 +23,6 @@ def test_signup_success(client: TestClient, db_session: Session):
     }
 
     # Act: API 엔드포인트를 호출합니다.
-    # 이 client는 conftest.py에서 DB 연결이 오버라이드된 상태입니다.
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
 
@@ -123,9 +122,9 @@ def test_signup_missing_fields(client: TestClient, db_session: Session):
     assert response.status_code == 422
     response_json = response.json()
     error_detail = response_json["detail"][0]
-    assert error_detail["loc"] == ["body", "username"]  # 에러 위치: body의 'username'
-    assert error_detail["msg"] == "Field required"  # 에러 메시지
-    assert error_detail["type"] == "missing"  # 에러 타입
+    assert error_detail["loc"] == ["body", "username"]
+    assert error_detail["msg"] == "Field required"
+    assert error_detail["type"] == "missing"
 
 
 # --- 2. 로그인 (POST /auth/login) ---
@@ -133,7 +132,6 @@ def test_signup_missing_fields(client: TestClient, db_session: Session):
 
 def test_login_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful user login with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 올바른 자격 증명으로 로그인 시도
     data = {
@@ -154,7 +152,6 @@ def test_login_invalid_password(
     client: TestClient, db_session: Session, test_user: User
 ):
     """Test user login with an invalid password."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 잘못된 비밀번호로 로그인 시도
     data = {
@@ -200,9 +197,9 @@ def test_login_missing_fields(client: TestClient, db_session: Session):
     assert response.status_code == 422
     response_json = response.json()
     error_detail = response_json["detail"][0]
-    assert error_detail["loc"] == ["body", "password"]  # 에러 위치: body의 'password'
-    assert error_detail["msg"] == "Field required"  # 에러 메시지
-    assert error_detail["type"] == "missing"  # 에러 타입
+    assert error_detail["loc"] == ["body", "password"]
+    assert error_detail["msg"] == "Field required"
+    assert error_detail["type"] == "missing"
 
 
 # --- 3. 로그아웃 (POST /auth/logout) ---
@@ -210,7 +207,6 @@ def test_login_missing_fields(client: TestClient, db_session: Session):
 
 def test_logout_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful user logout with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -257,7 +253,6 @@ def test_logout_invalid_token(client: TestClient, db_session: Session):
 
 def test_refresh_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful token refresh with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -303,7 +298,6 @@ def test_refresh_invalid_token(client: TestClient, db_session: Session):
 
 def test_verify_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful access token verification with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -315,7 +309,6 @@ def test_verify_success(client: TestClient, db_session: Session, test_user: User
     login_response_json = login_response.json()
     access_token = login_response_json["access"]
 
-    # Pass the token in the Authorization header if required by your API
     headers = {"Authorization": f"Bearer {access_token}"}
     response = client.post(
         "/api/v1/auth/verify", json={"access": access_token}, headers=headers
@@ -350,7 +343,6 @@ def test_verify_invalid_token(client: TestClient, db_session: Session):
 
 def test_me_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful retrieval of user profile with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -362,7 +354,6 @@ def test_me_success(client: TestClient, db_session: Session, test_user: User):
     login_response_json = login_response.json()
     access_token = login_response_json["access"]
 
-    # Pass the token in the Authorization header
     headers = {"Authorization": f"Bearer {access_token}"}
     response = client.get("/api/v1/user/me", headers=headers)
     db_session.flush()
