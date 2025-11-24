@@ -19,6 +19,7 @@ from app.features.journal.schemas.requests import (
     ImageUploadRequest,
 )
 from app.features.journal.service import JournalOpenAIService, JournalService
+from app.features.user.models import User
 
 # --- 픽스처: Mock 객체 준비 ---
 
@@ -487,7 +488,7 @@ async def test_create_image_presigned_url_s3_fail(
 
 
 @pytest.mark.asyncio
-async def test_request_image_generation_success(mocker):
+async def test_request_image_generation_success(test_user: User, mocker):
     """
     [Service] request_image_generation (AI 이미지 생성) 테스트
     """
@@ -532,13 +533,21 @@ async def test_request_image_generation_success(mocker):
 
     # Execution
     request = ImageGenerateRequest(content="Today was good", style="natural")
-    result = await service.request_image_generation(request)
+    result = await service.request_image_generation(request, test_user)
 
     # Verification
     assert result == "base64_image_data"
 
+    # user_description 문자열 생성
+    user_parts = [
+        f"The protagonist of this diary is a {test_user.gender}, aged {test_user.age}."
+    ]
+    if test_user.appearance:
+        user_parts.append(f"Appearance details: {test_user.appearance}.")
+    expected_description = " ".join(user_parts)
+
     # 서비스 내부의 헬퍼 함수들이 올바르게 호출되었는지 확인
     service._generate_scene_prompt_from_diary.assert_awaited_once_with(
-        request.content, service.prompt_natural
+        request.content, service.prompt_natural, expected_description
     )
     service._generate_image_from_prompt.assert_awaited_once_with("A beautiful scene")

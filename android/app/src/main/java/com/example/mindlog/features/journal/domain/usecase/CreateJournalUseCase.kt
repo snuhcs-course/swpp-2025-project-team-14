@@ -1,6 +1,6 @@
 package com.example.mindlog.features.journal.domain.usecase
 
-import com.example.mindlog.features.journal.data.dto.JournalResponse // import 추가
+import com.example.mindlog.features.journal.data.dto.JournalResponse
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import javax.inject.Inject
 
@@ -12,7 +12,7 @@ class CreateJournalUseCase @Inject constructor(
         content: String,
         emotions: Map<String, Int>,
         gratitude: String
-    ): JournalResponse {
+    ): Int {
         return repository.createJournal(title, content, emotions, gratitude)
     }
 }

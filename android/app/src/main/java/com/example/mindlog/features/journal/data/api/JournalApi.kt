@@ -86,6 +86,13 @@ interface JournalApi {
         @Query("cursor") cursor: Int?
     ): JournalListResponse
 
+    @GET("journal/search-keyword")
+    suspend fun searchByKeyword(
+        @Query("keyword") keyword: String,
+        @Query("limit") limit: Int,
+        @Query("cursor") cursor: Int?
+    ): JournalListResponse
+
     @Streaming
     @POST("journal/image/generate")
     suspend fun generateImage(

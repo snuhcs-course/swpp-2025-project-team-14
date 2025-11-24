@@ -39,11 +39,11 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
         }
 
         // RecyclerView
-        binding.recyclerAnswers.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerAnswers.adapter = adapter
+        binding.recyclerHistory.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerHistory.adapter = adapter
 
         // 무한 스크롤(바닥 도달 시 다음 페이지 로드)
-        binding.recyclerAnswers.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.recyclerHistory.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             private fun tryLoadNext(rv: RecyclerView) {
                 val lm = rv.layoutManager as? LinearLayoutManager ?: return
@@ -60,7 +60,6 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
                 }
             }
             override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                if (dy <= 0) return
                 tryLoadNext(rv)
             }
             override fun onScrollStateChanged(rv: RecyclerView, newState: Int) {
@@ -78,7 +77,7 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
                     adapter.submitList(s.items.toList())
-                    binding.recyclerAnswers.isEnabled = s.items.isNotEmpty()
+                    binding.recyclerHistory.isEnabled = s.items.isNotEmpty()
                 }
             }
         }

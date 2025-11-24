@@ -2,7 +2,7 @@ import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV = os.getenv("ENV", "local")
+ENV = os.getenv("ENV", "prod")
 assert ENV in ("local", "prod")
 
 

@@ -10,7 +10,7 @@ from app.features.auth.schemas.requests import (
     RefreshTokenRequest,
     SignupRequest,
 )
-from app.features.auth.schemas.responses import TokenResponse, TokenResponseEnvelope
+from app.features.auth.schemas.responses import TokenResponse
 from app.features.auth.service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -22,16 +22,20 @@ security = HTTPBearer()
     status_code=201,
     summary="Sign up a new user",
     description="Create a new user account and return access and refresh tokens.",
-    response_model=TokenResponseEnvelope,
+    response_model=TokenResponse,
 )
 def signup(
     request: SignupRequest,
     auth_service: Annotated[AuthService, Depends()],
 ):
     access, refresh = auth_service.signup(
-        request.login_id, request.password, request.username
+        request.login_id,
+        request.password,
+        request.username,
+        request.gender,
+        request.birthdate,
     )
-    return TokenResponseEnvelope(data=TokenResponse(access=access, refresh=refresh))
+    return TokenResponse.from_token(access, refresh)
 
 
 @router.post(
@@ -39,14 +43,14 @@ def signup(
     status_code=201,
     summary="Login a user",
     description="Log in an existing user and return access and refresh tokens.",
-    response_model=TokenResponseEnvelope,
+    response_model=TokenResponse,
 )
 def login(
     request: LoginRequest,
     auth_service: Annotated[AuthService, Depends()],
 ):
     access, refresh = auth_service.login(request.login_id, request.password)
-    return TokenResponseEnvelope(data=TokenResponse(access=access, refresh=refresh))
+    return TokenResponse.from_token(access, refresh)
 
 
 @router.post(
@@ -75,14 +79,14 @@ def logout(
     status_code=200,
     summary="Refresh access token",
     description="Refresh the access token using the refresh token.",
-    response_model=TokenResponseEnvelope,
+    response_model=TokenResponse,
 )
 def refresh(
     request: RefreshTokenRequest, auth_service: Annotated[AuthService, Depends()]
 ):
     refresh = request.refresh
     access, refresh = auth_service.refresh(refresh)
-    return TokenResponseEnvelope(data=TokenResponse(access=access, refresh=refresh))
+    return TokenResponse.from_token(access, refresh)
 
 
 @router.post(

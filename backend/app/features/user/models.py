@@ -1,6 +1,8 @@
 from __future__ import annotations
+
+from sqlalchemy import Date, Integer, String
 from typing import TYPE_CHECKING, List
-from datetime import datetime
+from datetime import date, datetime
 from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -19,6 +21,9 @@ class User(Base):
     login_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
     username: Mapped[str] = mapped_column(String(100), nullable=True)
+    gender: Mapped[str] = mapped_column(String(50), nullable=False)
+    birthdate: Mapped[date] = mapped_column(Date, nullable=False)
+    appearance: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     journals: Mapped[list[Journal]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
@@ -35,3 +40,12 @@ class User(Base):
     analysis: Mapped[list[Analysis]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+      
+    @property
+    def age(self) -> int:
+        today = date.today()
+        return (
+            today.year
+            - self.birthdate.year
+            - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+        )

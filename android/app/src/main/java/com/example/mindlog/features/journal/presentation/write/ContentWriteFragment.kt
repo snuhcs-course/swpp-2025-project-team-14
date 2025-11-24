@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.example.mindlog.R
 import com.example.mindlog.databinding.DialogAiStyleSelectorBinding
 import com.example.mindlog.databinding.FragmentContentWriteBinding
 import com.example.mindlog.features.journal.presentation.detail.JournalDetailActivity
@@ -193,59 +194,76 @@ class ContentWriteFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch { vm.aiGenerationError.collectLatest { showError(it) } }
         viewLifecycleOwner.lifecycleScope.launch { vm.noImage.collectLatest { updateImageView(null, null, null) } }
 
-        // 데이터 채우기
         vm.title.observe(viewLifecycleOwner) { if (binding.etTitle.text.toString() != it) binding.etTitle.setText(it) }
         vm.content.observe(viewLifecycleOwner) { if (binding.etContent.text.toString() != it) binding.etContent.setText(it) }
         vm.gratitude.observe(viewLifecycleOwner) { if (binding.etGratitude.text.toString() != it) binding.etGratitude.setText(it) }
     }
 
-    // 이미지 미리보기 업데이트
     private fun updateImageView(uri: Uri?, url: String?, bitmap: Bitmap?) {
         val sources = listOfNotNull(uri, url, bitmap)
         val hasImage = sources.isNotEmpty()
 
-        binding.ivPreview.isVisible = hasImage
-        binding.layoutAddImage.isVisible = true
+        binding.imageContainer.isVisible = hasImage
+        binding.layoutAddImage.isVisible = !hasImage
+
+        val constraintLayout = binding.root.getChildAt(0) as androidx.constraintlayout.widget.ConstraintLayout
+        val constraintSet = androidx.constraintlayout.widget.ConstraintSet()
+        constraintSet.clone(constraintLayout)
+
+        val marginTop = resources.getDimensionPixelSize(R.dimen.space_l)
 
         if (hasImage) {
-            binding.tvAddImagePlaceholder.isVisible = false
-            binding.layoutAddImage.setBackgroundResource(android.R.color.transparent)
-            binding.layoutAddImage.setPadding(0, 0, 0, 0)
-            if (isAdded) Glide.with(this).load(sources.first()).into(binding.ivPreview)
+            constraintSet.connect(
+                binding.labelContent.id,
+                androidx.constraintlayout.widget.ConstraintSet.TOP,
+                binding.imageContainer.id,
+                androidx.constraintlayout.widget.ConstraintSet.BOTTOM,
+                marginTop
+            )
+            if (isAdded) {
+                Glide.with(this).load(sources.first()).into(binding.ivPreview)
+            }
         } else {
-            binding.tvAddImagePlaceholder.isVisible = true
-            binding.layoutAddImage.setBackgroundResource(com.example.mindlog.R.drawable.bg_image_border_double)
-            val paddingInDp = 1
-            val paddingInPx = (paddingInDp * resources.displayMetrics.density).toInt()
-            binding.layoutAddImage.setPadding(paddingInPx, paddingInPx, paddingInPx, paddingInPx)
-            if (isAdded) Glide.with(this).clear(binding.ivPreview)
-            binding.ivPreview.setImageDrawable(null)
+            constraintSet.connect(
+                binding.labelContent.id,
+                androidx.constraintlayout.widget.ConstraintSet.TOP,
+                binding.layoutAddImage.id,
+                androidx.constraintlayout.widget.ConstraintSet.BOTTOM,
+                marginTop
+            )
+            if (isAdded) {
+                Glide.with(this).clear(binding.ivPreview)
+                binding.ivPreview.setImageDrawable(null)
+            }
         }
+        constraintSet.applyTo(constraintLayout)
 
-        // ✨ [핵심 수정] 모드별 추가 UI 제어 로직 변경
-        when (activity) {
-            is JournalWriteActivity -> {
-                // '작성' 모드에서도 항상 버튼이 보이도록 변경
-                binding.bottomActionButtons.isVisible = true
-                binding.layoutAddImage.isClickable = !hasImage
-            }
-
-            is JournalEditActivity -> {
-                // '수정' 모드에서도 이미지가 있든 없든 항상 버튼이 보임
-                binding.bottomActionButtons.isVisible = true
-                binding.layoutAddImage.isClickable = !hasImage
-            }
-
-            is JournalDetailActivity -> {
-                // '상세' 모드에서는 버튼이 항상 보이지 않음
-                binding.bottomActionButtons.isVisible = false
-                binding.layoutAddImage.isClickable = false
-            }
+        if (activity is JournalWriteActivity || activity is JournalEditActivity) {
+            binding.bottomActionButtons.isVisible = true
         }
     }
 
-
     private fun handleLoading(isLoading: Boolean) {
+        if (isLoading) {
+            binding.layoutAddImage.isClickable = false
+
+            if (binding.layoutAddImage.isVisible) {
+                binding.tvAddImagePlaceholder.isVisible = false
+                binding.placeholderLoadingGroup.isVisible = true
+                binding.layoutAddImage.setBackgroundResource(R.drawable.bg_image_border_loading)
+            } else {
+                binding.imageLoadingOverlay.isVisible = true
+                binding.imageLoadingGroup.isVisible = true
+            }
+        } else {
+            binding.layoutAddImage.isClickable = true
+
+            binding.placeholderLoadingGroup.isVisible = false
+            binding.imageLoadingOverlay.isVisible = false
+            binding.imageLoadingGroup.isVisible = false
+            binding.layoutAddImage.setBackgroundResource(R.drawable.bg_image_border_double)
+        }
+
         if (activity !is JournalDetailActivity) {
             binding.btnGenerateAiPhoto.isEnabled = !isLoading
         }
