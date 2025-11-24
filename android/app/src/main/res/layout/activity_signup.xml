@@ -333,6 +333,20 @@
                 android:textCursorDrawable="@drawable/edittext_cursor" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- 회원가입 에러 메시지 -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvSignupError"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="15dp" />
+
         <!-- 회원가입 버튼 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignup"
@@ -347,7 +361,7 @@
             app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="18dp" />
+            android:layout_marginTop="60dp" />
 
         <!-- 로그인으로 이동 -->
         <com.google.android.material.textview.MaterialTextView

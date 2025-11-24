@@ -1,5 +1,6 @@
 package com.example.mindlog.features.auth.presentation.signup
 
+import android.util.Log
 import com.example.mindlog.core.common.Result
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -38,6 +39,7 @@ class SignupViewModel @Inject constructor(
                     }
                 }
                 is Result.Error -> {
+                    Log.d("SignupViewModel", "$result")
                     withContext(dispatcher.main) {
                         signupResult.value = false
                         errorMessage.value = result.message ?: "회원가입 중 오류 발생"

@@ -2,6 +2,7 @@ package com.example.mindlog.features.auth.presentation.signup
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -54,26 +55,29 @@ class SignupActivity : AppCompatActivity() {
             val birthD = binding.actBirthDay.text.toString().toIntOrNull()
 
             if (username.isBlank() || id.isBlank() || pw.isBlank()) {
-                Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                showSignupError("모든 필드를 입력해주세요.")
                 return@setOnClickListener
             }
             if (pw != confirm) {
-                Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+                showSignupError("비밀번호가 일치하지 않습니다.")
                 return@setOnClickListener
             }
             if (gender == null) {
-                Toast.makeText(this, "성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
+                showSignupError("성별을 선택해주세요.")
                 return@setOnClickListener
             }
             if (birthY == null || birthM == null || birthD == null) {
-                Toast.makeText(this, "생년월일을 선택해주세요.", Toast.LENGTH_SHORT).show()
+                showSignupError("생년월일을 선택해주세요.")
                 return@setOnClickListener
             }
             // (선택) 존재하지 않는 날짜 방지 체크
             if (!isValidDate(birthY, birthM, birthD)) {
-                Toast.makeText(this, "유효하지 않은 생년월일입니다.", Toast.LENGTH_SHORT).show()
+                showSignupError("유효하지 않은 생년월일입니다.")
                 return@setOnClickListener
             }
+
+            // 클라이언트 측 검증 통과 시 기존 에러 메시지 제거
+            showSignupError(null)
 
             val birthDate = java.time.LocalDate.of(birthY, birthM, birthD)
             viewModel.signup(id, pw, username, gender, birthDate)
@@ -87,15 +91,21 @@ class SignupActivity : AppCompatActivity() {
         // ViewModel 관찰
         viewModel.signupResult.observe(this) { success ->
             if (success) {
+                // 성공 시 에러 메시지 제거
+                showSignupError(null)
                 Toast.makeText(this, "회원가입 성공! 자동 로그인 중...", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, MainActivity::class.java))
                 finishAffinity()
             } else {
-                Toast.makeText(this, "회원가입 실패. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                // 실패 시 ViewModel의 에러 메시지를 버튼 위에 표시
+                val msg = viewModel.errorMessage.value
+                showSignupError(msg ?: "회원가입에 실패했습니다. 다시 시도해주세요.")
             }
         }
+
         viewModel.errorMessage.observe(this) { msg ->
-            msg?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
+            // 서버/유효성 에러 메시지를 항상 빨간 글씨로 표시
+            showSignupError(msg)
         }
     }
 
@@ -149,5 +159,25 @@ class SignupActivity : AppCompatActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) SystemUiHelper.hideSystemUI(this)
+    }
+
+    private fun showSignupError(message: String?) {
+        if (message.isNullOrBlank()) {
+            binding.tvSignupError.visibility = View.GONE
+            binding.tvSignupError.text = ""
+        } else {
+            val errorText = when {
+                message.contains("password", ignoreCase = true) ->
+                    "조금 더 복잡한 비밀번호를 사용해주세요."
+                message.contains("login ID", ignoreCase = true) ||
+                        message.contains("loginId", ignoreCase = true) ||
+                        message.contains("login_id", ignoreCase = true) ->
+                    "동일한 로그인 아이디가 존재합니다. 다른 아이디를 사용해주세요."
+                else -> message
+            }
+
+            binding.tvSignupError.visibility = View.VISIBLE
+            binding.tvSignupError.text = errorText
+        }
     }
 }
