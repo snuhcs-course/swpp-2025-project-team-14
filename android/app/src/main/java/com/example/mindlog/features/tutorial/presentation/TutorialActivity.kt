@@ -28,7 +28,7 @@ class TutorialActivity : AppCompatActivity() {
         setupViewPager()
         setupButtons()
 
-        binding.tvSkip.bringToFront()
+        binding.btnSkip.bringToFront()
     }
 
     private fun getDrawableIds(prefix: String): List<Int> {
@@ -91,7 +91,7 @@ class TutorialActivity : AppCompatActivity() {
     }
 
     private fun setupButtons() {
-        binding.tvSkip.setOnClickListener { finishTutorial() }
+        binding.btnSkip.setOnClickListener { finishTutorial() }
 
         binding.btnNext.setOnClickListener {
             val current = binding.vpTutorial.currentItem
