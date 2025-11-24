@@ -31,6 +31,10 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
     private val viewModel: SelfAwareHistoryViewModel by viewModels()
     private val adapter by lazy { SelfAwareHistoryAdapter() }
 
+    private var hasLoadedOnce = false
+    private var wasLoading = false
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareHistoryBinding.bind(view)
 
@@ -79,10 +83,20 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
                 viewModel.state.collect { s ->
                     adapter.submitList(s.items.toList())
 
+                    // 최초 한 번 이상 로드가 끝난 이후에만 empty 상태를 보여주기 위한 플래그
+                    if (s.isLoading) {
+                        wasLoading = true
+                    }
+                    if (!s.isLoading && wasLoading) {
+                        hasLoadedOnce = true
+                    }
+
                     val hasItems = s.items.isNotEmpty()
+                    val showEmpty = hasLoadedOnce && !s.isLoading && !hasItems
+
                     binding.recyclerHistory.isVisible = hasItems
                     binding.recyclerHistory.isEnabled = hasItems
-                    binding.emptyContainer.isVisible = !hasItems
+                    binding.emptyContainer.isVisible = showEmpty
                 }
             }
         }

@@ -44,6 +44,9 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     private var wordCloud: WordCloud? = null
     private var suppressChipCallback = false
 
+    private var hasLoadedOnce = false
+    private var wasLoading = false
+
     private fun toKo(emotion: Emotion?): String? = when (emotion) {
         Emotion.HAPPY -> "행복"
         Emotion.SAD -> "슬픔"
@@ -125,6 +128,14 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
                     syncChipSelectionFromState(s.selectedEmotion)
                     binding.tvPeriodRange.text = formatRange(s.startDate, s.endDate)
 
+                    // 통계 로딩 상태 추적: 최초 로딩이 끝난 이후에만 empty 상태를 보여주기 위함
+                    if (s.isLoading) {
+                        wasLoading = true
+                    }
+                    if (!s.isLoading && wasLoading) {
+                        hasLoadedOnce = true
+                    }
+
                     if (!s.isLoading) {
                         renderEmotionRates(s.emotionRatios)
                         renderEmotionTrend(s.emotionTrends)
@@ -172,9 +183,15 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             binding.chartEmotionRates.clear()
             binding.chartEmotionRates.invalidate()
 
+            // 최초 로딩이 끝난 이후에만 empty 상태 표시
+            val showEmpty = hasLoadedOnce
             binding.chartEmotionRates.isVisible = false
-            binding.emptyEmotionRates.isVisible = true
-            binding.lottieEmotionRatesEmpty.playAnimation()
+            binding.emptyEmotionRates.isVisible = showEmpty
+            if (showEmpty) {
+                binding.lottieEmotionRatesEmpty.playAnimation()
+            } else {
+                binding.lottieEmotionRatesEmpty.cancelAnimation()
+            }
             return
         } else {
             binding.emptyEmotionRates.isVisible = false
@@ -290,9 +307,15 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     // ------------------------------
     private fun renderWordCloud(keywords: List<JournalKeyword>) {
         if (keywords.isEmpty()) {
+            // 최초 로딩이 끝난 이후에만 empty 상태 표시
+            val showEmpty = hasLoadedOnce
             binding.wordCloudView.isVisible = false
-            binding.emptyWordCloud.isVisible = true
-            binding.lottieWordCloudEmpty.playAnimation()
+            binding.emptyWordCloud.isVisible = showEmpty
+            if (showEmpty) {
+                binding.lottieWordCloudEmpty.playAnimation()
+            } else {
+                binding.lottieWordCloudEmpty.cancelAnimation()
+            }
             return
         } else {
             binding.emptyWordCloud.isVisible = false
@@ -334,9 +357,15 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
             binding.chartEmotionTrend.clear()
             binding.chartEmotionTrend.invalidate()
 
+            // 최초 로딩이 끝난 이후에만 empty 상태 표시
+            val showEmpty = hasLoadedOnce
             binding.chartEmotionTrend.isVisible = false
-            binding.emptyEmotionTrend.isVisible = true
-            binding.lottieEmotionTrendEmpty.playAnimation()
+            binding.emptyEmotionTrend.isVisible = showEmpty
+            if (showEmpty) {
+                binding.lottieEmotionTrendEmpty.playAnimation()
+            } else {
+                binding.lottieEmotionTrendEmpty.cancelAnimation()
+            }
             return
         } else {
             binding.emptyEmotionTrend.isVisible = false

@@ -193,6 +193,11 @@
                             android:textAlignment="center" />
                     </LinearLayout>
 
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/chartEmotionRates"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -255,11 +260,6 @@
                         android:id="@+id/chartEmotionTrend"
                         android:layout_width="match_parent"
                         android:layout_height="220dp" >
-
-                        <com.github.mikephil.charting.charts.PieChart
-                            android:id="@+id/chartEmotionRates"
-                            android:layout_width="match_parent"
-                            android:layout_height="220dp" />
                     </com.github.mikephil.charting.charts.LineChart>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

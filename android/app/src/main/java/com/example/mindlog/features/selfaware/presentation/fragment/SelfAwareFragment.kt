@@ -39,6 +39,8 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private var radarInitDone = false
     private var lastRadarCats: List<String>? = null
     private var lastRadarScores: List<Float>? = null
+    private var valueMapLoadedOnce = false
+    private var wasValueMapLoading = false
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,6 +74,20 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                     val isLoading = s.isLoading
                     val isQuestionError = s.isQuestionError
                     binding.progressValueMap.isVisible = isLoading
+
+                    if (isLoading) {
+                        wasValueMapLoading = true
+                    }
+                    if (!isLoading && wasValueMapLoading) {
+                        valueMapLoadedOnce = true
+                    }                    // valueMap 로딩 상태 추적: 최초 로딩이 끝난 이후에만 empty 상태를 보여주기 위함
+                    if (isLoading) {
+                        wasValueMapLoading = true
+                    }
+                    if (!isLoading && wasValueMapLoading) {
+                        valueMapLoadedOnce = true
+                    }
+
 
                     val shouldShowOverlay = s.showCompletionOverlay || s.isSubmitting || s.isAnsweredToday
                     val showQuestionLoading = (s.isLoadingQuestion || isQuestionError) && !shouldShowOverlay
@@ -132,24 +148,38 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
 
                     val chartEmpty = binding.radar.data == null || binding.radar.data.dataSetCount == 0
                     val needRender = hasValueMap && (chartEmpty || lastRadarCats != categories || lastRadarScores != scores)
+                    val showEmptyValueMap = valueMapLoadedOnce && !isLoading && !hasValueMap
 
-                    if (hasValueMap) {
-                        if (needRender) {
-                            renderRadar(binding.radar, categories, scores)
-                            lastRadarCats = categories.toList()
-                            lastRadarScores = scores.toList()
+                    when {
+                        isLoading -> {
+                            // 로딩 중: 차트/empty 둘 다 숨기고, 프로그레스만
+                            binding.radar.isVisible = false
+                            binding.lottieSelfAwareEmpty.isVisible = false
                         }
-                        binding.radar.isVisible = true
-                        binding.lottieSelfAwareEmpty.isVisible = false
-                        binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
-                    } else {
-                        // 데이터 없을 때는 차트 숨기고 플레이스홀더 이미지와 안내 문구 노출
-                        if (!chartEmpty) {
+
+                        hasValueMap -> {
+                            if (needRender) {
+                                renderRadar(binding.radar, categories, scores)
+                                lastRadarCats = categories.toList()
+                                lastRadarScores = scores.toList()
+                            }
+                            binding.radar.isVisible = true
+                            binding.lottieSelfAwareEmpty.isVisible = false
+                            binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
+                        }
+                        showEmptyValueMap -> {
+                            // 로딩이 한 번 이상 끝났고, 데이터가 실제로 없을 때만 empty Lottie 노출
                             binding.radar.clear()
+                            binding.radar.isVisible = false
+                            binding.lottieSelfAwareEmpty.isVisible = true
+                            binding.tvValueSummary.text =
+                                "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
                         }
-                        binding.radar.isVisible = false
-                        binding.lottieSelfAwareEmpty.isVisible = true
-                        binding.tvValueSummary.text = "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
+                        else -> {
+                            // 초기 상태 등: 아무것도 보여주지 않음 (깜빡임 방지)
+                            binding.radar.isVisible = false
+                            binding.lottieSelfAwareEmpty.isVisible = false
+                        }
                     }
 
                     // 핵심 가치 키워드가 하나도 없으면 안내 문구 및 칩 숨김
