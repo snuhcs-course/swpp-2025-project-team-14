@@ -1,2 +1,4 @@
-import app.features.auth.models  # noqa: F401
-import app.features.user.models  # noqa: F401
+import app.features.auth.models
+import app.features.user.models
+import app.features.journal.models 
+import app.features.selfaware.models

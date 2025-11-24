@@ -18,10 +18,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_begin="132dp" />
+            app:layout_constraintGuide_percent="0.10" />
 
         <!-- Name -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,112 +32,323 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- 이름 입력 -->
-        <EditText
-            android:id="@+id/etUsername"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilUsername"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@id/tvUsername"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp"
-            android:hint="이름을 입력하세요"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
+            app:hintTextColor="@android:color/transparent"
+            app:hintEnabled="false"
+            app:placeholderText="@null"
+            app:endIconMode="clear_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:hint="이름을 입력하세요"
+                android:background="@drawable/edittext_bg"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"
+                android:textCursorDrawable="@drawable/edittext_cursor"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gender"
             android:textColor="#1B1E33"
-            android:textColorHint="#B0B0B0"
             android:textSize="16sp"
-            android:textCursorDrawable="@drawable/edittext_cursor"/>
+            app:layout_constraintTop_toBottomOf="@id/tilUsername"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <RadioGroup
+            android:id="@+id/rgGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tvGender"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/rbMale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="남성"
+                android:textColor="#1B1E33" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/rbFemale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="여성"
+                android:layout_marginStart="24dp"
+                android:textColor="#1B1E33" />
+        </RadioGroup>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvBirth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Birthdate"
+            android:textColor="#1B1E33"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/rgGender"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBirthYear"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tvBirth"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tilBirthMonth"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/edittext_bg"
+            app:boxBackgroundMode="outline"
+            app:boxBackgroundColor="@android:color/transparent"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:boxStrokeColor="#1B1E33"
+            app:hintEnabled="false"
+            app:endIconMode="dropdown_menu">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actBirthYear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:paddingVertical="12dp"
+                android:paddingLeft="16dp"
+                android:gravity="center_vertical"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:dropDownHeight="wrap_content"
+                android:background="@null"
+                android:hint="년"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBirthMonth"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tvBirth"
+            app:layout_constraintStart_toEndOf="@id/tilBirthYear"
+            app:layout_constraintEnd_toStartOf="@id/tilBirthDay"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/edittext_bg"
+            app:boxBackgroundMode="outline"
+            app:boxBackgroundColor="@android:color/transparent"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:boxStrokeColor="#1B1E33"
+            app:hintEnabled="false"
+            app:endIconMode="dropdown_menu">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actBirthMonth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:paddingVertical="12dp"
+                android:paddingLeft="16dp"
+                android:gravity="center_vertical"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:dropDownHeight="wrap_content"
+                android:background="@null"
+                android:hint="월"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBirthDay"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tvBirth"
+            app:layout_constraintStart_toEndOf="@id/tilBirthMonth"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/edittext_bg"
+            app:boxBackgroundMode="outline"
+            app:boxBackgroundColor="@android:color/transparent"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:boxStrokeColor="#1B1E33"
+            app:hintEnabled="false"
+            app:endIconMode="dropdown_menu">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actBirthDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:paddingVertical="12dp"
+                android:paddingLeft="16dp"
+                android:gravity="center_vertical"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:dropDownHeight="wrap_content"
+                android:background="@null"
+                android:hint="일"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- ID -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvLoginId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ID"
             android:textColor="#1B1E33"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/etUsername"
-            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/tilBirthDay"
+            android:layout_marginTop="16dp"
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- 아이디 입력 -->
-        <EditText
-            android:id="@+id/etLoginId"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilLoginId"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/tvLoginId"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp"
-            android:hint="아이디를 입력하세요"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
-            android:textColor="#1B1E33"
-            android:textColorHint="#B0B0B0"
-            android:textSize="16sp"
-            android:textCursorDrawable="@drawable/edittext_cursor"/>
+            app:hintTextColor="@android:color/transparent"
+            app:hintEnabled="false"
+            app:placeholderText="@null"
+            app:endIconMode="clear_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etLoginId"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="아이디를 입력하세요"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"
+                android:textCursorDrawable="@drawable/edittext_cursor" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Password"
             android:textColor="#1B1E33"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/etLoginId"
-            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/tilLoginId"
+            android:layout_marginTop="16dp"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <EditText
-            android:id="@+id/etPassword"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/tvPassword"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"
-            android:hint="비밀번호를 입력하세요"
-            android:inputType="textPassword"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
-            android:textColor="#1B1E33"
-            android:textColorHint="#B0B0B0"
-            android:textSize="16sp"
-            android:textCursorDrawable="@drawable/edittext_cursor"/>
+            app:hintTextColor="@android:color/transparent"
+            app:hintEnabled="false"
+            app:placeholderText="@null"
+            app:endIconMode="clear_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="비밀번호를 입력하세요"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"
+                android:textCursorDrawable="@drawable/edittext_cursor" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Confirm Password -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvConfirmPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Confirm Password"
             android:textColor="#1B1E33"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/etPassword"
-            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/tilPassword"
+            android:layout_marginTop="16dp"
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- 비밀번호 확인 -->
-        <EditText
-            android:id="@+id/etConfirmPassword"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilConfirmPassword"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/tvConfirmPassword"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"
-            android:hint="비밀번호를  다시 입력하세요"
-            android:inputType="textPassword"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
-            android:textColor="#1B1E33"
-            android:textColorHint="#B0B0B0"
-            android:textSize="16sp"
-            android:textCursorDrawable="@drawable/edittext_cursor"/>
+            app:hintTextColor="@android:color/transparent"
+            app:hintEnabled="false"
+            app:placeholderText="@null"
+            app:endIconMode="password_toggle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etConfirmPassword"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="비밀번호를 한번 더 입력하세요"
+                android:inputType="textPassword"
+                android:textColor="#1B1E33"
+                android:textColorHint="#B0B0B0"
+                android:textSize="16sp"
+                android:textCursorDrawable="@drawable/edittext_cursor" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 회원가입 에러 메시지 -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvSignupError"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="15dp" />
 
         <!-- 회원가입 버튼 -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignup"
             android:layout_width="0dp"
             android:layout_height="66dp"
@@ -147,13 +358,13 @@
             android:fontFamily="sans-serif-medium"
             app:backgroundTint="#2D3142"
             app:cornerRadius="16dp"
-            app:layout_constraintTop_toBottomOf="@id/etConfirmPassword"
+            app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="18dp" />
+            android:layout_marginTop="60dp" />
 
         <!-- 로그인으로 이동 -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvGoLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

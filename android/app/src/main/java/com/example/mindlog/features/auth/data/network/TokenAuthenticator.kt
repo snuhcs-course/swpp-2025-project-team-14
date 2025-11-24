@@ -3,6 +3,7 @@ package com.example.mindlog.features.auth.data.network
 import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.util.TokenManager
+import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
@@ -29,12 +30,12 @@ class TokenAuthenticator @Inject constructor(
         }
 
         return try {
-            val res = refreshApi.refresh(RefreshTokenRequest(refresh)).execute()
-            if (!res.isSuccessful) return null
-            val body = res.body() ?: return null
-            val newAccess = body.data.access ?: return null
-            val newRefresh = body.data.refresh ?: refresh
+            val res = runBlocking {
+                refreshApi.refresh(RefreshTokenRequest(refresh))
+            }
 
+            val newAccess = res.access ?: return null
+            val newRefresh = res.refresh ?: refresh
             tokenManager.saveTokens(newAccess, newRefresh)
 
             response.request.newBuilder()

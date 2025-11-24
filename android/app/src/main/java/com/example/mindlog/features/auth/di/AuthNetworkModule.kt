@@ -1,9 +1,11 @@
-package com.example.mindlog.features.auth.data.network
+package com.example.mindlog.features.auth.di
 
 import android.content.Context
 import com.example.mindlog.BuildConfig
 import com.example.mindlog.features.auth.data.api.AuthApi
 import com.example.mindlog.features.auth.data.api.RefreshApi
+import com.example.mindlog.features.auth.data.network.AuthInterceptor
+import com.example.mindlog.features.auth.data.network.TokenAuthenticator
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.util.TokenManager
@@ -24,16 +26,20 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AuthNetworkModule {
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideTokenManager(@ApplicationContext context: Context): TokenManager =
         TokenManager(context)
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi =
         retrofit.create(AuthApi::class.java)
 
     // no interceptor and authenticator
-    @Provides @Singleton @Named("refreshRetrofit")
+    @Provides
+    @Singleton
+    @Named("refreshRetrofit")
     fun provideRefreshRetrofit(): Retrofit =
         Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)
@@ -41,24 +47,21 @@ object AuthNetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-    @Provides @Singleton @Named("refreshApi")
+    @Provides
+    @Singleton
+    @Named("refreshApi")
     fun provideRefreshApi(@Named("refreshRetrofit") retrofit: Retrofit): RefreshApi =
         retrofit.create(RefreshApi::class.java)
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideAuthInterceptor(tokenManager: TokenManager): Interceptor =
         AuthInterceptor(tokenManager)
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideTokenAuthenticator(
         tokenManager: TokenManager,
         @Named("refreshApi") refreshApi: RefreshApi
     ): Authenticator = TokenAuthenticator(tokenManager, refreshApi)
-
-    @Provides @Singleton
-    fun provideAuthRepository(
-        authApi: AuthApi,
-        @Named("refreshApi") refreshApi: RefreshApi,
-        tokenManager: TokenManager
-    ): AuthRepository = AuthRepositoryImpl(authApi, refreshApi, tokenManager)
 }

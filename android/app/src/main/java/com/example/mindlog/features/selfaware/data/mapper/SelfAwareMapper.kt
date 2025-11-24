@@ -2,48 +2,61 @@ package com.example.mindlog.features.selfaware.data.mapper
 
 import com.example.mindlog.features.selfaware.data.dto.*
 import com.example.mindlog.features.selfaware.domain.model.*
-import java.time.Instant
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 // feature/selfaware/data/mapper/SelfAwareMapper.kt
 class SelfAwareMapper @Inject constructor() {
 
-    fun parseInstant(s: String) = Instant.parse(s)
+    fun parseLocalDateTime(s: String) = LocalDateTime.parse(s).toLocalDate()
 
     fun toQuestion(dto: QuestionResponse) = Question(
         id = dto.id,
         type = dto.questionType,
         text = dto.text,
-        categoriesKo = dto.categoriesKo,
-        categoriesEn = dto.categoriesEn,
-        createdAt = parseInstant(dto.createdAt)
-    )
-
-    fun toValueScore(dto: ValueScoreResponse) = ValueScore(
-        category = dto.category,
-        value = dto.value,
-        confidence = dto.confidence,
-        intensity = dto.intensity,
-        polarity = dto.polarity,
-        evidence = dto.evidenceQuotes
+        createdAt = parseLocalDateTime(dto.createdAt)
     )
 
     fun toAnswer(dto: AnswerResponse) = Answer(
         id = dto.id,
         questionId = dto.questionId,
+        type = dto.type,
         text = dto.text,
-        createdAt = parseInstant(dto.createdAt),
-        updatedAt = parseInstant(dto.updatedAt),
-        valueScores = dto.valueScores.map(::toValueScore)
-    )
-
-    fun toTodayQA(dto: TodayQAResponse) = TodayQA(
-        question = toQuestion(dto.question),
-        answer = dto.answer?.let(::toAnswer)
+        createdAt = parseLocalDateTime(dto.createdAt),
+        updatedAt = parseLocalDateTime(dto.updatedAt),
     )
 
     fun toQAItem(dto: QAResponse) = QAItem(
         question = toQuestion(dto.question),
-        answer = toAnswer(dto.answer)
+        answer = dto.answer?.let(::toAnswer)
     )
+
+    private fun toValueScore(dto: ValueScoreResponse): ValueScore {
+        return ValueScore(
+            value = dto.value,
+            intensity = dto.intensity
+        )
+    }
+
+    fun toTopValueScores(dto: TopValueScoresResponse): TopValueScores {
+        return TopValueScores(
+            valueScores = dto.valueScores.map(::toValueScore)
+        )
+    }
+
+
+    private fun toCategory(dto: CategoryResponse): CategoryScore {
+        return CategoryScore(
+            categoryEn = dto.categoryEn,
+            categoryKo = dto.categoryKo,
+            score = dto.score
+        )
+    }
+
+    fun toValueMap(dto: ValueMapResponse): ValueMap {
+        return ValueMap(
+            categoryScores = dto.categoryScores.map(::toCategory),
+            updatedAt = parseLocalDateTime(dto.updatedAt)
+        )
+    }
 }

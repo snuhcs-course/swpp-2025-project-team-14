@@ -2,21 +2,13 @@ package com.example.mindlog.features.auth.presentation.main
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.core.common.SystemUiHelper
-import com.example.mindlog.core.network.NetworkModule
+import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.ActivityMainBinding
-import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.network.AuthInterceptor
-import com.example.mindlog.features.auth.data.network.TokenAuthenticator
-import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
-import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.home.presentation.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,26 +40,37 @@ class MainActivity : AppCompatActivity() {
 
         when {
             access.isNullOrEmpty() || refresh.isNullOrEmpty() -> {
-                // 토큰 없음 → 로그인 화면으로
                 goToLogin()
             }
             tokenManager.isAccessTokenExpired() -> {
-                // 토큰 만료 → refresh 시도
-                refresh.let { token ->
-                    if (authRepository.refresh(token)) {
-                        goToJournal()
-                    } else {
+                // refresh 시도
+                when (val result = authRepository.refresh()) {
+                    is Result.Success -> {
+                        if (result.data) goToJournal()
+                        else {
+                            tokenManager.clearTokens()
+                            goToLogin()
+                        }
+                    }
+                    is Result.Error -> {
                         tokenManager.clearTokens()
                         goToLogin()
                     }
                 }
             }
             else -> {
-                if (authRepository.verify()) {
-                    goToJournal()
-                } else {
-                    tokenManager.clearTokens()
-                    goToLogin()
+                when (val result = authRepository.verify()) {
+                    is Result.Success -> {
+                        if (result.data) goToJournal()
+                        else {
+                            tokenManager.clearTokens()
+                            goToLogin()
+                        }
+                    }
+                    is Result.Error -> {
+                        tokenManager.clearTokens()
+                        goToLogin()
+                    }
                 }
             }
         }
