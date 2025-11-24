@@ -33,7 +33,7 @@ load_dotenv()
 def get_age_and_gender_by_user_id(user_id: int, user_repository: UserRepository)
     try:
         user = user_repository.get_user_by_user_id(user_id)
-        age = age(user)
+        age = user.age
         gender = user.gender
     except:
         age = 23
