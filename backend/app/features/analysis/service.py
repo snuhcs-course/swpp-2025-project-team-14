@@ -30,16 +30,6 @@ from app.features.analysis.prompt import personalized_advice_prompt
 
 load_dotenv()
 
-def get_age_and_gender_by_user_id(user_id: int, user_repository: UserRepository)
-    try:
-        user = user_repository.get_user_by_user_id(user_id)
-        age = user.age
-        gender = user.gender
-    except:
-        age = 23
-        gender = "Male"
-    return age, gender
-
 class AnalysisService:
     def __init__(
         self,
@@ -107,8 +97,7 @@ class AnalysisService:
         neo_pi = self.extract_neo_pi_from_answer(user_id)
         return evaluate(neo_pi, sex, age, flag)
     
-    def update_neo_pi_score(self, user_id: int):
-        age, gender = get_age_and_gender_by_user_id(user_id, self.user_repository)
+    def update_neo_pi_score(self, user_id: int, age: int = 23, gender: str = "Male"):
         neo_pi_score = self.evaluate_big_5_score(user_id, age, gender, flag = False)
         self.analysis_repository.update_analysis(user_id=user_id, neo_pi_score=neo_pi_score)
     
@@ -146,7 +135,7 @@ class AnalysisService:
         user_type = self.evaluate_user_type(user_id)
         self.analysis_repository.update_analysis(user_id=user_id, user_type=user_type)
 
-    def get_comment_from_big_5_score(self, user_id, age, sex):
+    def get_comment_from_big_5_score(self, user_id, age, gender):
         analysis = self.get_analysis_by_user(user_id)
         if analysis == None or analysis.neo_pi_score == None:
             raise
@@ -161,12 +150,11 @@ class AnalysisService:
         o_response = big_5_chain.invoke({"big_5_explanations": openness_explanations, "big_5_score": score_json})
         return a_response, c_response, e_response, n_response, o_response
     
-    def update_comprehensive_analysis(self, user_id: int):
-        age, gender = get_age_and_gender_by_user_id(user_id, self.user_repository)
+    def update_comprehensive_analysis(self, user_id: int, age: int = 23, gender: str = "Male"):
         a_response, c_response, e_response, n_response, o_response = self.get_comment_from_big_5_score(user_id, age, gender)
         self.analysis_repository.update_analysis(user_id=user_id, conscientiousness=c_response, neuroticism=n_response, extraversion=e_response, openness=o_response, agreeableness=a_response)
 
-    def extract_personalized_advice(self, user_id: int, age, sex):
+    def extract_personalized_advice(self, user_id: int, age, gender):
         analysis = self.analysis_repository.get_analysis_by_user_id(user_id)
         if analysis == None:
             raise
@@ -183,7 +171,6 @@ class AnalysisService:
 
         return response
     
-    def update_personalized_advice(self, user_id: int):
-        age, gender = get_age_and_gender_by_user_id(user_id, self.user_repository)
+    def update_personalized_advice(self, user_id: int, age: int = 23, gender: str = "Male"):
         personalized_advice = self.extract_personalized_advice(user_id, age, gender)
         self.analysis_repository.update_analysis(user_id=user_id, personalized_advice=personalized_advice)
