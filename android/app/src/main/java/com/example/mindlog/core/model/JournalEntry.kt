@@ -8,5 +8,7 @@ data class JournalEntry(
     val content: String,
     val createdAt: Date,
     val imageUrl: String?,
-    val keywords: List<Keyword>
+    val keywords: List<Keyword>,
+    val emotions: List<Emotion>,
+    val gratitude: String?
 )

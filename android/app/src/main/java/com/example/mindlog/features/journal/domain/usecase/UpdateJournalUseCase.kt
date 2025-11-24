@@ -33,7 +33,6 @@ class UpdateJournalUseCase @Inject constructor(
         val request = UpdateJournalRequest(
             title = titleToUpdate,
             content = contentToUpdate,
-            summary = null, // summary는 항상 null로 고정
             gratitude = gratitudeToUpdate
         )
 
