@@ -31,17 +31,19 @@ router = APIRouter(prefix="/analysis", tags=["analysis"])
 # -----------------------------
 def update_analysis_table(
     user_id: int,
+    user_age: int,
+    user_gender: str,
     analysis_service: AnalysisService,
 ):
     try:
         print("Start updating neo_pi_score")
-        analysis_service.update_neo_pi_score(user_id)
+        analysis_service.update_neo_pi_score(user_id, user_age, user_gender)
         print("Start updating user_id")
         analysis_service.update_user_type(user_id)
         print("Start updating comprehensive_analysis")
-        analysis_service.update_comprehensive_analysis(user_id)
+        analysis_service.update_comprehensive_analysis(user_id, user_age, user_gender)
         print("Start updating personalized_advice")
-        analysis_service.update_personalized_advice(user_id)
+        analysis_service.update_personalized_advice(user_id, user_age, user_gender)
         print("Analysis updated")
     except Exception as e:
         print(f"Error processing updating analysis table for user {user_id}: {e}")
@@ -117,6 +119,8 @@ def update_analysis(
         background_tasks.add_task(
             update_analysis_table,
             user.id,
+            user.age,
+            user.gender,
             analysis_service
         )
         return "Update Started"
