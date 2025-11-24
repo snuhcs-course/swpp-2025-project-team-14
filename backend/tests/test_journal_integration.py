@@ -189,11 +189,14 @@ def test_search_journals_by_date_success(
     """
     일지 검색 (GET /api/v1/journal/search) (기간) 성공 테스트
     """
-    today = date.today().isoformat()
+    target_date = test_journal.created_at
+    target_date = target_date.date()
+
+    query_date = target_date.isoformat()
 
     # 1. API 요청 (오늘 날짜로 검색)
     response = client.get(
-        f"/api/v1/journal/search/?start_date={today}&end_date={today}",
+        f"/api/v1/journal/search/?start_date={query_date}&end_date={query_date}",
         headers=auth_headers,
     )
 
@@ -544,6 +547,7 @@ async def test_complete_image_upload_success(
 @pytest.mark.asyncio
 async def test_request_journal_image_generation_success(
     client: TestClient,
+    auth_headers: dict[str, str],
     mocker,
 ):
     """
@@ -566,6 +570,7 @@ async def test_request_journal_image_generation_success(
     # 1. API 요청
     response = client.post(
         "/api/v1/journal/image/generate",
+        headers=auth_headers,
         json=request_data,
     )
 
