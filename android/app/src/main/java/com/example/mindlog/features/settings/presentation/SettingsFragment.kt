@@ -1,8 +1,8 @@
-// path: android/app/src/main/java/com/example/mindlog/features/settings/presentation/SettingsFragment.kt
 package com.example.mindlog.features.settings.presentation
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -80,6 +80,7 @@ class SettingsFragment : Fragment() {
                             requireActivity().finish()
                         }
                         is Result.Error -> {
+                            Log.e("SettingsFragment", "로그아웃 에러: ${result.message}")
                             Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -107,6 +108,7 @@ class SettingsFragment : Fragment() {
                     }
                 }
                 is Result.Error -> {
+                    Log.e("SettingsFragment", "유저 정보 로드 에러: ${result.message}")
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                 }
             }

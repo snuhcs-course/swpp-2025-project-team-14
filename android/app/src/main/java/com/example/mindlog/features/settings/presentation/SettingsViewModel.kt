@@ -79,10 +79,18 @@ class SettingsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             try {
-                if (authRepository.logout()) {
-                    _logoutEvent.emit(Result.Success(Unit))
-                } else {
-                    _logoutEvent.emit(Result.Error(message = "로그아웃에 실패했습니다."))
+                when (val result = authRepository.logout()) {
+                    is Result.Success -> {
+
+                        if (result.data) {
+                            _logoutEvent.emit(Result.Success(Unit))
+                        } else {
+                            _logoutEvent.emit(Result.Error(message = "로그아웃에 실패했습니다."))
+                        }
+                    }
+                    is Result.Error -> {
+                        _logoutEvent.emit(result)
+                    }
                 }
             } catch (e: Exception) {
                 _logoutEvent.emit(Result.Error(message = e.message ?: "오류가 발생했습니다."))

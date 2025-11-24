@@ -83,8 +83,8 @@ class EditProfileFragment : Fragment() {
             binding.tilUsername.error = null
 
             val gender = when (binding.rgGender.checkedRadioButtonId) {
-                binding.rbMale.id -> "M"
-                binding.rbFemale.id -> "F"
+                binding.rbMale.id -> "Male"
+                binding.rbFemale.id -> "Female"
                 else -> null
             }
 
@@ -115,8 +115,8 @@ class EditProfileFragment : Fragment() {
                     binding.etAppearance.setText(user.appearance ?: "")
 
                     when (user.gender) {
-                        "M" -> binding.rbMale.isChecked = true
-                        "F" -> binding.rbFemale.isChecked = true
+                        "Male" -> binding.rbMale.isChecked = true
+                        "Female" -> binding.rbFemale.isChecked = true
                     }
 
                     user.birthdate?.let { dateStr ->
