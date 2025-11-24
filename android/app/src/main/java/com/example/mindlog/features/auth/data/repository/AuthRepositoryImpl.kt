@@ -35,11 +35,10 @@ class AuthRepositoryImpl @Inject constructor(
         birthDate: LocalDate
     ): Result<Boolean> = withContext(Dispatchers.IO) {
         runCatching {
-            val res: TokenResponse = authApi.signup(
-                SignupRequest(
-                    loginId, password, username, gender, birthDate.toString()
-                )
+            val request = SignupRequest(
+                loginId, password, username, gender, birthDate.toString()
             )
+            val res: TokenResponse = authApi.signup(request)
             tokenManager.saveTokens(res.access, res.refresh)
             true
         }.toResult()

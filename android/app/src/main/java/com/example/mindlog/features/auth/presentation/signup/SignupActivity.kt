@@ -45,8 +45,8 @@ class SignupActivity : AppCompatActivity() {
             val confirm = binding.etConfirmPassword.text.toString()
 
             val gender = when (binding.rgGender.checkedRadioButtonId) {
-                com.example.mindlog.R.id.rbMale -> "male"
-                com.example.mindlog.R.id.rbFemale -> "female"
+                com.example.mindlog.R.id.rbMale -> "Male"
+                com.example.mindlog.R.id.rbFemale -> "Female"
                 else -> null
             }
             val birthY = binding.actBirthYear.text.toString().toIntOrNull()
