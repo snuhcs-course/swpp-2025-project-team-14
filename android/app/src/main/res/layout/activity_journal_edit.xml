@@ -5,13 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingTop="@dimen/screen_padding_top"
     android:background="@color/bg"
     tools:context=".features.journal.presentation.write.JournalEditActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="40dp"
+        android:layout_marginTop="30dp"
         app:title="일기 수정"
         app:titleCentered="true"
         app:navigationIcon="@drawable/ic_arrow_back"
@@ -33,6 +35,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="15dp"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,9 +47,9 @@
             android:layout_width="wrap_content"
             android:layout_height="56dp"
             android:text="삭제"
-            android:textColor="@color/emotion_angry_red"
+            android:textColor="@color/emotion_annoyed"
             app:cornerRadius="12dp"
-            app:strokeColor="@color/emotion_angry_red" />
+            app:strokeColor="@color/emotion_annoyed" />
 
         <Space
             android:layout_width="12dp"
