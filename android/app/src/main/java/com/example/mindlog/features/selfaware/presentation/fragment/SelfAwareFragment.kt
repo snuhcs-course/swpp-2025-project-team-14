@@ -125,21 +125,43 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                             (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
                     }
 
-                    // 카테고리/점수 안전 매핑 + 빈 차트 방어
+                    // 카테고리/점수 안전 매핑 + 빈 차트/플레이스홀더 처리
                     val categories = s.valueMap.map { it.categoryKo }
                     val scores = s.valueMap.map { (it.score ?: 0).toFloat() }
-                    val chartEmpty = (binding.radar.data == null || binding.radar.data.dataSetCount == 0)
-                    val needRender = chartEmpty || lastRadarCats != categories || lastRadarScores != scores
+                    val hasValueMap = categories.isNotEmpty() && scores.isNotEmpty()
 
-                    val visible = s.valueMap.isNotEmpty()
-                    if (needRender) {
-                        renderRadar(binding.radar, categories, scores)
-                        lastRadarCats = categories.toList()
-                        lastRadarScores = scores.toList()
+                    val chartEmpty = binding.radar.data == null || binding.radar.data.dataSetCount == 0
+                    val needRender = hasValueMap && (chartEmpty || lastRadarCats != categories || lastRadarScores != scores)
+
+                    if (hasValueMap) {
+                        if (needRender) {
+                            renderRadar(binding.radar, categories, scores)
+                            lastRadarCats = categories.toList()
+                            lastRadarScores = scores.toList()
+                        }
+                        binding.radar.isVisible = true
+                        binding.ivValueMapEmpty.isVisible = false
+                        binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
+                    } else {
+                        // 데이터 없을 때는 차트 숨기고 플레이스홀더 이미지와 안내 문구 노출
+                        if (!chartEmpty) {
+                            binding.radar.clear()
+                        }
+                        binding.radar.isVisible = false
+                        binding.ivValueMapEmpty.isVisible = true
+                        binding.tvValueSummary.text = "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
                     }
-                    binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
 
-                    // chips
+                    // 핵심 가치 키워드가 하나도 없으면 안내 문구 및 칩 숨김
+                    val hasTopValues = s.topValueScores.any { !it.value.isNullOrBlank() }
+                    if (!hasTopValues) {
+                        binding.tvTopValueScoresSummary.text = "핵심 가치 키워드가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
+                        binding.chipGroupValuesContainer.isVisible = false
+                    } else {
+                        binding.tvTopValueScoresSummary.text = "사용자님이 중시하는 가치들은 위와 같아요."
+                        binding.chipGroupValuesContainer.isVisible = true
+                    }
+
                     val chips = listOf(
                         binding.chipValueFirst,
                         binding.chipValueSecond,

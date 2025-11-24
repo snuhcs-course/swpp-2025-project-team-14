@@ -3,6 +3,7 @@ package com.example.mindlog.features.selfaware.presentation.fragment
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -77,7 +78,11 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
                     adapter.submitList(s.items.toList())
-                    binding.recyclerHistory.isEnabled = s.items.isNotEmpty()
+
+                    val hasItems = s.items.isNotEmpty()
+                    binding.recyclerHistory.isVisible = hasItems
+                    binding.recyclerHistory.isEnabled = hasItems
+                    binding.emptyContainer.isVisible = !hasItems
                 }
             }
         }

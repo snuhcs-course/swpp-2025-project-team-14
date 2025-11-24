@@ -248,6 +248,16 @@
                         app:indicatorColor="#64B5F6"
                         android:visibility="gone"/>
 
+                    <ImageView
+                        android:id="@+id/ivValueMapEmpty"
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_gravity="center_horizontal"
+                        android:contentDescription="가치 지도 없음 안내 이미지"
+                        android:visibility="gone"
+                        app:srcCompat="@drawable/ic_empty_selfaware" />
+
                     <com.github.mikephil.charting.charts.RadarChart
                         android:id="@+id/radar"
                         android:layout_width="match_parent"
@@ -384,11 +394,12 @@
                     </LinearLayout>
 
                     <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvTopValueScoresSummary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:text="사용자님이 중시하는 가치들은 위와 같아요."
-                        android:textColor="#636779"
+                        android:textColor="#2D3142"
                         android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
