@@ -110,12 +110,21 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnTutorial"
+        style="@style/Widget.Mindlog.SettingsButton"
+        android:text="튜토리얼 보기"
+        app:icon="@drawable/ic_help"
+        app:layout_constraintTop_toBottomOf="@id/btnChangePassword"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogout"
         style="@style/Widget.Mindlog.SettingsButton"
         android:layout_marginTop="24dp"
         android:text="로그아웃"
         app:icon="@drawable/ic_logout"
-        app:layout_constraintTop_toBottomOf="@id/btnChangePassword"
+        app:layout_constraintTop_toBottomOf="@id/btnTutorial"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

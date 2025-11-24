@@ -62,6 +62,10 @@ class SettingsFragment : Fragment() {
             findNavController().navigate(R.id.action_settingsFragment_to_editProfileFragment)
         }
 
+        binding.btnTutorial.setOnClickListener {
+            // TODO: 추후 튜토리얼 화면으로 이동하는 로직 구현 예정
+        }
+
         binding.btnLogout.setOnClickListener {
             showLogoutConfirmDialog()
         }
