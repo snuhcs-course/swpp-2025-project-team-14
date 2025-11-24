@@ -32,4 +32,34 @@
         tools:itemCount="5"
         tools:listitem="@layout/item_journal_card" />
 
+    <!-- 일기 없을 때 보여줄 빈 상태 뷰 -->
+    <LinearLayout
+        android:id="@+id/empty_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_empty_journal"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/ic_empty_journal" />
+
+        <TextView
+            android:id="@+id/tv_empty_journal_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textAlignment="center"
+            android:text="아직 작성한 일기가 없어요.\n일기를 작성해 보세요!"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_secondary" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

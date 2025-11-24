@@ -251,6 +251,10 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private fun observeViewModel() {
         viewModel.journals.observe(viewLifecycleOwner, Observer { journalList ->
+            val isEmpty = journalList.isNullOrEmpty()
+            binding.rvDiaryFeed.visibility = if (isEmpty) View.GONE else View.VISIBLE
+            binding.emptyView.visibility = if (isEmpty) View.VISIBLE else View.GONE
+
             // submitList의 콜백에서 플래그를 확인하고 스크롤 처리
             journalAdapter.submitList(journalList.toList()) {
                 if (scrollToTopOnNextSubmit) {
