@@ -347,8 +347,6 @@ async def test_extract_keywords_logic(mocker):
     # 1. 준비 (Given)
     mock_repo = Mock(spec=JournalRepository)
 
-    # JournalOpenAIService의 __init__이 복잡하므로 의존성 주입을 모킹
-    # __init__ 내부에서 AsyncOpenAI()를 호출하므로 이를 모킹해야 함
     mocker.patch("app.features.journal.service.AsyncOpenAI")
 
     # _load_prompt 모킹
@@ -364,10 +362,8 @@ async def test_extract_keywords_logic(mocker):
         "app.features.journal.service.ChatOpenAI", return_value=mock_structured_llm
     )
 
-    # 서비스 인스턴스 생성 (이제 __init__에서 에러가 안 남)
     service = JournalOpenAIService(journal_repository=mock_repo)
 
-    # (테스트용 데이터 준비)
     journal_id = 1
     mock_journal = Journal(
         id=journal_id,
@@ -506,7 +502,6 @@ async def test_request_image_generation_success(test_user: User, mocker):
         "app.features.journal.service.ChatOpenAI", return_value=mock_structured_llm
     )
 
-    # Service 인스턴스 생성 (init bypass 후 수동 설정)
     mock_client = AsyncMock()
     mocker.patch("app.features.journal.service.AsyncOpenAI", return_value=mock_client)
     # 프롬프트 로드 Mocking
@@ -514,8 +509,6 @@ async def test_request_image_generation_success(test_user: User, mocker):
 
     # 메서드 내부에서 사용할 헬퍼 함수들의 반환값 모킹
 
-    # _generate_scene_prompt_from_diary (GPT 호출) 모킹
-    # service.py의 내부 private 메서드를 직접 모킹
     mocker.patch.object(
         service,
         "_generate_scene_prompt_from_diary",
@@ -523,7 +516,6 @@ async def test_request_image_generation_success(test_user: User, mocker):
         return_value="A beautiful scene",
     )
 
-    # _generate_image_from_prompt (DALL-E 호출) 모킹
     mocker.patch.object(
         service,
         "_generate_image_from_prompt",
@@ -546,7 +538,6 @@ async def test_request_image_generation_success(test_user: User, mocker):
         user_parts.append(f"Appearance details: {test_user.appearance}.")
     expected_description = " ".join(user_parts)
 
-    # 서비스 내부의 헬퍼 함수들이 올바르게 호출되었는지 확인
     service._generate_scene_prompt_from_diary.assert_awaited_once_with(
         request.content, service.prompt_natural, expected_description
     )
