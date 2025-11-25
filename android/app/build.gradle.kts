@@ -156,6 +156,7 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("com.google.truth:truth:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.7.7")
 }
 
 kapt {
