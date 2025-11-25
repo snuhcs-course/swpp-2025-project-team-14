@@ -83,16 +83,18 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
                 viewModel.state.collect { s ->
                     adapter.submitList(s.items.toList())
 
-                    // 최초 한 번 이상 로드가 끝난 이후에만 empty 상태를 보여주기 위한 플래그
-                    if (s.isLoading) {
+                    val isAnyLoading = s.isRefreshing || s.isLoading
+
+                    // 로딩이 한 번이라도 끝난 뒤부터 empty 상태를 보여주고 싶을 때
+                    if (isAnyLoading) {
                         wasLoading = true
                     }
-                    if (!s.isLoading && wasLoading) {
+                    if (!isAnyLoading && wasLoading) {
                         hasLoadedOnce = true
                     }
 
                     val hasItems = s.items.isNotEmpty()
-                    val showEmpty = hasLoadedOnce && !s.isLoading && !hasItems
+                    val showEmpty = hasLoadedOnce && !isAnyLoading && !hasItems
 
                     binding.recyclerHistory.isVisible = hasItems
                     binding.recyclerHistory.isEnabled = hasItems

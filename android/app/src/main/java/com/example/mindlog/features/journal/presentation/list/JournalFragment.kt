@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,6 +48,8 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     // 새 글 작성 후 또는 검색 조건 변경 후 맨 위로 스크롤하기 위한 플래그
     private var scrollToTopOnNextSubmit = false
+    private var isEmpty = true
+    private var isLoad = false
 
     // HomeActivity의 FAB(작성 버튼)가 클릭되면 이 메서드가 호출됨
     override fun onFabClick() {
@@ -257,11 +260,11 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private fun observeViewModel() {
         viewModel.journals.observe(viewLifecycleOwner, Observer { journalList ->
-            val isEmpty = journalList.isNullOrEmpty()
-            val isLoading = viewModel.isLoading.value == true
+            isEmpty = journalList.isNullOrEmpty()
+            isLoad = viewModel.isLoading.value == true
 
-            binding.rvDiaryFeed.visibility = if (!isLoading && isEmpty) View.GONE else View.VISIBLE
-            binding.emptyView.visibility = if (!isLoading && isEmpty) View.VISIBLE else View.GONE
+            binding.rvDiaryFeed.visibility = if (!isLoad && isEmpty) View.GONE else View.VISIBLE
+            binding.emptyView.visibility = if (!isLoad && isEmpty) View.VISIBLE else View.GONE
 
             // submitList의 콜백에서 플래그를 확인하고 스크롤 처리
             journalAdapter.submitList(journalList.toList()) {
@@ -276,6 +279,10 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
         })
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             // 로딩 처리
+            isLoad = isLoading
+
+            binding.rvDiaryFeed.visibility = if (!isLoad && isEmpty) View.GONE else View.VISIBLE
+            binding.emptyView.visibility = if (!isLoad && isEmpty) View.VISIBLE else View.GONE
         }
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
             if (message != null) {
