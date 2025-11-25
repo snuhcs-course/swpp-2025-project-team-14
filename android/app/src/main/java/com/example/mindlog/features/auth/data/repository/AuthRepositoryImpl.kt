@@ -6,6 +6,7 @@ import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.common.toResult
 import com.example.mindlog.features.auth.data.api.*
 import com.example.mindlog.features.auth.data.dto.LoginRequest
+import com.example.mindlog.features.auth.data.dto.LogoutResponse
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.data.dto.SignupRequest
 import com.example.mindlog.features.auth.data.dto.TokenResponse
@@ -74,9 +75,10 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout(): Result<Boolean> = withContext(Dispatchers.IO) {
         runCatching {
-            val access = tokenManager.getAccessToken()
-            if (!access.isNullOrBlank()) {
-                authApi.logout("Bearer $access")
+            val refresh = tokenManager.getRefreshToken() ?: throw IllegalStateException("Refresh token missing")
+            val res: LogoutResponse = authApi.logout(RefreshTokenRequest(refresh))
+            if (!res.ok) {
+                throw IllegalStateException(res.error ?: "Logout failed on server")
             }
             tokenManager.clearTokens()
             true

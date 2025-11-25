@@ -81,7 +81,6 @@ class SettingsViewModel @Inject constructor(
             try {
                 when (val result = authRepository.logout()) {
                     is Result.Success -> {
-
                         if (result.data) {
                             _logoutEvent.emit(Result.Success(Unit))
                         } else {

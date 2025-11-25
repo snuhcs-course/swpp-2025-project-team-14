@@ -1,6 +1,8 @@
 package com.example.mindlog.features.auth.data.api
 
 import com.example.mindlog.features.auth.data.dto.LoginRequest
+import com.example.mindlog.features.auth.data.dto.LogoutResponse
+import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.data.dto.SignupRequest
 import com.example.mindlog.features.auth.data.dto.TokenResponse
 import retrofit2.Call
@@ -22,6 +24,7 @@ interface AuthApi {
     @POST("auth/verify")
     suspend fun verify(@Header("Authorization") bearerToken: String): Unit
 
+    @Headers("No-Auth: true")
     @POST("auth/logout")
-    suspend fun logout(@Header("Authorization") bearerToken: String): Unit
+    suspend fun logout(@Body refreshTokenRequest: RefreshTokenRequest): LogoutResponse
 }
