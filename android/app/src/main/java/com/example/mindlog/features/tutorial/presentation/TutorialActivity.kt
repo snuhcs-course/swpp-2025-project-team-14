@@ -15,6 +15,10 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class TutorialActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_RETURN_TO_SETTINGS = "extra_return_to_settings"
+    }
+
     private lateinit var binding: ActivityTutorialBinding
     private lateinit var pagerAdapter: TutorialAdapter
 
@@ -123,9 +127,16 @@ class TutorialActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("tutorial_prefs", MODE_PRIVATE)
         prefs.edit().putBoolean("completed", true).commit()
 
-        // 홈 화면으로 이동
-        startActivity(Intent(this, HomeActivity::class.java))
-        finish()
+        val returnToSettings = intent.getBooleanExtra(EXTRA_RETURN_TO_SETTINGS, false)
+
+        if (returnToSettings) {
+            // 설정 화면에서 진입한 경우: 단순히 종료하여 이전 Activity(설정 화면)로 돌아감
+            finish()
+        } else {
+            // 온보딩 플로우 등에서 진입한 경우: 홈 화면으로 이동
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
+        }
     }
 
     fun completeTutorialForTest() {

@@ -18,6 +18,7 @@ import com.example.mindlog.R
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.FragmentSettingsBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
+import com.example.mindlog.features.tutorial.TutorialActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -63,7 +64,10 @@ class SettingsFragment : Fragment() {
         }
 
         binding.btnTutorial.setOnClickListener {
-            // TODO: 추후 튜토리얼 화면으로 이동하는 로직 구현 예정
+            val intent = Intent(requireContext(), TutorialActivity::class.java).apply {
+                putExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, true)
+            }
+            startActivity(intent)
         }
 
         binding.btnLogout.setOnClickListener {
