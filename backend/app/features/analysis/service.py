@@ -164,8 +164,8 @@ class AnalysisService:
 
         response = personalized_advice_chain.invoke({"theory": theory, "neo_pi_summary": score})
 
-        return response
+        return theory, response
     
     def update_personalized_advice(self, user_id: int, age: int = 23, gender: str = "Male"):
-        personalized_advice = self.extract_personalized_advice(user_id, age, gender)
-        self.analysis_repository.update_analysis(user_id=user_id, personalized_advice=personalized_advice)
+        advice_type, personalized_advice = self.extract_personalized_advice(user_id, age, gender)
+        self.analysis_repository.update_analysis(user_id=user_id, advice_type=advice_type ,personalized_advice=personalized_advice)
