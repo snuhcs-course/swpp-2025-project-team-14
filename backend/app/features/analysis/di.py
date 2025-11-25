@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 def get_analysis_service(db: Session = Depends(get_db_session)) -> AnalysisService:
     return AnalysisService(
-        user_repository=UserRepository(db),
         answer_repository=AnswerRepository(db),
         analysis_repository=AnalysisRepository(db),
     )

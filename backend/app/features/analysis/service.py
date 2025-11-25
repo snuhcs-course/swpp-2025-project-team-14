@@ -33,11 +33,9 @@ load_dotenv()
 class AnalysisService:
     def __init__(
         self,
-        user_repository: UserRepository,
         answer_repository: AnswerRepository,
         analysis_repository: AnalysisRepository,
     ) -> None:
-        self.user_repository = user_repository
         self.answer_repository = answer_repository
         self.analysis_repository = analysis_repository
 
