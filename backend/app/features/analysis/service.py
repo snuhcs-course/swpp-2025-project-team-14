@@ -6,9 +6,6 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 
-from app.features.user.repository import (
-    UserRepository, 
-)
 from app.features.selfaware.repository import (
     AnswerRepository, 
 )
