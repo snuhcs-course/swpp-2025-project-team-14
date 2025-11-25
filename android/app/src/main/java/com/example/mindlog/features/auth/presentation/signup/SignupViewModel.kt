@@ -39,7 +39,6 @@ class SignupViewModel @Inject constructor(
                     }
                 }
                 is Result.Error -> {
-                    Log.d("SignupViewModel", "$result")
                     withContext(dispatcher.main) {
                         signupResult.value = false
                         errorMessage.value = result.message ?: "회원가입 중 오류 발생"

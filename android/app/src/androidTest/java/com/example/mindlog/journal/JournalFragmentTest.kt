@@ -58,6 +58,8 @@ class JournalFragmentTest {
         onView(withId(R.id.rv_diary_feed)).check(matches(isDisplayed()))
         onView(withText("테스트 일기 제목")).check(matches(isDisplayed()))
         onView(withText("테스트 내용입니다.")).check(matches(isDisplayed()))
+        // 데이터가 있으면 emptyView는 보이지 않아야 한다
+        onView(withId(R.id.empty_view)).check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
 
     @Test
@@ -67,9 +69,8 @@ class JournalFragmentTest {
         // When: 프래그먼트 실행
         launchFragmentInHiltContainer<JournalFragment>()
 
-        // Then: 리사이클러뷰는 표시되지만 내용은 없음 (혹은 EmptyView가 있다면 그것을 체크)
-        onView(withId(R.id.rv_diary_feed)).check(matches(isDisplayed()))
-        // 만약 "작성된 일기가 없습니다" 같은 텍스트 뷰가 있다면:
-        // onView(withText("일기가 없습니다")).check(matches(isDisplayed()))
+        // Then: 데이터가 없으면 리스트는 숨고 EmptyView(애니메이션)가 보인다
+        onView(withId(R.id.rv_diary_feed)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.empty_view)).check(matches(isDisplayed()))
     }
 }

@@ -47,7 +47,7 @@ class StatisticsFragmentTest {
 
         // SAD 칩 클릭 → "최근 슬픔했던 이유는?"으로 변경
         onView(withId(R.id.chipSad)).perform(click())
-        onView(withText("최근 슬픔했던 이유는?"))
+        onView(withText("최근 슬펐던 이유는?"))
             .check(matches(isDisplayed()))
     }
 
@@ -97,7 +97,7 @@ class StatisticsFragmentTest {
         // 슬픔 칩 클릭 후 체크 상태 변경 및 제목 문구 변경 확인
         onView(withId(R.id.chipSad)).perform(scrollTo(), click())
         onView(withId(R.id.chipSad)).check(matches(isChecked()))
-        onView(withText("최근 슬픔했던 이유는?")).check(matches(isDisplayed()))
+        onView(withText("최근 슬펐던 이유는?")).check(matches(isDisplayed()))
     }
 
     @Test
