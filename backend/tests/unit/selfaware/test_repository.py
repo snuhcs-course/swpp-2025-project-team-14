@@ -1,49 +1,10 @@
 import pytest
-from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from app.database.base import Base
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, String
-
-# -----------------------
-# 실제 모델 Import
-# -----------------------
-from app.features.user.models import User
-from app.features.selfaware.models import (
-    Question,
-    Answer,
-    ValueScore,
-    ValueMap,
-)
 from app.features.selfaware.repository import (
     QuestionRepository,
     AnswerRepository,
     ValueScoreRepository,
     ValueMapRepository,
 )
-
-# -----------------------
-# DB Session Fixture
-# -----------------------
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine("sqlite:///:memory:", echo=False)
-    TestingSessionLocal = sessionmaker(bind=engine)
-
-    Base.metadata.create_all(engine)
-    session = TestingSessionLocal()
-
-    # 기본 User 1명 생성
-    user = User(username="tester", login_id="tester",hashed_password="password")
-    session.add(user)
-    session.commit()
-
-    yield session
-    session.close()
-
-
 # -----------------------
 # Repo Fixtures
 # -----------------------
@@ -62,8 +23,6 @@ def value_score_repo(db_session):
 @pytest.fixture
 def value_map_repo(db_session):
     return ValueMapRepository(session=db_session)
-
-
 
 # ============================================================
 #                     Question Repository
