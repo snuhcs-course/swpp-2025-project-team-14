@@ -91,7 +91,16 @@ class TestAuthDispatcher : Dispatcher() {
                 MockResponse()
                     .setResponseCode(200)
                     .setHeader("Content-Type", "application/json")
-                    .setBody("""{"detail": "logged out"}""")
+                    .setBody(
+                        """
+                        {
+                            "ok": true,
+                            "data": {
+                                "status": "ok"
+                            },
+                            "error": null
+                        }
+                        """.trimIndent())
             }
 
             else -> {
