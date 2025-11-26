@@ -27,7 +27,11 @@ def mock_answer_repo(mocker):
 @pytest.fixture
 def mock_value_score_repo(mocker):
     repo = mocker.Mock()
-    repo.get_top_5_value_scores.return_value = [mocker.Mock(polarity=1,value="친절",intensity=90,category="Neuroticism"), FakeValueScore(1,"사교성",90,"Extraversion"), FakeValueScore(-1,"이기성",85,"Openness to Experience"), FakeValueScore(1,"진취성",80,"Agreeableness"), FakeValueScore(0,"공상",75,"성실성")]
+    repo.get_top_5_value_scores.return_value = [mocker.Mock(polarity=1,value="친절",intensity=90,category="Neuroticism"),
+                                                mocker.Mock(polarity=1,value="사교성",intensity=90,category="Extraversion"),
+                                                mocker.Mock(polarity=-1,value="이기성",intensity=85,category="Openness to Experience"),
+                                                mocker.Mock(polarity=1,value="진취성",intensity=80,category="Agreeableness"),
+                                                mocker.Mock(polarity=0,value="공상",intensity=75,category="성실성")]
     return repo
 
 @pytest.fixture
