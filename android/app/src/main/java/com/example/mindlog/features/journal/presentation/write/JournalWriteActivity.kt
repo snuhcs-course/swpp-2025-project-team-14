@@ -100,6 +100,7 @@ class JournalWriteActivity : AppCompatActivity() {
             supportFragmentManager.popBackStack()
             updateButtonsForEmotionSelect()
         } else {
+            setResult(RESULT_CANCELED)
             finish()
         }
     }

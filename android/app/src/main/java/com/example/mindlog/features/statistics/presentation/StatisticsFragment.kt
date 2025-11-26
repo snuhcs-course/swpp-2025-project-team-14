@@ -1,8 +1,12 @@
 package com.example.mindlog.features.statistics.presentation
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -12,6 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentStatisticsBinding
+import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
@@ -35,10 +41,11 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @AndroidEntryPoint
-class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
+class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.FabClickListener {
 
     private var _binding: FragmentStatisticsBinding? = null
     private val binding get() = _binding!!
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private val viewModel: StatisticsViewModel by viewModels()
 
     private var wordCloud: WordCloud? = null
@@ -65,8 +72,24 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
     private fun formatRange(start: LocalDate, end: LocalDate): String =
         "${start.format(dateFormatter)}~${end.format(dateFormatter)}"
 
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        activityResultLauncher.launch(intent)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentStatisticsBinding.bind(view)
+
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 작성 완료 시 홈의 Journal 탭으로 이동
+                (activity as? HomeActivity)?.let { homeActivity ->
+                    homeActivity.navigateToJournalTab()
+                }
+            }
+        }
 
         setupEmotionTrendChart()
         setupEmotionRatesPieChart()

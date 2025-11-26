@@ -1,5 +1,7 @@
 package com.example.mindlog.features.selfaware.presentation.fragment
 
+import android.content.Intent
+import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -26,12 +28,17 @@ import android.text.Spannable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.inputmethod.BaseInputConnection
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
+import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 
 @AndroidEntryPoint
-class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
+class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.FabClickListener {
     private var _binding: FragmentSelfAwareBinding? = null
     private val binding get() = _binding!!
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private val vm: SelfAwareViewModel by viewModels()
 
     private var answerWatcher: TextWatcher? = null
@@ -42,10 +49,26 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private var valueMapLoadedOnce = false
     private var wasValueMapLoading = false
 
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        activityResultLauncher.launch(intent)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
         binding.completionOverlay.bringToFront()
+
+        // Journal 작성 화면에서 돌아올 때 결과를 처리하기 위한 launcher 설정
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 작성 완료 시 홈의 Journal 탭으로 이동
+                (activity as? HomeActivity)?.let { homeActivity ->
+                    homeActivity.navigateToJournalTab()
+                }
+            }
+        }
 
         answerWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -219,6 +242,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         lastRadarCats = null
         lastRadarScores = null
     }
+
 
     private fun isComposing(text: CharSequence?): Boolean {
         val sp = text as? Spannable ?: return false

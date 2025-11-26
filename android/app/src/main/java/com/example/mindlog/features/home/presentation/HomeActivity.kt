@@ -58,4 +58,8 @@ class HomeActivity : AppCompatActivity() {
             SystemUiHelper.hideSystemUI(this)
         }
     }
+
+    fun navigateToJournalTab() {
+        binding.bottomNav.selectedItemId = R.id.journalFragment
+    }
 }

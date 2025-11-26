@@ -1,7 +1,11 @@
 package com.example.mindlog.features.analysis.presentation
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,20 +17,38 @@ import com.example.mindlog.databinding.FragmentAnalysisBinding
 import com.example.mindlog.features.analysis.domain.model.ComprehensiveAnalysis
 import com.example.mindlog.features.analysis.domain.model.PersonalizedAdvice
 import com.example.mindlog.features.analysis.domain.model.UserType
+import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AnalysisFragment : Fragment(R.layout.fragment_analysis) {
+class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabClickListener {
 
     private var _binding: FragmentAnalysisBinding? = null
     private val binding get() = _binding!!
-
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private val viewModel: AnalysisViewModel by viewModels()
+
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        activityResultLauncher.launch(intent)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAnalysisBinding.bind(view)
+
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 작성 완료 시 홈의 Journal 탭으로 이동
+                (activity as? HomeActivity)?.let { homeActivity ->
+                    homeActivity.navigateToJournalTab()
+                }
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
