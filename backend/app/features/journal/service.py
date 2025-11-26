@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import date
 from functools import partial
 from typing import Annotated
@@ -10,6 +11,7 @@ from langchain_openai import ChatOpenAI
 from openai import AsyncOpenAI
 
 from app.features.journal.errors import (
+    ImageGenerationError,
     JournalBadRequestError,
     JournalNotFoundError,
     JournalUpdateError,
@@ -26,10 +28,10 @@ from app.features.journal.schemas.responses import (
     JournalKeywordsListResponse,
     PresignedUrlResponse,
 )
-
-# [Refactoring] 신규 모듈 import
 from app.features.journal.strategies import ImageStyleFactory, _load_prompt
 from app.features.user.models import User
+
+logger = logging.getLogger(__name__)
 
 
 class JournalService:
@@ -187,13 +189,20 @@ class JournalOpenAIService:
                 request.content, prompt_template, user_description
             )
         except Exception as e:
-            print(f"GPT 호출 실패: {e}")
+            logger.error(
+                f"GPT call failed during scene prompt generation: {e}", exc_info=True
+            )
+            raise ImageGenerationError(
+                "Failed to generate scene description from diary."
+            ) from e
 
         try:
             image_b64 = await self._generate_image_from_prompt(prompt)
         except Exception as e:
-            print(f"DALL-E 3 호출 실패: {e}")
-            return ""
+            logger.error(f"DALL-E 3 call failed: {e}", exc_info=True)
+            raise ImageGenerationError(
+                "Failed to create image from the description."
+            ) from e
 
         return image_b64
 
@@ -259,12 +268,20 @@ class JournalOpenAIService:
             res_envelope = await chain.ainvoke(input_data)
             res = res_envelope.data
         except Exception as e:
-            print(f"LangChain(ainvoke) 호출 실패: {e}")
-
-        if not res:
+            logger.error(
+                f"LangChain(ainvoke) call failed for journal {journal_id}: {e}",
+                exc_info=True,
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="LLM이 유효한 키워드를 반환하지 않았습니다.",
+                detail="Failed to extract keywords.",
+            ) from e
+
+        if not res:
+            logger.warning(f"LLM returned empty result for journal {journal_id}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="LLM returned invalid format.",
             )
 
         save_task = partial(

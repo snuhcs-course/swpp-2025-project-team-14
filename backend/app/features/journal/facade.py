@@ -52,12 +52,10 @@ class JournalImageFacade:
 
     async def finalize_image_upload(self, journal_id: int, s3_key: str) -> JournalImage:
         """업로드 완료: S3 확인 및 DB 갱신"""
-        # S3 파일 존재 확인
         file_exists = await self.s3_repository.check_file_exists(s3_key)
         if not file_exists:
             raise ImageUploadError("Uploaded image not found in S3.")
 
-        # 저널 존재 확인
         find_journal_task = partial(
             self.journal_repository.get_journal_by_id, journal_id=journal_id
         )

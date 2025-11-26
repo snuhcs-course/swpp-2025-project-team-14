@@ -36,3 +36,8 @@ class ImageUploadError(HTTPException):
             status_code=500,
             detail="image upload error: " + detail,
         )
+
+
+class ImageGenerationError(HTTPException):
+    def __init__(self, detail: str = "Failed to generate image."):
+        super().__init__(status_code=503, detail=detail)
