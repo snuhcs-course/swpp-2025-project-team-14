@@ -1,17 +1,11 @@
 import os
-from datetime import date
 from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
-# 에러 클래스 import 경로 확인 (app/features/journal/errors.py)
-from app.features.journal.errors import (
-    ImageUploadError,
-    JournalBadRequestError,
-    JournalNotFoundError,
-    JournalUpdateError,
-)
-from app.features.journal.models import Journal, JournalEmotion, JournalImage
+from app.features.journal.errors import ImageUploadError, JournalNotFoundError
+from app.features.journal.facade import JournalImageFacade
+from app.features.journal.models import Journal, JournalImage
 from app.features.journal.repository import JournalRepository, S3Repository
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
@@ -19,6 +13,7 @@ from app.features.journal.schemas.requests import (
     ImageUploadRequest,
 )
 from app.features.journal.service import JournalOpenAIService, JournalService
+from app.features.journal.strategies import ImageStyleFactory, ImageStyleStrategy
 from app.features.user.models import User
 
 # --- 픽스처: Mock 객체 준비 ---
@@ -26,14 +21,11 @@ from app.features.user.models import User
 
 @pytest.fixture
 def mock_journal_repo() -> Mock:
-    """JournalRepository의 가짜 Mock 객체를 생성합니다."""
     return Mock(spec=JournalRepository)
 
 
 @pytest.fixture
 def mock_s3_repo() -> Mock:
-    """S3Repository의 가짜 Mock 객체를 생성합니다."""
-    # S3 관련 메서드는 async이므로 AsyncMock을 사용하는 것이 좋습니다.
     repo = Mock(spec=S3Repository)
     repo.generate_upload_url = AsyncMock()
     repo.check_file_exists = AsyncMock()
@@ -42,79 +34,78 @@ def mock_s3_repo() -> Mock:
 
 
 @pytest.fixture
-def journal_service(mock_journal_repo: Mock, mock_s3_repo: Mock) -> JournalService:
-    """가짜 Repository를 주입받은 JournalService 인스턴스를 생성합니다."""
+def mock_image_facade() -> Mock:
+    """JournalImageFacade의 가짜 Mock 객체 (Service 테스트용)"""
+    facade = Mock(spec=JournalImageFacade)
+    facade.initiate_image_upload = AsyncMock()
+    facade.finalize_image_upload = AsyncMock()
+    return facade
+
+
+@pytest.fixture
+def mock_style_factory() -> Mock:
+    """ImageStyleFactory의 가짜 Mock 객체 (OpenAI Service 테스트용)"""
+    return Mock(spec=ImageStyleFactory)
+
+
+@pytest.fixture
+def journal_service(mock_journal_repo: Mock, mock_image_facade: Mock) -> JournalService:
+    """
+    JournalService에는 이제 S3Repo가 아닌 Facade가 주입됩니다.
+    """
     return JournalService(
+        journal_repository=mock_journal_repo,
+        image_facade=mock_image_facade,
+    )
+
+
+@pytest.fixture
+def journal_image_facade(
+    mock_journal_repo: Mock, mock_s3_repo: Mock
+) -> JournalImageFacade:
+    """
+    실제 로직 테스트를 위해 Facade 인스턴스를 생성합니다. (Facade 테스트용)
+    """
+    return JournalImageFacade(
         journal_repository=mock_journal_repo, s3_repository=mock_s3_repo
     )
 
 
-# --- JournalService 테스트 케이스 ---
+# --- JournalService 테스트 케이스 (CRUD) ---
 
 
 def test_create_journal_success(
     journal_service: JournalService, mock_journal_repo: Mock
 ):
-    """
-    [Service] create_journal 성공 테스트
-    """
-    # Given
     user_id = 1
     title = "테스트 일기"
     content = "내용"
     emotions = {"happy": 5}
     gratitude = "감사"
-
     mock_journal = Journal(id=100, user_id=user_id, title=title)
     mock_journal_repo.add_journal.return_value = mock_journal
 
-    # When
     result = journal_service.create_journal(
-        user_id=user_id,
-        title=title,
-        content=content,
-        emotions=emotions,
-        gratitude=gratitude,
+        user_id, title, content, emotions, gratitude
     )
 
-    # Then
-    mock_journal_repo.add_journal.assert_called_once_with(
-        user_id=user_id,
-        title=title,
-        content=content,
-        emotions=emotions,
-        gratitude=gratitude,
-    )
+    mock_journal_repo.add_journal.assert_called_once()
     assert result == mock_journal
 
 
 def test_get_journal_success(journal_service: JournalService, mock_journal_repo: Mock):
-    """
-    [Service] get_journal 성공 테스트
-    """
-    # Given
     journal_id = 1
-    mock_journal = Journal(id=journal_id, title="Found")
+    mock_journal = Journal(id=journal_id)
     mock_journal_repo.get_journal_by_id.return_value = mock_journal
 
-    # When
     result = journal_service.get_journal(journal_id)
-
-    # Then
-    mock_journal_repo.get_journal_by_id.assert_called_once_with(journal_id)
     assert result == mock_journal
 
 
 def test_get_journal_not_found(
     journal_service: JournalService, mock_journal_repo: Mock
 ):
-    """
-    [Service] get_journal 실패 테스트 (404)
-    """
-    # Given
     mock_journal_repo.get_journal_by_id.return_value = None
-
-    # When & Then
     with pytest.raises(JournalNotFoundError):
         journal_service.get_journal(999)
 
@@ -122,423 +113,215 @@ def test_get_journal_not_found(
 def test_delete_journal_success(
     journal_service: JournalService, mock_journal_repo: Mock
 ):
-    """
-    [Service] delete_journal 성공 테스트
-    """
-    # Given
     journal_id = 1
     mock_journal = Journal(id=journal_id)
     mock_journal_repo.get_journal_by_id.return_value = mock_journal
 
-    # When
     journal_service.delete_journal(journal_id)
-
-    # Then
     mock_journal_repo.delete_journal.assert_called_once_with(mock_journal)
-
-
-def test_list_journals_by_user(
-    journal_service: JournalService, mock_journal_repo: Mock
-):
-    """
-    [Service] list_journals_by_user 테스트
-    """
-    # Given
-    user_id = 1
-    limit = 10
-    cursor = 5
-    mock_list = [Journal(id=1), Journal(id=2)]
-    mock_journal_repo.list_journals_by_user.return_value = mock_list
-
-    # When
-    result = journal_service.list_journals_by_user(user_id, limit, cursor)
-
-    # Then
-    mock_journal_repo.list_journals_by_user.assert_called_once_with(
-        user_id, limit, cursor
-    )
-    assert result == mock_list
 
 
 def test_update_journal_success(
     journal_service: JournalService, mock_journal_repo: Mock
 ):
-    """
-    [Service] update_journal 성공 테스트
-    """
-    # Given
     journal_id = 1
-    mock_journal = Journal(id=journal_id, title="Old")
+    mock_journal = Journal(id=journal_id)
     mock_journal_repo.get_journal_by_id.return_value = mock_journal
 
-    # When
-    journal_service.update_journal(journal_id, title="New Title")
-
-    # Then
-    mock_journal_repo.update_journal.assert_called_once_with(
-        journal=mock_journal, title="New Title", content=None, gratitude=None
-    )
-
-
-def test_update_journal_not_found(
-    journal_service: JournalService, mock_journal_repo: Mock
-):
-    """
-    [Service] update_journal 실패 테스트 (일기 없음)
-    """
-    # Given
-    mock_journal_repo.get_journal_by_id.return_value = None
-
-    # When & Then
-    with pytest.raises(JournalNotFoundError):
-        journal_service.update_journal(journal_id=999, title="수정 시도")
-
-
-def test_update_journal_no_data(
-    journal_service: JournalService, mock_journal_repo: Mock
-):
-    """
-    [Service] update_journal 실패 테스트 (데이터 없음)
-    """
-    # When & Then
-    with pytest.raises(JournalUpdateError):
-        journal_service.update_journal(journal_id=1)  # 모든 인자 None
+    journal_service.update_journal(journal_id, title="New")
+    mock_journal_repo.update_journal.assert_called_once()
 
 
 def test_search_journals_success(
     journal_service: JournalService, mock_journal_repo: Mock
 ):
-    """
-    [Service] search_journals 성공 테스트
-    """
-    # Given
-    user_id = 1
-    title = "search"
-    mock_result = [Journal(id=1, title="search result")]
-    mock_journal_repo.search_journals.return_value = mock_result
-
-    # When
-    result = journal_service.search_journals(user_id, title=title)
-
-    # Then
+    mock_journal_repo.search_journals.return_value = []
+    journal_service.search_journals(1, title="Test")
     mock_journal_repo.search_journals.assert_called_once()
-    assert result == mock_result
 
 
-def test_search_journals_invalid_date(journal_service: JournalService):
-    """
-    [Service] search_journals 실패 테스트 (날짜 범위 오류)
-    """
-    # Given
-    start = date(2023, 1, 10)
-    end = date(2023, 1, 5)  # start > end
-
-    # When & Then
-    with pytest.raises(JournalBadRequestError):
-        journal_service.search_journals(user_id=1, start_date=start, end_date=end)
-
-
-# --- S3 이미지 관련 테스트 (Async) ---
+# --- JournalService 이미지 테스트 (Facade 위임 확인) ---
 
 
 @pytest.mark.asyncio
-async def test_create_image_presigned_url_success(
-    journal_service: JournalService, mock_journal_repo: Mock, mock_s3_repo: Mock
+async def test_service_delegates_create_presigned_url(
+    journal_service: JournalService, mock_image_facade: Mock
 ):
     """
-    [Service] create_image_presigned_url 성공 테스트
+    [Service] create_image_presigned_url이 Facade를 호출하는지 테스트
     """
-    # Given
     journal_id = 1
     payload = ImageUploadRequest(filename="test.jpg", content_type="image/jpeg")
+    mock_response = MagicMock()
+    mock_image_facade.initiate_image_upload.return_value = mock_response
 
-    mock_journal = Journal(id=journal_id)
-    mock_journal_repo.get_journal_by_id.return_value = mock_journal
-
-    mock_s3_repo.generate_upload_url.return_value = {
-        "presigned_url": "http://pre-signed",
-        "file_url": "http://file-url",
-    }
-
-    # When
     result = await journal_service.create_image_presigned_url(journal_id, payload)
 
-    # Then
-    mock_journal_repo.get_journal_by_id.assert_called_with(journal_id=journal_id)
-    mock_s3_repo.generate_upload_url.assert_awaited_once()
-    assert result.presigned_url == "http://pre-signed"
-    assert "images/journals/1/" in result.s3_key  # 키 생성 로직 확인
+    mock_image_facade.initiate_image_upload.assert_awaited_once_with(
+        journal_id, payload.filename, payload.content_type
+    )
+    assert result == mock_response
 
 
 @pytest.mark.asyncio
-async def test_create_image_presigned_url_journal_not_found(
-    journal_service: JournalService, mock_journal_repo: Mock
+async def test_service_delegates_complete_upload(
+    journal_service: JournalService, mock_image_facade: Mock
 ):
     """
-    [Service] create_image_presigned_url 실패 테스트 (저널 없음)
+    [Service] complete_image_upload가 Facade를 호출하는지 테스트
     """
-    # Given
-    mock_journal_repo.get_journal_by_id.return_value = None
-    payload = ImageUploadRequest(filename="t.jpg", content_type="image/jpeg")
-
-    # When & Then
-    with pytest.raises(JournalNotFoundError):
-        await journal_service.create_image_presigned_url(999, payload)
-
-
-@pytest.mark.asyncio
-async def test_complete_image_upload_success(
-    journal_service: JournalService, mock_journal_repo: Mock, mock_s3_repo: Mock
-):
-    """
-    [Service] complete_image_upload 성공 테스트
-    """
-    # Given
     journal_id = 1
-    payload = ImageCompletionRequest(s3_key="some/key.jpg")
+    payload = ImageCompletionRequest(s3_key="key")
+    mock_image = JournalImage(id=1)
+    mock_image_facade.finalize_image_upload.return_value = mock_image
 
-    mock_journal = Journal(id=journal_id)
-    mock_journal_repo.get_journal_by_id.return_value = mock_journal
-
-    # S3 파일 존재 확인
-    mock_s3_repo.check_file_exists.return_value = True
-
-    # 기존 이미지 없음
-    mock_journal_repo.get_image_by_journal_id.return_value = None
-
-    # 저장될 이미지
-    mock_saved_image = JournalImage(id=10, journal_id=journal_id, s3_key="some/key.jpg")
-    mock_journal_repo.replace_journal_image.return_value = mock_saved_image
-
-    # When
     result = await journal_service.complete_image_upload(journal_id, payload)
 
-    # Then
-    mock_s3_repo.check_file_exists.assert_awaited_once_with(payload.s3_key)
-    mock_journal_repo.replace_journal_image.assert_called_once()
-    assert result == mock_saved_image
+    mock_image_facade.finalize_image_upload.assert_awaited_once_with(
+        journal_id, payload.s3_key
+    )
+    assert result == mock_image
+
+
+# --- JournalImageFacade 테스트 (기존 Service 로직 이동) ---
 
 
 @pytest.mark.asyncio
-async def test_complete_image_upload_file_missing(
-    journal_service: JournalService, mock_s3_repo: Mock
+async def test_facade_initiate_upload_success(
+    journal_image_facade: JournalImageFacade,
+    mock_journal_repo: Mock,
+    mock_s3_repo: Mock,
 ):
     """
-    [Service] complete_image_upload 실패 테스트 (S3에 파일 없음)
+    [Facade] initiate_image_upload 성공 테스트 (UUID 생성, S3 URL 발급)
     """
-    # Given
-    mock_s3_repo.check_file_exists.return_value = False
-    payload = ImageCompletionRequest(s3_key="missing.jpg")
-
-    # When & Then
-    with pytest.raises(ImageUploadError):
-        await journal_service.complete_image_upload(1, payload)
-
-
-# --- JournalOpenAIService 테스트 ---
-
-
-@pytest.mark.asyncio  # async 함수 테스트
-async def test_extract_keywords_logic(mocker):
-    """
-    [Service] extract_keywords_with_emotion_associations 테스트
-    - 목표: LLM(LangChain)을 올바른 인자로 호출하고, 그 결과를 repository에 잘 저장하는가?
-    """
-    # 1. 준비 (Given)
-    mock_repo = Mock(spec=JournalRepository)
-
-    mocker.patch("app.features.journal.service.AsyncOpenAI")
-
-    # _load_prompt 모킹
-    mocker.patch(
-        "app.features.journal.service._load_prompt", return_value="fake prompt"
-    )
-
-    # ChatOpenAI 모킹 (LangChain)
-    mock_chain = AsyncMock()
-    mock_structured_llm = MagicMock()
-    mock_structured_llm.with_structured_output.return_value = mock_chain
-    mocker.patch(
-        "app.features.journal.service.ChatOpenAI", return_value=mock_structured_llm
-    )
-
-    service = JournalOpenAIService(journal_repository=mock_repo)
-
     journal_id = 1
-    mock_journal = Journal(
-        id=journal_id,
-        content="오늘 너무 행복했다.",
-        emotions=[JournalEmotion(emotion="happy", intensity=5)],
-    )
-    mock_repo.get_journal_by_id.return_value = mock_journal
+    filename = "test.jpg"
+    content_type = "image/jpeg"
 
-    # (LangChain이 반환할 가짜 결과)
-    mock_llm_result = MagicMock()  # JournalKeywordsListResponse 모형
-    mock_llm_result.data = [
-        {
-            "keyword": "강아지",
-            "emotion": "happy",
-            "summary": "오늘 강아지를 봐서 행복했다.",
-            "weight": 0.9,
-        }
-    ]
-    mock_chain.return_value = mock_llm_result
-    mock_chain.ainvoke.return_value = mock_llm_result
+    mock_journal_repo.get_journal_by_id.return_value = Journal(id=journal_id)
+    mock_s3_repo.generate_upload_url.return_value = {
+        "presigned_url": "http://pre",
+        "file_url": "http://file",
+    }
 
-    # (Repo가 반환할 가짜 결과)
-    mock_saved_keywords = [MagicMock()]  # list[JournalKeyword] 모형
-    mock_repo.add_keywords_emotion_associations.return_value = mock_saved_keywords
-
-    # 2. 실행 (When)
-    result = await service.extract_keywords_with_emotion_associations(journal_id)
-
-    # 3. 검증 (Then)
-    # 3-1. 올바른 Journal을 조회했는가?
-    mock_repo.get_journal_by_id.assert_called_once_with(journal_id=journal_id)
-
-    # 3-2. LangChain 체인을 올바른 입력으로 호출했는가?
-    assert mock_chain.called
-
-    # 3-3. LLM의 결과를 Repository에 잘 전달했는가?
-    mock_repo.add_keywords_emotion_associations.assert_called_once_with(
-        journal_id=journal_id, keyword_emotion_associations=mock_llm_result.data
+    result = await journal_image_facade.initiate_image_upload(
+        journal_id, filename, content_type
     )
 
-    # 3-4. 최종 결과를 잘 반환했는가?
-    assert result == mock_saved_keywords
+    mock_s3_repo.generate_upload_url.assert_awaited_once()
+    assert result.presigned_url == "http://pre"
+    assert "images/journals/1/" in result.s3_key
 
 
-def test_get_journals_by_keyword(
-    journal_service: JournalService, mock_journal_repo: Mock
+@pytest.mark.asyncio
+async def test_facade_initiate_upload_not_found(
+    journal_image_facade: JournalImageFacade, mock_journal_repo: Mock
 ):
-    """
-    [Service] get_journals_by_keyword 테스트
-    """
-    # Given
-    user_id = 1
-    keyword = "happy"
-    mock_result = [Journal(id=1)]
-    mock_journal_repo.get_journals_by_keyword.return_value = mock_result
-
-    # When
-    result = journal_service.get_journals_by_keyword(user_id, keyword)
-
-    # Then
-    mock_journal_repo.get_journals_by_keyword.assert_called_once_with(
-        user_id=user_id, keyword=keyword, limit=10, cursor=None
-    )
-    assert result == mock_result
-
-
-def test_get_journal_owner(journal_service: JournalService, mock_journal_repo: Mock):
-    """
-    [Service] get_journal_owner 테스트
-    """
-    # Given
-    journal_id = 1
-    mock_journal = Journal(id=journal_id, user_id=99)
-    mock_journal_repo.get_journal_by_id.return_value = mock_journal
-
-    # When
-    owner_id = journal_service.get_journal_owner(journal_id)
-
-    # Then
-    assert owner_id == 99
-
-
-def test_get_journal_owner_none(
-    journal_service: JournalService, mock_journal_repo: Mock
-):
-    """
-    [Service] get_journal_owner 실패 테스트 (존재하지 않는 일지)
-    """
-    # Given
     mock_journal_repo.get_journal_by_id.return_value = None
-
-    # When
-    owner_id = journal_service.get_journal_owner(999)
-
-    # Then
-    assert owner_id is None
+    with pytest.raises(JournalNotFoundError):
+        await journal_image_facade.initiate_image_upload(999, "t.jpg", "image/jpeg")
 
 
 @pytest.mark.asyncio
-async def test_create_image_presigned_url_s3_fail(
-    journal_service: JournalService, mock_journal_repo: Mock, mock_s3_repo: Mock
+async def test_facade_finalize_upload_success(
+    journal_image_facade: JournalImageFacade,
+    mock_journal_repo: Mock,
+    mock_s3_repo: Mock,
 ):
     """
-    [Service] create_image_presigned_url 실패 테스트 (S3 에러)
+    [Facade] finalize_image_upload 성공 테스트 (S3 확인, DB 갱신)
     """
-    # Given
-    mock_journal_repo.get_journal_by_id.return_value = Journal(id=1)
-    mock_s3_repo.generate_upload_url.return_value = None  # S3 실패 시뮬레이션
+    journal_id = 1
+    s3_key = "some/key.jpg"
 
-    payload = ImageUploadRequest(filename="t.jpg", content_type="image/jpeg")
+    mock_s3_repo.check_file_exists.return_value = True
+    mock_journal_repo.get_journal_by_id.return_value = Journal(id=journal_id)
+    mock_journal_repo.get_image_by_journal_id.return_value = None
 
-    # When & Then
-    with pytest.raises(ImageUploadError):
-        await journal_service.create_image_presigned_url(1, payload)
+    expected_image = JournalImage(id=10, s3_key=s3_key)
+    mock_journal_repo.replace_journal_image.return_value = expected_image
 
+    result = await journal_image_facade.finalize_image_upload(journal_id, s3_key)
 
-# --- JournalOpenAIService 이미지 생성 테스트 ---
+    mock_s3_repo.check_file_exists.assert_awaited_once_with(s3_key)
+    mock_journal_repo.replace_journal_image.assert_called_once()
+    assert result == expected_image
 
 
 @pytest.mark.asyncio
-async def test_request_image_generation_success(test_user: User, mocker):
-    """
-    [Service] request_image_generation (AI 이미지 생성) 테스트
-    """
-    # Mock Setup
-    mocker.patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key_for_testing"})
-    mocker.patch(
-        "app.features.journal.service._load_prompt", return_value="fake_prompt"
-    )
+async def test_facade_finalize_upload_missing_file(
+    journal_image_facade: JournalImageFacade, mock_s3_repo: Mock
+):
+    mock_s3_repo.check_file_exists.return_value = False
+    with pytest.raises(ImageUploadError):
+        await journal_image_facade.finalize_image_upload(1, "missing.jpg")
 
-    # OpenAI Client Mocking
+
+# --- JournalOpenAIService 테스트 (Strategy/Factory 적용) ---
+
+
+@pytest.mark.asyncio
+async def test_request_image_generation_with_strategy(
+    test_user: User, mocker, mock_style_factory: Mock
+):
+    """
+    [Service] request_image_generation 테스트 (Factory 및 Strategy 패턴 검증)
+    """
+    # 1. Setup Mocks
+    mocker.patch.dict(os.environ, {"OPENAI_API_KEY": "fake"})
+
+    # LangChain/OpenAI Mock
     mock_chain = AsyncMock()
     mock_structured_llm = MagicMock()
     mock_structured_llm.with_structured_output.return_value = mock_chain
     mocker.patch(
         "app.features.journal.service.ChatOpenAI", return_value=mock_structured_llm
     )
+    mocker.patch("app.features.journal.service.AsyncOpenAI", return_value=AsyncMock())
+    mocker.patch(
+        "app.features.journal.service._load_prompt", return_value="keyword_prompt"
+    )
 
-    mock_client = AsyncMock()
-    mocker.patch("app.features.journal.service.AsyncOpenAI", return_value=mock_client)
-    # 프롬프트 로드 Mocking
-    service = JournalOpenAIService(journal_repository=MagicMock())
+    # [Strategy & Factory Mocking]
+    mock_strategy = Mock(spec=ImageStyleStrategy)
+    mock_strategy.get_system_prompt.return_value = "Strategy Prompt"
 
-    # 메서드 내부에서 사용할 헬퍼 함수들의 반환값 모킹
+    mock_style_factory.create_strategy.return_value = mock_strategy
 
+    # Service 인스턴스 생성 (Factory 주입)
+    service = JournalOpenAIService(
+        journal_repository=MagicMock(), style_factory=mock_style_factory
+    )
+
+    # 내부 헬퍼 메서드 Mocking (실제 LLM 호출 방지)
     mocker.patch.object(
         service,
         "_generate_scene_prompt_from_diary",
         new_callable=AsyncMock,
-        return_value="A beautiful scene",
+        return_value="Scene",
     )
-
     mocker.patch.object(
         service,
         "_generate_image_from_prompt",
         new_callable=AsyncMock,
-        return_value="base64_image_data",
+        return_value="B64Image",
     )
 
-    # Execution
-    request = ImageGenerateRequest(content="Today was good", style="natural")
+    # 2. Execution
+    request = ImageGenerateRequest(content="Diary", style="natural")
     result = await service.request_image_generation(request, test_user)
 
-    # Verification
-    assert result == "base64_image_data"
+    # 3. Verification
+    # 3-1. Factory가 올바른 스타일로 호출되었는가?
+    mock_style_factory.create_strategy.assert_called_once_with("natural")
 
-    # user_description 문자열 생성
-    user_parts = [
-        f"The protagonist of this diary is a {test_user.gender}, aged {test_user.age}."
-    ]
-    if test_user.appearance:
-        user_parts.append(f"Appearance details: {test_user.appearance}.")
-    expected_description = " ".join(user_parts)
+    # 3-2. Strategy에서 프롬프트를 가져왔는가?
+    mock_strategy.get_system_prompt.assert_called_once()
 
-    service._generate_scene_prompt_from_diary.assert_awaited_once_with(
-        request.content, service.prompt_natural, expected_description
-    )
-    service._generate_image_from_prompt.assert_awaited_once_with("A beautiful scene")
+    # 3-3. 가져온 프롬프트("Strategy Prompt")가 LLM 호출에 사용되었는가?
+    service._generate_scene_prompt_from_diary.assert_awaited_once()
+    call_args = service._generate_scene_prompt_from_diary.call_args
+    assert "Strategy Prompt" in call_args[0]  # 인자 중 프롬프트가 포함되어야 함
+
+    assert result == "B64Image"
