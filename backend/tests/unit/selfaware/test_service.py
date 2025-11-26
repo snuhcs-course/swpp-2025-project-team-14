@@ -2,7 +2,8 @@ import pytest
 from app.features.selfaware.service import (
     QuestionService,
     ValueScoreService,
-    ValueMapService
+    ValueMapService,
+    AnswerService
 )
 
 @pytest.fixture
@@ -22,6 +23,7 @@ def mock_journal_repo(mocker):
 def mock_answer_repo(mocker):
     repo = mocker.Mock()
     repo.get_answer_by_id.return_value = mocker.Mock(text="내 돈으로 벌어 내가 산 치킨을 먹으며 나 자신이 증명됨을 느꼈기 때문입니다.")
+    repo.get_answer_by_question.return_value = mocker.Mock(text="내 돈으로 벌어 내가 산 치킨을 먹으며 나 자신이 증명됨을 느꼈기 때문입니다.")
     return repo
 
 @pytest.fixture
@@ -58,6 +60,10 @@ def value_map_service(mock_value_map_repo, mock_value_score_repo, mock_answer_re
     return ValueMapService(value_map_repository=mock_value_map_repo,
                            value_score_repository=mock_value_score_repo,
                            answer_repository=mock_answer_repo)
+
+@pytest.fixture
+def answer_service(mock_answer_repo):
+    return AnswerService(answer_repository=mock_answer_repo)
 
 def test_generate_question_type_0(question_service, mock_question_repo, mocker):
     mocker.patch("app.features.selfaware.service.random.randint", return_value = 0)
@@ -98,3 +104,7 @@ def test_generate_comment(value_map_service):
     result = value_map_service.generate_comment(1)
     assert type(result[0]) == str
     assert type(result[1]) == str
+
+def test_get_answer_by_question(answer_service):
+    result = answer_service.get_answer_by_question(1)
+    assert result
