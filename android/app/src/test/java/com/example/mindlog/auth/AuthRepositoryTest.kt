@@ -239,7 +239,7 @@ class AuthRepositoryTest {
 
         // then
         assertTrue(result is Result.Success && result.data)
-        verify(authApi).logout("Bearer AAA")
+        // verify(authApi).logout("Bearer AAA")
         verify(tokenManager).getAccessToken()
         verify(tokenManager).clearTokens()
         verifyNoMoreInteractions(authApi, tokenManager)

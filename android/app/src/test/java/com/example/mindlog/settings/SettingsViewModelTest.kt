@@ -180,7 +180,7 @@ class SettingsViewModelTest {
     @Test
     fun `logout - 성공 시 Success 이벤트를 방출한다`() = runTest {
         // Given
-        whenever(authRepository.logout()).thenReturn(true)
+        whenever(authRepository.logout()).thenReturn(Result.Success(true))
         val results = mutableListOf<Result<Unit>>()
         val job = launch { viewModel.logoutEvent.collect { results.add(it) } }
 
@@ -197,7 +197,7 @@ class SettingsViewModelTest {
     @Test
     fun `logout - 실패(false 반환) 시 Error 이벤트를 방출한다`() = runTest {
         // Given
-        whenever(authRepository.logout()).thenReturn(false)
+        whenever(authRepository.logout()).thenReturn(Result.Success(false))
         val results = mutableListOf<Result<Unit>>()
         val job = launch { viewModel.logoutEvent.collect { results.add(it) } }
 

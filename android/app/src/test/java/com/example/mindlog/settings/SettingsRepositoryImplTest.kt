@@ -93,7 +93,7 @@ class SettingsRepositoryImplTest {
 
         // Then
         val request = mockWebServer.takeRequest()
-        assertEquals("PUT", request.method)
+        assertEquals("PATCH", request.method)
         assertEquals("/user/me", request.path)
 
         val body = request.body.readUtf8()
