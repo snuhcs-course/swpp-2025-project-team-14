@@ -19,6 +19,7 @@ import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.FragmentSettingsBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.tutorial.TutorialActivity
+import com.example.mindlog.features.tutorial.TutorialMenuActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -64,7 +65,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.btnTutorial.setOnClickListener {
-            val intent = Intent(requireContext(), TutorialActivity::class.java).apply {
+            val intent = Intent(requireContext(), TutorialMenuActivity::class.java).apply {
                 putExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, true)
             }
             startActivity(intent)

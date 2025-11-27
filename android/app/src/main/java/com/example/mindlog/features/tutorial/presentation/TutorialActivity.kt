@@ -17,12 +17,30 @@ class TutorialActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_RETURN_TO_SETTINGS = "extra_return_to_settings"
+        const val EXTRA_FEATURE_LABEL = "extra_feature_label"   // 어떤 기능 튜토리얼인지 (예: "일기 작성")
     }
 
     private lateinit var binding: ActivityTutorialBinding
     private lateinit var pagerAdapter: TutorialAdapter
 
-    private val pages by lazy { generateTutorialPages() }
+    private val allPages by lazy { generateTutorialPages() }
+
+    // 메뉴 Activity에서 전달된 기능 이름 (예: "일기 작성", "통계")
+    private val selectedFeatureLabel: String? by lazy {
+        intent.getStringExtra(EXTRA_FEATURE_LABEL)
+    }
+
+    // 실제 ViewPager에 표시할 페이지: 기능이 지정되어 있으면 해당 기능만 필터링, 아니면 전체
+    private val pages: List<TutorialPage> by lazy {
+        val feature = selectedFeatureLabel
+        if (feature.isNullOrEmpty()) {
+            allPages
+        } else {
+            allPages.filter { it.feature == feature }
+                // 혹시 필터 결과가 비어 있으면 안전하게 전체를 보여주도록 fallback
+                .ifEmpty { allPages }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,14 +147,11 @@ class TutorialActivity : AppCompatActivity() {
 
         val returnToSettings = intent.getBooleanExtra(EXTRA_RETURN_TO_SETTINGS, false)
 
-        if (returnToSettings) {
-            // 설정 화면에서 진입한 경우: 단순히 종료하여 이전 Activity(설정 화면)로 돌아감
-            finish()
-        } else {
-            // 온보딩 플로우 등에서 진입한 경우: 홈 화면으로 이동
-            startActivity(Intent(this, HomeActivity::class.java))
-            finish()
-        }
+        // 튜토리얼 페이지 → 항상 메뉴 화면으로 돌아감
+        startActivity(Intent(this, TutorialMenuActivity::class.java).apply {
+            putExtra(EXTRA_RETURN_TO_SETTINGS, returnToSettings)
+        })
+        finish()
     }
 
     fun completeTutorialForTest() {
