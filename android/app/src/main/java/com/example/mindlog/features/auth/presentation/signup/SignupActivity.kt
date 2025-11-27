@@ -58,21 +58,29 @@ class SignupActivity : AppCompatActivity() {
                 showSignupError("모든 필드를 입력해주세요.")
                 return@setOnClickListener
             }
-            if (pw != confirm) {
-                showSignupError("비밀번호가 일치하지 않습니다.")
-                return@setOnClickListener
-            }
             if (gender == null) {
                 showSignupError("성별을 선택해주세요.")
                 return@setOnClickListener
             }
             if (birthY == null || birthM == null || birthD == null) {
-                showSignupError("생년월일을 선택해주세요.")
+                showSignupError("생년월일을 입력해주세요.")
                 return@setOnClickListener
             }
             // (선택) 존재하지 않는 날짜 방지 체크
             if (!isValidDate(birthY, birthM, birthD)) {
                 showSignupError("유효하지 않은 생년월일입니다.")
+                return@setOnClickListener
+            }
+            if (!isValidLoginId(id)) {
+                showSignupError("로그인 아이디는 영어 대소문자와 숫자로만 입력해주세요.")
+                return@setOnClickListener
+            }
+            if (!isValidPassword(pw)) {
+                showSignupError("비밀번호는 특수문자, 영어, 숫자 중 2가지 이상을 포함하고 8자 이상이어야 합니다.")
+                return@setOnClickListener
+            }
+            if (pw != confirm) {
+                showSignupError("비밀번호가 일치하지 않습니다.")
                 return@setOnClickListener
             }
 
@@ -156,6 +164,33 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
+    private fun isValidLoginId(id: String): Boolean {
+        // 영어 대소문자와 숫자만 허용 (한글 및 기타 문자 불가)
+        val regex = "^[A-Za-z0-9]+$".toRegex()
+        return regex.matches(id)
+    }
+
+    private fun isValidPassword(password: String): Boolean {
+        // 길이 8자 이상
+        if (password.length < 8) return false
+
+        var hasLetter = false
+        var hasDigit = false
+        var hasSpecial = false
+
+        password.forEach { ch ->
+            when {
+                ch.isLetter() -> hasLetter = true
+                ch.isDigit() -> hasDigit = true
+                !ch.isLetterOrDigit() -> hasSpecial = true
+            }
+        }
+
+        // 특수문자 / 영어 / 숫자 중 2가지 이상 포함
+        val categoryCount = listOf(hasLetter, hasDigit, hasSpecial).count { it }
+        return categoryCount >= 2
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) SystemUiHelper.hideSystemUI(this)
@@ -173,6 +208,8 @@ class SignupActivity : AppCompatActivity() {
                         message.contains("loginId", ignoreCase = true) ||
                         message.contains("login_id", ignoreCase = true) ->
                     "동일한 로그인 아이디가 존재합니다. 다른 아이디를 사용해주세요."
+                message.contains("username", ignoreCase = true) ->
+                    "사용자 이름이 유효하지 않습니다. 옯바른 이름을 입력해주세요."
                 else -> message
             }
 
