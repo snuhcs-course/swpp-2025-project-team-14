@@ -88,9 +88,9 @@ class AnalysisService:
         print("valid big 5 score generated")
         return total_response
     
-    def evaluate_big_5_score(self, user_id, age, sex, flag = False):
+    def evaluate_big_5_score(self, user_id, age, gender, flag = False):
         neo_pi = self.extract_neo_pi_from_answer(user_id)
-        return evaluate(neo_pi, sex, age, flag)
+        return evaluate(neo_pi, gender, age, flag)
     
     def update_neo_pi_score(self, user_id: int, age: int = 23, gender: str = "Male"):
         neo_pi_score = self.evaluate_big_5_score(user_id, age, gender, flag = False)
