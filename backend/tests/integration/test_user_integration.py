@@ -17,7 +17,7 @@ def test_signup_success(client: TestClient, db_session: Session):
     data = {
         "login_id": "new_user",
         "password": "qwerQWER123!",
-        "username": "new-user",
+        "username": "사용자",
         "gender": "Female",
         "birthdate": date(2002, 2, 2).isoformat(),
     }
