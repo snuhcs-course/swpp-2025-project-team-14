@@ -14,6 +14,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.R
 import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.tutorial.TutorialMenuActivity
 import com.example.mindlog.features.tutorial.TutorialActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -64,22 +65,20 @@ class TutorialActivityTest {
     }
 
     @Test
-    fun clickSkip_setsTutorialCompleted_andFinishesActivity() {
+    fun clickSkip_setsTutorialCompleted_andOpensMenu() {
         // SharedPreferences 초기화 (Application Context 기준)
         val appContext = ApplicationProvider.getApplicationContext<Context>()
         val prefs = appContext.getSharedPreferences("tutorial_prefs", Context.MODE_PRIVATE)
         prefs.edit().clear().commit()
 
-        // 실제 클릭 대신, Activity의 테스트용 헬퍼 메서드를 직접 호출
-        activityRule.scenario.onActivity { activity ->
-            activity.completeTutorialForTest()
-        }
+        // 상단 "건너뛰기" 버튼 클릭
+        onView(withId(R.id.btnSkip)).perform(click())
 
         // 튜토리얼 완료 플래그가 true로 저장되었는지 확인
         val completed = prefs.getBoolean("completed", false)
         assert(completed)
 
-        // ActivityScenario가 종료 상태인지 확인 (튜토리얼이 닫혔는지)
-        assert(activityRule.scenario.state.isAtLeast(androidx.lifecycle.Lifecycle.State.DESTROYED))
+        // TutorialMenuActivity가 열렸는지 Intents를 통해 확인
+        Intents.intended(hasComponent(TutorialMenuActivity::class.java.name))
     }
 }
