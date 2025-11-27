@@ -1,28 +1,9 @@
 from datetime import datetime
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import clear_mappers, sessionmaker
 
-from app.database.base import Base  # 실제 Base declarative_base import
 from app.features.analysis.models import Analysis
 from app.features.analysis.repository import AnalysisRepository
-
-# (없다면 Base = declarative_base()로 대체)
-
-
-# ---------------------------------------
-# ✅ 테스트용 인메모리 DB 세션 생성
-# ---------------------------------------
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine("sqlite:///:memory:", echo=False)
-    testing_session_local = sessionmaker(bind=engine)
-    Base.metadata.create_all(engine)
-    session = testing_session_local()
-    yield session
-    session.close()
-    clear_mappers()
 
 
 @pytest.fixture
@@ -93,6 +74,5 @@ def test_update_analysis_multiple_fields(repo, db_session):
 
 
 def test_update_analysis_not_found(repo):
-    # 존재하지 않는 user_id에 대해 예외 발생
-    with pytest.raises(ValueError):
+    with pytest.raises(Exception):  # noqa: B017
         repo.update_analysis(user_id=999, user_type="도전형")

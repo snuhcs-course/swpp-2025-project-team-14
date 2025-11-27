@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import ABC, abstractmethod
 from typing import List
 from datetime import date
 import random
@@ -17,33 +18,20 @@ from app.features.selfaware.prompt import MultiValueScoreStructure, ValueMapAnal
 from app.features.selfaware.repository import QuestionRepository, AnswerRepository, ValueMapRepository, ValueScoreRepository
 from app.features.selfaware.prompt import CATEGORIES, CategoryExtractionResponse, QuestionGenerationResponse
 
-class QuestionService:
-    def __init__(
-        self,
-        journal_repository: JournalRepository,
-        question_repository: QuestionRepository,
-    ) -> None:
-        self.journal_repository = journal_repository
-        self.question_repository = question_repository
+class QuestionStrategy(ABC):
+    @abstractmethod
+    def generate(self, user_id: int, journal_repository: JournalRepository, question_repository: QuestionRepository) -> Question:
+        pass
 
-
-    def generate_selfaware_question(self, user_id: int) -> Question:
-        """
-        특정 사용자의 일기를 DB에서 불러와 요약 → 감정 분석 및 카테고리 추출 → 자기성찰 질문을 생성 → DB 저장
-        """
+class SelfawareStrategy(QuestionStrategy):
+    def generate(self, user_id: int, journal_repository: JournalRepository, question_repository: QuestionRepository):
         llm = ChatOpenAI(model="gpt-5-nano")
         summary_parser  = PydanticOutputParser(pydantic_object=JournalSummary)
         category_parser = PydanticOutputParser(pydantic_object=CategoryExtractionResponse)
         question_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
 
         # ✅ 1. 유저의 일기 가져오기
-        journals = self.journal_repository.list_journals_by_user(user_id)
-        if not journals or len(journals) == 0:
-            type = random.randint(0, 1)
-            if type == 0:
-                return self.generate_single_category_question(user_id)
-            if type == 1:
-                return self.generate_multi_category_question(user_id)
+        journals = journal_repository.list_journals_by_user(user_id)
 
         # ✅ 2. 최근 일기 3~5개만 선택 (토큰 제한 방지)
         recent_journals = journals[-5:]
@@ -85,16 +73,16 @@ class QuestionService:
         response: QuestionGenerationResponse = question_chain.invoke({"summary": summary, "analysis": analysis, "categories": categories_text})
 
         # DB에 저장
-        question = self.question_repository.create_question(
+        question = question_repository.create_question(
             user_id=user_id,
             question_type="personalized_category",  
             text=response.question,
         )
 
         return question
-    
 
-    def generate_single_category_question(self, user_id: int) -> Question:
+class SingleStrategy(QuestionStrategy):
+    def generate(self, user_id: int, journal_repository: JournalRepository, question_repository: QuestionRepository):
         llm = ChatOpenAI(model="gpt-5-nano")
         output_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
         
@@ -108,16 +96,16 @@ class QuestionService:
         response: QuestionGenerationResponse = single_category_chain.invoke({"category": category})
 
         # DB에 저장
-        question = self.question_repository.create_question(
+        question = question_repository.create_question(
             user_id=user_id,
             question_type="single_category",
             text=response.question,
         )
 
         return question
-
-
-    def generate_multi_category_question(self, user_id: int) -> Question:
+    
+class MultiStrategy(QuestionStrategy):
+    def generate(self, user_id: int, journal_repository: JournalRepository, question_repository: QuestionRepository):
         llm = ChatOpenAI(model="gpt-5-nano")
         output_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
 
@@ -135,7 +123,7 @@ class QuestionService:
         response: QuestionGenerationResponse = multi_category_chain.invoke({"categories": categories})
     
         # DB에 저장
-        question = self.question_repository.create_question(
+        question = question_repository.create_question(
             user_id=user_id,
             question_type="multi_category",
             text=response.question,
@@ -143,14 +131,37 @@ class QuestionService:
 
         return question
 
-    def generate_question(self, user_id: int) -> Question:
-        type = random.randint(0, 2)
-        if type == 0:
-            return self.generate_selfaware_question(user_id)
-        if type == 1:
-            return self.generate_single_category_question(user_id)
-        return self.generate_multi_category_question(user_id)
+class NatigationContext:
+    def __init__(self):
+        self.question_strategy: QuestionStrategy
 
+    def set_question_strategy(self, question_strategy: QuestionStrategy):
+        self.question_strategy = question_strategy
+
+    def perform(self, user_id, journal_repository, question_repository):
+        if self.question_strategy is None:
+            raise ValueError("Question strategy is not set.")
+        return self.question_strategy.generate(user_id, journal_repository, question_repository)
+
+class QuestionService:
+    def __init__(
+        self,
+        journal_repository: JournalRepository,
+        question_repository: QuestionRepository,
+    ) -> None:
+        self.journal_repository = journal_repository
+        self.question_repository = question_repository
+
+    def generate_question(self, user_id: int) -> Question:
+        navigation = NatigationContext()
+        flag = random.randint(0, 2)
+        if flag == 0:
+            navigation.set_question_strategy(SelfawareStrategy())
+        elif flag == 1:
+            navigation.set_question_strategy(SingleStrategy())
+        else:
+            navigation.set_question_strategy(MultiStrategy())
+        return navigation.perform(user_id, self.journal_repository, self.question_repository)
 
     def get_questions_by_id(self, question_id: int) -> Question | None:
         return self.question_repository.get_question_by_id(question_id)

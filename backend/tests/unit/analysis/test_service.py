@@ -63,15 +63,23 @@ def test_evaluate_big_5_score(service, mocker):
     mock_evaluate = mocker.patch(
         "app.features.analysis.service.evaluate", return_value={"O": 60}
     )
-    result = service.evaluate_big_5_score(user_id=1, age=23, sex="Male")
+    result = service.evaluate_big_5_score(user_id=1, age=23, gender="Male")
     mock_evaluate.assert_called_once()
     assert result == {"O": 60}
 
 
 def test_get_comment_from_big_5_score(service, mocker):
-    pass
+    response = service.get_comment_from_big_5_score(user_id=1, age=23, gender="Male")
+    assert isinstance(response[0], str)
+    assert isinstance(response[1], str)
+    assert isinstance(response[2], str)
+    assert isinstance(response[3], str)
+    assert isinstance(response[4], str)
 
 
 def test_extract_personalized_advice(service, mocker, mock_analysis_repo):
-    response = service.extract_personalized_advice(user_id=1, age=23, sex="Male")
+    theory, response = service.extract_personalized_advice(
+        user_id=1, age=23, gender="Male"
+    )
+    assert theory in ["CBT", "ACT", "EQ"]
     assert len(response) > 0
