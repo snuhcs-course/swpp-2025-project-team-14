@@ -106,7 +106,14 @@ class SettingsFragment : Fragment() {
 
                     val infoParts = mutableListOf<String>()
                     user.birthdate?.let { infoParts.add(it) }
-                    user.gender?.let { infoParts.add(it) }
+                    user.gender?.let { gender ->
+                        val displayGender = when (gender.uppercase()) {
+                            "M", "MALE" -> "남자"
+                            "F", "FEMALE" -> "여자"
+                            else -> "기타"
+                        }
+                        infoParts.add(displayGender)
+                    }
 
                     if (infoParts.isNotEmpty()) {
                         binding.tvAdditionalInfo.text = infoParts.joinToString(" · ")

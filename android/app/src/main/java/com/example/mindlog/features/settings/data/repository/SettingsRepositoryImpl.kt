@@ -2,6 +2,7 @@ package com.example.mindlog.features.settings.data.repository
 
 import com.example.mindlog.core.model.UserInfo
 import com.example.mindlog.features.settings.data.api.SettingsApi
+import com.example.mindlog.features.settings.data.dto.PasswordUpdateRequest
 import com.example.mindlog.features.settings.data.dto.UserUpdateRequest
 import com.example.mindlog.features.settings.domain.repository.SettingsRepository
 import javax.inject.Inject
@@ -23,14 +24,12 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateUserInfo(
-        password: String?,
         username: String?,
         gender: String?,
         birthdate: String?,
         appearance: String?
     ) {
         val request = UserUpdateRequest(
-            password = password,
             username = username,
             gender = gender,
             birthdate = birthdate,
@@ -38,9 +37,21 @@ class SettingsRepositoryImpl @Inject constructor(
         )
 
         val response = api.updateUserInfo(request)
-
         if (!response.isSuccessful) {
             throw RuntimeException("내 정보 업데이트 실패: ${response.code()} ${response.message()}")
+        }
+    }
+
+    override suspend fun updatePassword(currentPassword: String, newPassword: String) {
+        val request = PasswordUpdateRequest(
+            currentPassword = currentPassword,
+            newPassword = newPassword
+        )
+        val response = api.updatePassword(request)
+
+        if (!response.isSuccessful) {
+            val errorMsg = response.errorBody()?.string() ?: response.message()
+            throw RuntimeException(errorMsg)
         }
     }
 }

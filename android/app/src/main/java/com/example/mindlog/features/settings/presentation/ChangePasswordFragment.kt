@@ -46,6 +46,13 @@ class ChangePasswordFragment : Fragment() {
             val newPw = binding.etNewPassword.text.toString()
             val confirmPw = binding.etConfirmPassword.text.toString()
 
+            if (currentPw.isBlank()) {
+                binding.tilCurrentPassword.error = "현재 비밀번호를 입력해주세요."
+                return@setOnClickListener
+            } else {
+                binding.tilCurrentPassword.error = null
+            }
+
             if (newPw.isBlank()) {
                 binding.tilNewPassword.error = "새 비밀번호를 입력해주세요."
                 return@setOnClickListener
@@ -55,11 +62,10 @@ class ChangePasswordFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // 에러 메시지 초기화
             binding.tilNewPassword.error = null
             binding.tilConfirmPassword.error = null
 
-            showConfirmDialog(newPw)
+            showConfirmDialog(currentPw, newPw)
         }
 
         observeViewModel()
@@ -83,13 +89,13 @@ class ChangePasswordFragment : Fragment() {
         }
     }
 
-    private fun showConfirmDialog(newPw: String) {
+    private fun showConfirmDialog(currentPw: String, newPw: String) {
         MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_MindLog_AlertDialog)
             .setTitle("비밀번호 변경")
             .setMessage("정말로 비밀번호를 변경하시겠습니까?")
             .setNegativeButton("취소", null)
             .setPositiveButton("확인") { _, _ ->
-                viewModel.updatePassword(newPw)
+                viewModel.updatePassword(currentPw, newPw)
             }
             .show()
     }

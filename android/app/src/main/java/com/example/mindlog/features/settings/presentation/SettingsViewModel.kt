@@ -1,4 +1,3 @@
-// path: android/app/src/main/java/com/example/mindlog/features/settings/presentation/SettingsViewModel.kt
 package com.example.mindlog.features.settings.presentation
 
 import androidx.lifecycle.LiveData
@@ -9,6 +8,7 @@ import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.model.UserInfo
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.settings.domain.usecase.GetUserInfoUseCase
+import com.example.mindlog.features.settings.domain.usecase.UpdatePasswordUseCase
 import com.example.mindlog.features.settings.domain.usecase.UpdateUserInfoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,6 +20,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val updateUserInfoUseCase: UpdateUserInfoUseCase,
+    private val updatePasswordUseCase: UpdatePasswordUseCase,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
@@ -65,10 +66,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun updatePassword(newPassword: String) {
+    fun updatePassword(currentPassword: String, newPassword: String) {
         viewModelScope.launch {
             try {
-                updateUserInfoUseCase(password = newPassword)
+                updatePasswordUseCase(
+                    currentPassword = currentPassword,
+                    newPassword = newPassword
+                )
                 _updateResult.emit(Result.Success("비밀번호가 변경되었습니다."))
             } catch (e: Exception) {
                 _updateResult.emit(Result.Error(message = e.message ?: "비밀번호 변경 실패"))
