@@ -424,34 +424,6 @@ def test_update_me_success(client: TestClient, db_session: Session, test_user: U
     assert test_user.birthdate == new_birthdate
 
 
-def test_update_me_password(client: TestClient, db_session: Session, test_user: User):
-    """Test updating user password and verifying login with new password."""
-    # Arrange: 로그인
-    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
-    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
-    headers = {"Authorization": f"Bearer {token}"}
-
-    # Act: 비밀번호 변경 요청
-    new_password = "NewPassword123!"
-    update_data = {"password": new_password}
-
-    response = client.patch("/api/v1/user/me", json=update_data, headers=headers)
-    db_session.flush()
-
-    # Assert: 변경 성공 확인
-    assert response.status_code == 200
-
-    # Act & Assert: 새 비밀번호로 로그인 시도 성공 확인
-    new_login_data = {"login_id": "test_user", "password": new_password}
-    new_login_resp = client.post("/api/v1/auth/login", json=new_login_data)
-    assert new_login_resp.status_code == 201
-
-    # Act & Assert: 구 비밀번호로 로그인 시도 실패 확인
-    old_login_data = {"login_id": "test_user", "password": "ValidPass123!"}
-    old_login_resp = client.post("/api/v1/auth/login", json=old_login_data)
-    assert old_login_resp.status_code == 401
-
-
 def test_update_me_invalid_data(
     client: TestClient, db_session: Session, test_user: User
 ):
@@ -467,8 +439,6 @@ def test_update_me_invalid_data(
 
     # Assert: 400 Bad Request
     assert response.status_code == 400
-    # 에러 메시지에 password 관련 내용이 있는지 확인
-    assert "password" in str(response.json())
 
 
 def test_update_me_no_fields(client: TestClient, db_session: Session, test_user: User):
@@ -482,4 +452,73 @@ def test_update_me_no_fields(client: TestClient, db_session: Session, test_user:
     response = client.patch("/api/v1/user/me", json={}, headers=headers)
 
     # Assert: 400 Bad Request
+    assert response.status_code == 400
+
+
+# --- 8. 비밀번호 변경 (PATCH /user/update-password) ---
+
+
+def test_update_password_success(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test successful password update."""
+    # Arrange: 로그인하여 토큰 발급
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    login_resp = client.post("/api/v1/auth/login", json=login_data)
+    token = login_resp.json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 비밀번호 변경 요청
+    new_password = "NewPassword123!"
+    data = {"current_password": "ValidPass123!", "new_password": new_password}
+    response = client.patch("/api/v1/user/update-password", json=data, headers=headers)
+    db_session.flush()
+
+    # Assert: 응답 상태 확인
+    assert response.status_code == 200
+    assert response.json() == "Update Success"
+
+    # Act & Assert: 새 비밀번호로 로그인 성공 확인
+    new_login_data = {"login_id": "test_user", "password": new_password}
+    new_login_resp = client.post("/api/v1/auth/login", json=new_login_data)
+    assert new_login_resp.status_code == 201
+
+    # Act & Assert: 구 비밀번호로 로그인 실패 확인
+    old_login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    old_login_resp = client.post("/api/v1/auth/login", json=old_login_data)
+    assert old_login_resp.status_code == 401
+
+
+def test_update_password_wrong_current(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test password update with incorrect current password."""
+    # Arrange: 로그인
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 틀린 현재 비밀번호로 요청
+    data = {"current_password": "WrongPassword123!", "new_password": "NewPassword123!"}
+    response = client.patch("/api/v1/user/update-password", json=data, headers=headers)
+
+    # Assert: 401 Unauthorized
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid current password"
+
+
+def test_update_password_invalid_new_format(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test password update with invalid new password format."""
+    # Arrange: 로그인
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 너무 짧거나 유효하지 않은 형식의 새 비밀번호로 요청
+    data = {"current_password": "ValidPass123!", "new_password": "short"}
+    response = client.patch("/api/v1/user/update-password", json=data, headers=headers)
+
+    # Assert: 400 Bad Request (Validation Error)
     assert response.status_code == 400
