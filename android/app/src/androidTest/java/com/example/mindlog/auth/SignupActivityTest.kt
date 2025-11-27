@@ -54,16 +54,16 @@ class SignupActivityTest {
 
         ActivityScenario.launch(SignupActivity::class.java).use {
             onView(withId(R.id.etUsername))
-                .perform(typeText("test_username"), closeSoftKeyboard())
+                .perform(replaceText("test_username"), closeSoftKeyboard())
 
             onView(withId(R.id.etLoginId))
-                .perform(typeText("test_id"), closeSoftKeyboard())
+                .perform(replaceText("testid123"), closeSoftKeyboard())
 
             onView(withId(R.id.etPassword))
-                .perform(typeText("password123"), closeSoftKeyboard())
+                .perform(replaceText("password123"), closeSoftKeyboard())
 
             onView(withId(R.id.etConfirmPassword))
-                .perform(typeText("password123"), closeSoftKeyboard())
+                .perform(replaceText("password123"), closeSoftKeyboard())
 
             onView(withId(R.id.rbMale)).perform(click())
 
@@ -86,11 +86,11 @@ class SignupActivityTest {
 
         // 입력
         ActivityScenario.launch(SignupActivity::class.java).use {
-            onView(withId(R.id.etUsername)).perform(typeText("test_username"), closeSoftKeyboard())
-            onView(withId(R.id.etLoginId)).perform(typeText("test_id"), closeSoftKeyboard())
-            onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
+            onView(withId(R.id.etUsername)).perform(replaceText("test_username"), closeSoftKeyboard())
+            onView(withId(R.id.etLoginId)).perform(replaceText("testid123"), closeSoftKeyboard())
+            onView(withId(R.id.etPassword)).perform(replaceText("password123"), closeSoftKeyboard())
             onView(withId(R.id.etConfirmPassword)).perform(
-                typeText("password123"),
+                replaceText("password123"),
                 closeSoftKeyboard()
             )
             onView(withId(R.id.rbMale)).perform(click())
@@ -131,10 +131,10 @@ class SignupActivityTest {
     @Test
     fun signup_password_mismatch_shows_validation_error() {
         ActivityScenario.launch(SignupActivity::class.java).use {
-            onView(withId(R.id.etUsername)).perform(typeText("test_username"), closeSoftKeyboard())
-            onView(withId(R.id.etLoginId)).perform(typeText("test_id"), closeSoftKeyboard())
-            onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
-            onView(withId(R.id.etConfirmPassword)).perform(typeText("different123"), closeSoftKeyboard())
+            onView(withId(R.id.etUsername)).perform(replaceText("test_username"), closeSoftKeyboard())
+            onView(withId(R.id.etLoginId)).perform(replaceText("testid123"), closeSoftKeyboard())
+            onView(withId(R.id.etPassword)).perform(replaceText("password123"), closeSoftKeyboard())
+            onView(withId(R.id.etConfirmPassword)).perform(replaceText("different123"), closeSoftKeyboard())
             onView(withId(R.id.rbMale)).perform(click())
             onView(withId(R.id.actBirthYear)).perform(replaceText("2000"), closeSoftKeyboard())
             onView(withId(R.id.actBirthMonth)).perform(replaceText("1"), closeSoftKeyboard())
@@ -145,6 +145,52 @@ class SignupActivityTest {
             onView(withId(R.id.tvSignupError))
                 .check(matches(isDisplayed()))
                 .check(matches(withText("비밀번호가 일치하지 않습니다.")))
+
+            Intents.intended(hasComponent(MainActivity::class.java.name), Intents.times(0))
+        }
+    }
+
+    @Test
+    fun signup_invalid_login_id_shows_validation_error() {
+        ActivityScenario.launch(SignupActivity::class.java).use {
+            onView(withId(R.id.etUsername)).perform(replaceText("test_username"), closeSoftKeyboard())
+            // 잘못된 아이디: 한글 포함
+            onView(withId(R.id.etLoginId)).perform(replaceText("아이디"), closeSoftKeyboard())
+            onView(withId(R.id.etPassword)).perform(replaceText("password123"), closeSoftKeyboard())
+            onView(withId(R.id.etConfirmPassword)).perform(replaceText("password123"), closeSoftKeyboard())
+            onView(withId(R.id.rbMale)).perform(click())
+            onView(withId(R.id.actBirthYear)).perform(replaceText("2000"), closeSoftKeyboard())
+            onView(withId(R.id.actBirthMonth)).perform(replaceText("1"), closeSoftKeyboard())
+            onView(withId(R.id.actBirthDay)).perform(replaceText("1"), closeSoftKeyboard())
+
+            onView(withId(R.id.btnSignup)).perform(click())
+
+            onView(withId(R.id.tvSignupError))
+                .check(matches(isDisplayed()))
+                .check(matches(withText("로그인 아이디는 영어 대소문자와 숫자로만 입력해주세요.")))
+
+            Intents.intended(hasComponent(MainActivity::class.java.name), Intents.times(0))
+        }
+    }
+
+    @Test
+    fun signup_weak_password_shows_validation_error() {
+        ActivityScenario.launch(SignupActivity::class.java).use {
+            onView(withId(R.id.etUsername)).perform(replaceText("test_username"), closeSoftKeyboard())
+            onView(withId(R.id.etLoginId)).perform(replaceText("testid123"), closeSoftKeyboard())
+            // 약한 비밀번호: 영문만 8자
+            onView(withId(R.id.etPassword)).perform(replaceText("abcdefgh"), closeSoftKeyboard())
+            onView(withId(R.id.etConfirmPassword)).perform(replaceText("abcdefgh"), closeSoftKeyboard())
+            onView(withId(R.id.rbMale)).perform(click())
+            onView(withId(R.id.actBirthYear)).perform(replaceText("2000"), closeSoftKeyboard())
+            onView(withId(R.id.actBirthMonth)).perform(replaceText("1"), closeSoftKeyboard())
+            onView(withId(R.id.actBirthDay)).perform(replaceText("1"), closeSoftKeyboard())
+
+            onView(withId(R.id.btnSignup)).perform(click())
+
+            onView(withId(R.id.tvSignupError))
+                .check(matches(isDisplayed()))
+                .check(matches(withText("비밀번호는 특수문자, 영어, 숫자 중 2가지 이상을 포함하고 8자 이상이어야 합니다.")))
 
             Intents.intended(hasComponent(MainActivity::class.java.name), Intents.times(0))
         }
