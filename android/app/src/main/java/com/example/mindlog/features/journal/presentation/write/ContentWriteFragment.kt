@@ -222,6 +222,11 @@ class ContentWriteFragment : Fragment() {
             )
             if (isAdded) {
                 Glide.with(this).load(sources.first()).into(binding.ivPreview)
+                val previewLayoutParams = binding.ivPreview.layoutParams
+                previewLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                binding.ivPreview.layoutParams = previewLayoutParams
+                binding.ivPreview.adjustViewBounds = true
+                binding.ivPreview.requestLayout()
             }
         } else {
             constraintSet.connect(

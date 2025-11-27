@@ -42,10 +42,10 @@
     <ImageView
         android:id="@+id/iv_thumbnail"
         android:layout_width="0dp"
-        android:layout_height="120dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/space_s"
         android:contentDescription="@null"
-        android:scaleType="centerCrop"
+        android:scaleType="fitCenter"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
