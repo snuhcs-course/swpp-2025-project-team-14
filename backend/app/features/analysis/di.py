@@ -2,6 +2,7 @@ from app.database.session import get_db_session
 from app.features.analysis.repository import AnalysisRepository
 from app.features.analysis.service import AnalysisService
 from app.features.selfaware.repository import AnswerRepository
+from app.features.user.repository import UserRepository
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
