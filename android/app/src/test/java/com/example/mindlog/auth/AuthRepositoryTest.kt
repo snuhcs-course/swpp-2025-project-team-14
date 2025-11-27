@@ -214,34 +214,71 @@ class AuthRepositoryTest {
     // logout
     // ------------------------
     @Test
-    fun `logout clears tokens even when no access`() = runTest {
+    fun `logout returns Error when no refresh token`() = runTest {
         // given
-        `when`(tokenManager.getAccessToken()).thenReturn(null)
+        `when`(tokenManager.getRefreshToken()).thenReturn(null)
 
         // when
         val result = repo.logout()
 
         // then
-        assertTrue(result is Result.Success && result.data)
-        verify(tokenManager).getAccessToken()
-        verify(tokenManager).clearTokens()
+        assertTrue(result is Result.Error)
+        verify(tokenManager).getRefreshToken()
         verifyNoMoreInteractions(tokenManager)
         verifyNoInteractions(authApi)
     }
 
     @Test
-    fun `logout calls api and clears tokens when access exists`() = runBlocking {
+    fun `logout calls api and clears tokens when refresh exists and api success`() = runTest {
         // given
-        `when`(tokenManager.getAccessToken()).thenReturn("AAA")
+        `when`(tokenManager.getRefreshToken()).thenReturn("RRR")
+        `when`(authApi.logout(RefreshTokenRequest("RRR")))
+            .thenReturn(LogoutResponse(ok = true, data = null, error = null))
 
         // when
         val result = repo.logout()
 
         // then
         assertTrue(result is Result.Success && result.data)
-        // verify(authApi).logout("Bearer AAA")
-        verify(tokenManager).getAccessToken()
+        verify(tokenManager).getRefreshToken()
+        verify(authApi).logout(RefreshTokenRequest("RRR"))
         verify(tokenManager).clearTokens()
+        verifyNoMoreInteractions(authApi, tokenManager)
+    }
+
+    @Test
+    fun `logout returns Error and does not clear tokens when api returns not ok`() = runTest {
+        // given
+        `when`(tokenManager.getRefreshToken()).thenReturn("RRR")
+        `when`(authApi.logout(RefreshTokenRequest("RRR")))
+            .thenReturn(LogoutResponse(ok = false, data = null, error = "fail"))
+
+        // when
+        val result = repo.logout()
+
+        // then
+        assertTrue(result is Result.Error)
+        verify(tokenManager).getRefreshToken()
+        verify(authApi).logout(RefreshTokenRequest("RRR"))
+        verify(tokenManager, never()).clearTokens()
+        verifyNoMoreInteractions(authApi, tokenManager)
+    }
+
+    @Test
+    fun `logout returns Error and does not clear tokens when api throws`() = runTest {
+        // given
+        `when`(tokenManager.getRefreshToken()).thenReturn("RRR")
+        `when`(authApi.logout(RefreshTokenRequest("RRR")))
+            .thenThrow(RuntimeException("network"))
+
+        // when
+        val result = repo.logout()
+
+        // then
+        assertTrue(result is Result.Error)
+        verify(tokenManager).getRefreshToken()
+        verify(authApi).logout(RefreshTokenRequest("RRR"))
+        verify(tokenManager, never()).clearTokens()
         verifyNoMoreInteractions(authApi, tokenManager)
     }
 }
