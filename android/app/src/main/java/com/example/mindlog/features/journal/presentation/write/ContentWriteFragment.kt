@@ -314,7 +314,7 @@ class ContentWriteFragment : Fragment() {
     }
 
     private fun showImageDeleteConfirmDialog() {
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_MindLog_AlertDialog)
             .setTitle("이미지 삭제")
             .setMessage("선택한 이미지를 삭제하시겠습니까?")
             .setNegativeButton("취소", null)

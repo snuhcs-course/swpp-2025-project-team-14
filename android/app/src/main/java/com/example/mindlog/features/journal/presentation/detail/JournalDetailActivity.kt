@@ -26,7 +26,6 @@ class JournalDetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_JOURNAL_ID = "EXTRA_JOURNAL_ID"
-        // ✨ 결과를 반환할 때 사용할 새로운 상수 정의
         const val EXTRA_UPDATED_JOURNAL_ID = "EXTRA_UPDATED_JOURNAL_ID"
         const val EXTRA_DELETED_JOURNAL_ID = "EXTRA_DELETED_JOURNAL_ID"
     }
@@ -35,15 +34,12 @@ class JournalDetailActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // 수정이 완료되면, 수정된 ID를 결과 Intent에 담아 설정
             val resultIntent = Intent().apply {
                 putExtra(EXTRA_UPDATED_JOURNAL_ID, viewModel.journalId!!)
             }
             setResult(Activity.RESULT_OK, resultIntent)
-            // 현재 화면의 내용도 새로고침
             viewModel.loadJournalDetails(viewModel.journalId!!, forceRefresh = true)
         }
-        // 단순 뒤로가기(RESULT_OK가 아님)의 경우 아무것도 하지 않음
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +65,6 @@ class JournalDetailActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
-        // 뒤로가기 버튼은 아무런 result도 설정하지 않고 그냥 종료만 함
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
@@ -112,7 +107,7 @@ class JournalDetailActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmDialog() {
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MindLog_AlertDialog)
             .setTitle("일기 삭제")
             .setMessage("정말로 이 일기를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.")
             .setNegativeButton("취소", null)

@@ -78,11 +78,9 @@ class JournalEditActivity : AppCompatActivity() {
         viewModel.journalState.observe(this) { result ->
             when (result) {
                 is Result.Success -> {
-                    // TODO: 로딩 인디케이터 숨김
                     binding.editFragmentContainer.visibility = View.VISIBLE
                 }
                 is Result.Error -> {
-                    // TODO: 로딩 인디케이터 숨김
                     Toast.makeText(this, result.message, Toast.LENGTH_LONG).show()
                     finish()
                 }
@@ -92,7 +90,6 @@ class JournalEditActivity : AppCompatActivity() {
         // 수정/삭제 결과 관찰
         lifecycleScope.launch {
             viewModel.editResult.collect { result ->
-                // 👇 when을 statement로 사용하여 else 브랜치 생략 가능
                 when (result) {
                     is Result.Success -> {
                         Toast.makeText(this@JournalEditActivity, result.data, Toast.LENGTH_SHORT).show()
@@ -108,7 +105,7 @@ class JournalEditActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmDialog() {
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MindLog_AlertDialog)
             .setTitle("일기 삭제")
             .setMessage("정말로 이 일기를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.")
             .setNegativeButton("취소", null)
