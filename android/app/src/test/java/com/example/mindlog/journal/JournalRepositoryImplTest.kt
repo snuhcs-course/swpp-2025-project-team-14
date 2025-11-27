@@ -1,8 +1,9 @@
-package com.example.mindlog.features.journal.data.repository
+package com.example.mindlog.journal
 
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.journal.data.dto.UpdateJournalRequest
 import com.example.mindlog.features.journal.data.mapper.JournalMapper
+import com.example.mindlog.features.journal.data.repository.JournalRepositoryImpl
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -29,7 +30,7 @@ class JournalRepositoryImplTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var journalApi: JournalApi
     private lateinit var journalRepository: JournalRepositoryImpl
-    private lateinit var journalMapper: JournalMapper // ✨ Mapper 인스턴스 추가
+    private lateinit var journalMapper: JournalMapper
 
     @Before
     fun setup() {
@@ -47,7 +48,6 @@ class JournalRepositoryImplTest {
             .build()
             .create(JournalApi::class.java)
 
-        // ✨ 실제 Mapper 인스턴스를 생성하여 Repository에 주입
         journalMapper = JournalMapper()
         journalRepository = JournalRepositoryImpl(journalApi, journalMapper)
     }
@@ -83,7 +83,6 @@ class JournalRepositoryImplTest {
         val request = mockWebServer.takeRequest()
         assertEquals("/journal/me?limit=10", request.path)
         assertEquals(2, result.items.size)
-        // ✨ DTO가 아닌 JournalEntry 모델의 필드를 검증
         assertEquals(1, result.items[0].id)
         assertEquals("Test 1", result.items[0].title)
         assertEquals(3, result.nextCursor)
@@ -132,7 +131,6 @@ class JournalRepositoryImplTest {
         )
 
         // When
-        // ✨ 반환 타입이 JournalResponse -> Int로 변경됨
         val createdId = journalRepository.createJournal(
             "New Journal",
             "New Content",
@@ -168,7 +166,6 @@ class JournalRepositoryImplTest {
         )
 
         // When
-        // ✨ 반환 타입이 KeywordListResponse -> List<Keyword>로 변경됨
         val result = journalRepository.extractKeywords(journalId)
 
         // Then
@@ -178,14 +175,9 @@ class JournalRepositoryImplTest {
 
         assertNotNull(result)
         assertEquals(1, result.size)
-        // ✨ DTO가 아닌 Keyword 모델의 필드를 검증
         assertEquals("test", result.first().keyword)
         assertEquals("happy", result.first().emotion)
     }
-
-    // 나머지 테스트(update, delete, search, upload 등)는 Repository의 반환 타입이
-    // Unit, String, Exception 등이라서 리팩토링의 영향을 받지 않으므로 기존 코드를 그대로 유지합니다.
-    // 아래는 기존 테스트 코드를 그대로 유지한 부분입니다.
 
     @Test(expected = HttpException::class)
     fun `getJournalById - failure - throws HttpException for 404`() = runTest {
@@ -344,5 +336,4 @@ class JournalRepositoryImplTest {
         assertEquals("행복", result.items[0].keywords.first().keyword)
         assertEquals(5, result.nextCursor)
     }
-
 }
