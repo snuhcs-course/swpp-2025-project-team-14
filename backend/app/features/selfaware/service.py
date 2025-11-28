@@ -173,6 +173,9 @@ class QuestionService:
 
     def get_questions_by_date(self, user_id: int, date: date) -> Question | None:
         return self.question_repository.get_question_by_date(user_id, date)
+    
+    def delete_question_by_id(self, user_id: int, question_id: int):
+        return self.delete_question_by_id(user_id, question_id)
 
 
 class AnswerService:
