@@ -64,7 +64,7 @@ class EditProfileFragmentTest {
         onView(withId(R.id.act_birth_month)).check(matches(withText("01")))
         onView(withId(R.id.act_birth_day)).check(matches(withText("01")))
 
-        // 성별 (M -> 남성)
+        // 성별 (Male -> 남성)
         onView(withId(R.id.rb_male)).check(matches(isChecked()))
 
         // 외모
@@ -100,7 +100,7 @@ class EditProfileFragmentTest {
 
         assertEquals("새로운 이름", updatedUser.username)
         assertEquals("새로운 스타일", updatedUser.appearance)
-        assertEquals("F", updatedUser.gender)
+        assertEquals("Female", updatedUser.gender)
         // 변경된 년도와 기존 월/일 조합 확인
         assertEquals("2000-01-01", updatedUser.birthdate)
     }

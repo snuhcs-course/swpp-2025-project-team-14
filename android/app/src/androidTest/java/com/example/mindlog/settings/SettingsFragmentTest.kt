@@ -50,7 +50,7 @@ class SettingsFragmentTest {
     @Test
     fun displayUserInfo_showsCorrectDataFromRepository() {
         // Given: Repository 초기 데이터 (TestSettingsRepository 참조)
-        // username: "기존 사용자", loginId: "test_login_id", birthdate: "1990-01-01", gender: "M"
+        // username: "기존 사용자", loginId: "test_login_id", birthdate: "1990-01-01", gender: "M" (UI에서는 "남자"로 표시됨)
 
         // When
         launchFragmentInHiltContainer<SettingsFragment>()
@@ -60,7 +60,7 @@ class SettingsFragmentTest {
         onView(withId(R.id.tv_login_id)).check(matches(withText("ID: test_login_id")))
 
         // birthdate와 gender가 합쳐져서 표시됨
-        onView(withId(R.id.tv_additional_info)).check(matches(withText("1990-01-01 · M")))
+        onView(withId(R.id.tv_additional_info)).check(matches(withText("1990-01-01 · 남자")))
     }
 
     @Test

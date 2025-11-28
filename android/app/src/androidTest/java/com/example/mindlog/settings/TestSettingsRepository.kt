@@ -13,7 +13,7 @@ class TestSettingsRepository @Inject constructor() : SettingsRepository {
         id = 1,
         loginId = "test_login_id",
         username = "기존 사용자",
-        gender = "M",
+        gender = "Male",
         birthdate = "1990-01-01",
         appearance = "기존 외모"
     )
@@ -27,18 +27,12 @@ class TestSettingsRepository @Inject constructor() : SettingsRepository {
     }
 
     override suspend fun updateUserInfo(
-        password: String?,
         username: String?,
         gender: String?,
         birthdate: String?,
         appearance: String?
     ) {
-        // 비밀번호 변경 요청이 오면 기록
-        if (password != null) {
-            lastUpdatedPassword = password
-        }
-
-        // 나머지 정보 업데이트
+        // 프로필 정보만 업데이트
         currentUserInfo = currentUserInfo.copy(
             username = username ?: currentUserInfo.username,
             gender = gender ?: currentUserInfo.gender,
@@ -47,13 +41,18 @@ class TestSettingsRepository @Inject constructor() : SettingsRepository {
         )
     }
 
+    override suspend fun updatePassword(currentPassword: String, newPassword: String) {
+        // 테스트에서는 단순히 마지막으로 변경 요청된 비밀번호만 기록
+        lastUpdatedPassword = newPassword
+    }
+
     // 테스트 상태 초기화
     fun reset() {
         currentUserInfo = UserInfo(
             id = 1,
             loginId = "test_login_id",
             username = "기존 사용자",
-            gender = "M",
+            gender = "Male",
             birthdate = "1990-01-01",
             appearance = "기존 외모"
         )

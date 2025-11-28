@@ -5,6 +5,7 @@ import com.example.mindlog.core.common.Result
 import com.example.mindlog.core.model.UserInfo
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.settings.domain.usecase.GetUserInfoUseCase
+import com.example.mindlog.features.settings.domain.usecase.UpdatePasswordUseCase
 import com.example.mindlog.features.settings.domain.usecase.UpdateUserInfoUseCase
 import com.example.mindlog.features.settings.presentation.SettingsViewModel
 import com.example.mindlog.utils.MainDispatcherRule
@@ -17,6 +18,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.*
+import org.mockito.kotlin.eq
 
 @ExperimentalCoroutinesApi
 class SettingsViewModelTest {
@@ -29,6 +31,7 @@ class SettingsViewModelTest {
 
     private lateinit var getUserInfoUseCase: GetUserInfoUseCase
     private lateinit var updateUserInfoUseCase: UpdateUserInfoUseCase
+    private lateinit var updatePasswordUseCase: UpdatePasswordUseCase
     private lateinit var authRepository: AuthRepository
     private lateinit var viewModel: SettingsViewModel
 
@@ -45,8 +48,10 @@ class SettingsViewModelTest {
     fun setup() {
         getUserInfoUseCase = mock()
         updateUserInfoUseCase = mock()
+        updatePasswordUseCase = mock()
+
         authRepository = mock()
-        viewModel = SettingsViewModel(getUserInfoUseCase, updateUserInfoUseCase, authRepository)
+        viewModel = SettingsViewModel(getUserInfoUseCase, updateUserInfoUseCase, updatePasswordUseCase, authRepository)
     }
 
     // --- loadUserInfo ---
@@ -88,7 +93,7 @@ class SettingsViewModelTest {
         val newUsername = "UpdatedUser"
 
         // 순서대로: 업데이트 -> 정보 재로딩
-        whenever(updateUserInfoUseCase.invoke(anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).then { }
+        whenever(updateUserInfoUseCase.invoke(anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).then { }
         whenever(getUserInfoUseCase.invoke()).thenReturn(dummyUserInfo.copy(username = newUsername))
 
         val results = mutableListOf<Result<String>>()
@@ -101,7 +106,12 @@ class SettingsViewModelTest {
 
         // Then
         // 1. Update 호출 검증
-        verify(updateUserInfoUseCase).invoke(username = newUsername, gender = "M", birthdate = "2000-01-01", appearance = "Cool")
+        verify(updateUserInfoUseCase).invoke(
+            username = eq(newUsername),
+            gender = eq("M"),
+            birthdate = eq("2000-01-01"),
+            appearance = eq("Cool")
+        )
         // 2. 성공 메시지 방출 확인
         assertTrue(results.first() is Result.Success)
         assertEquals("프로필이 저장되었습니다.", (results.first() as Result.Success).data)
@@ -113,7 +123,7 @@ class SettingsViewModelTest {
     fun `updateProfile - 실패 시 Error 이벤트를 방출한다`() = runTest {
         // Given
         val errorMessage = "업데이트 실패"
-        whenever(updateUserInfoUseCase.invoke(anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull()))
+        whenever(updateUserInfoUseCase.invoke(anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull()))
             .thenThrow(RuntimeException(errorMessage))
 
         val results = mutableListOf<Result<String>>()
@@ -138,12 +148,12 @@ class SettingsViewModelTest {
         val job = launch { viewModel.updateResult.collect { results.add(it) } }
 
         // When
-        viewModel.updatePassword(newPw)
+        viewModel.updatePassword(currentPassword = "oldPw", newPassword = newPw)
         advanceUntilIdle()
         job.cancel()
 
         // Then
-        verify(updateUserInfoUseCase).invoke(password = newPw)
+        verify(updatePasswordUseCase).invoke(currentPassword = eq("oldPw"), newPassword = eq(newPw))
         assertTrue(results.first() is Result.Success)
         assertEquals("비밀번호가 변경되었습니다.", (results.first() as Result.Success).data)
     }
@@ -152,14 +162,10 @@ class SettingsViewModelTest {
     fun `updatePassword - 예외 발생 시 Error 이벤트를 방출한다`() = runTest {
         // Given
         val errorMessage = "비밀번호 변경 중 오류"
-        // ✨ [수정됨] 모든 파라미터에 Matcher 명시
         whenever(
-            updateUserInfoUseCase.invoke(
-                password = any(),
-                username = anyOrNull(),
-                gender = anyOrNull(),
-                birthdate = anyOrNull(),
-                appearance = anyOrNull()
+            updatePasswordUseCase.invoke(
+                currentPassword = any(),
+                newPassword = any()
             )
         ).thenThrow(RuntimeException(errorMessage))
 
@@ -167,7 +173,7 @@ class SettingsViewModelTest {
         val job = launch { viewModel.updateResult.collect { results.add(it) } }
 
         // When
-        viewModel.updatePassword("1234")
+        viewModel.updatePassword(currentPassword = "oldPw", newPassword = "1234")
         advanceUntilIdle()
         job.cancel()
 

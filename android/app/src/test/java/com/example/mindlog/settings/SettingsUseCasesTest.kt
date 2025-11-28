@@ -54,7 +54,6 @@ class SettingsUseCasesTest {
 
         // Then
         verify(mockRepository).updateUserInfo(
-            password = null,
             username = newName,
             gender = newGender,
             birthdate = null,

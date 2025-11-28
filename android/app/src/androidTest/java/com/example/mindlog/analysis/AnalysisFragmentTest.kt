@@ -85,7 +85,7 @@ class AnalysisFragmentTest {
         // TestAnalysisRepository 에서 넣어둔 타이틀에 맞춰 검증
         onView(withId(R.id.tvAdviceType))
             .perform(scrollTo())
-            .check(matches(withText("오늘의 탐험 가이드")))
+            .check(matches(withText("조언 유형: " + "오늘의 탐험 가이드")))
 
         onView(withId(R.id.tvAdviceBody))
             .perform(scrollTo())
