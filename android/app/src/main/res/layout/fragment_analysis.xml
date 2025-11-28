@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="분석"
+        android:text="나에 대한 분석"
         android:textColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -178,10 +178,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✨"
-                            android:textSize="18sp" />
+                            android:textSize="14dp" />
 
                         <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvAdviceType"
+                            android:id="@+id/tvAdvice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
@@ -191,6 +191,17 @@
                             android:textSize="14sp"
                             tools:text="오늘의 성장 포인트" />
                     </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvAdviceType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="#2D3142"
+                        android:textSize="13sp"
+                        android:lineSpacingExtra="2dp"
+                        tools:text="EQ" />
+
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvAdviceBody"

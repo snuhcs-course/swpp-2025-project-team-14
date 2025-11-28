@@ -14,7 +14,7 @@
         android:layout_height="40dp"
         android:background="@android:color/transparent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="답변 기록"
+        app:title="질문 / 답변 기록"
         app:titleTextColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"

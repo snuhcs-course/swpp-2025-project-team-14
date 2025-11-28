@@ -45,8 +45,7 @@ class StatisticsViewModelTest {
     }
 
     @Test
-    fun `load() picks top emotion from rates when no previous selection`() = runTest {
-        // given
+    fun `load() with no previous selection keeps selectedEmotion null and aggregates events`() = runTest {   // given
         val start = LocalDate.of(2025, 10, 1)
         val end = LocalDate.of(2025, 10, 7)
         vm.setDateRange(start, end)
@@ -80,15 +79,23 @@ class StatisticsViewModelTest {
         assertEquals(false, state.isLoading)
         assertEquals(rates, state.emotionRatios)
         assertEquals(stats, state.statistics)
-        assertEquals(Emotion.HAPPY, state.selectedEmotion) // top from ratio
-        assertEquals(listOf("기쁜 일"), state.emotionEvents) // filtered by selected emotion
-        assertEquals(listOf(EmotionTrend(Emotion.CALM, listOf(1,2,3))), state.emotionTrends)
+        // 초기 진입 시에는 특정 감정 대신 "모든 감정" 상태 (null)
+        assertEquals(null, state.selectedEmotion)
+
+        // 감정 이벤트: 모든 감정 이벤트를 모아 "(감정)" 라벨 붙인 리스트
+        val expectedEvents = listOf(
+            "기쁜 일 (행복)",
+            "슬픈 일 (슬픔)"
+        )
+        assertEquals(expectedEvents.toSet(), state.emotionEvents.toSet())
+
+        // 감정 변화 그래프: 모든 감정 라인 그대로
+        assertEquals(stats.EmotionTrends, state.emotionTrends)
         assertEquals(listOf(JournalKeyword("운동", 3)), state.journalKeywords)
     }
 
     @Test
-    fun `load() falls back to first trend emotion when rates empty`() = runTest {
-        // given
+    fun `load() with empty rates keeps selectedEmotion null and shows all trends`() = runTest {   // given
         val start = LocalDate.of(2025, 10, 1)
         val end = LocalDate.of(2025, 10, 7)
         vm.setDateRange(start, end)
@@ -113,8 +120,14 @@ class StatisticsViewModelTest {
 
         // then
         val state = vm.state.value
-        assertEquals(Emotion.ANXIOUS, state.selectedEmotion)
-        assertEquals(listOf("불안했던 이유"), state.emotionEvents)
+
+        // Rates가 비어 있고 이전 선택이 없으면 여전히 "모든 감정" 상태(null)
+        assertEquals(null, state.selectedEmotion)
+
+        // 감정 이벤트: 불안 이벤트에 "(불안)" 라벨이 붙어야 함
+        assertEquals(listOf("불안했던 이유 (불안)"), state.emotionEvents)
+        // 감정 변화 그래프: 통계에 들어 있는 트렌드 그대로
+        assertEquals(stats.EmotionTrends, state.emotionTrends)
     }
 
     @Test

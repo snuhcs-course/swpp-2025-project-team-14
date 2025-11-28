@@ -141,15 +141,13 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
         card.isVisible = true
 
         if (advice == null) {
-            binding.tvAdviceEmoji.text = "✨"
             binding.tvAdviceType.text = "아직 개인화 조언이 없어요"
             binding.tvAdviceBody.text = "기록이 조금 더 쌓이면 맞춤형 조언을 드릴게요."
             return
         }
 
         // 예시: emoji + title + body 구조라고 가정
-        binding.tvAdviceEmoji.text = advice.adviceType ?: "✨"
-        binding.tvAdviceType.text = advice.adviceType
+        binding.tvAdviceType.text = "조언 유형: " + advice.adviceType
         binding.tvAdviceBody.text = advice.personalizedAdvice
     }
 

@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="나 알아보기"
+        android:text="질문으로 나 알아보기"
         android:textColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"

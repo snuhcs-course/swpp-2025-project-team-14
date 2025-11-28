@@ -2,7 +2,7 @@ package com.example.mindlog.features.tutorial
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mindlog.R
@@ -17,12 +17,43 @@ class TutorialActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_RETURN_TO_SETTINGS = "extra_return_to_settings"
+        const val EXTRA_FEATURE_LABEL = "extra_feature_label"   // 어떤 기능 튜토리얼인지 (예: "일기 작성")
+        const val EXTRA_GO_TO_MENU = "extra_go_to_menu"
     }
 
     private lateinit var binding: ActivityTutorialBinding
     private lateinit var pagerAdapter: TutorialAdapter
 
-    private val pages by lazy { generateTutorialPages() }
+    private val allPages by lazy { generateTutorialPages() }
+
+    // 메뉴 Activity에서 전달된 기능 이름 (예: "일기 작성", "통계")
+    private val selectedFeatureLabel: String? by lazy {
+        intent.getStringExtra(EXTRA_FEATURE_LABEL)
+    }
+
+    // 실제 ViewPager에 표시할 페이지: 기능이 지정되어 있으면 해당 기능만 필터링, 아니면 전체
+    private val pages: List<TutorialPage> by lazy {
+        val feature = selectedFeatureLabel
+        if (feature.isNullOrEmpty()) {
+            allPages
+        } else {
+            allPages.filter { it.feature == feature }
+                // 혹시 필터 결과가 비어 있으면 안전하게 전체를 보여주도록 fallback
+                .ifEmpty { allPages }
+        }
+    }
+
+    private val goToMenu: Boolean by lazy {
+        intent.getBooleanExtra(EXTRA_GO_TO_MENU, false)
+    }
+
+    private val returnToSettings: Boolean by lazy {
+        intent.getBooleanExtra(EXTRA_RETURN_TO_SETTINGS, false)
+    }
+
+    private val isFeatureTutorial: Boolean by lazy {
+        !selectedFeatureLabel.isNullOrEmpty()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,14 +94,23 @@ class TutorialActivity : AppCompatActivity() {
                 TutorialPage(imageRes = resId, feature = feature)
             }
 
+        if (goToMenu) {
+            val introPages = getDrawableIds("tutorial_first").map { resId ->
+                TutorialPage(imageRes = resId, feature = "앱 소개")
+            }
+            if (introPages.isNotEmpty()) {
+                return introPages
+            }
+        }
+
         return buildList {
             addAll(pagesFrom("tutorial_write", "일기 작성"))
             addAll(pagesFrom("tutorial_detail", "일기 상세 보기 및 수정"))
             addAll(pagesFrom("tutorial_search", "일기 검색"))
-            addAll(pagesFrom("tutorial_selfaware", "나 알아가기"))
-            addAll(pagesFrom("tutorial_statistic", "통계"))
-            addAll(pagesFrom("tutorial_analysis", "분석"))
-            addAll(pagesFrom("tutorial_setting", "튜토리얼 완료"))
+            addAll(pagesFrom("tutorial_selfaware", "질문으로 나 알아가기"))
+            addAll(pagesFrom("tutorial_statistic", "일기 통계"))
+            addAll(pagesFrom("tutorial_analysis", "나에 대한 분석"))
+            addAll(pagesFrom("tutorial_setting", "설정"))
         }
     }
 
@@ -106,6 +146,18 @@ class TutorialActivity : AppCompatActivity() {
             }
         }
 
+        if (goToMenu) {
+            binding.btnSkip.visibility = View.GONE
+        } else {
+            binding.btnSkip.visibility = View.VISIBLE
+        }
+
+        // 페이지가 하나도 없으면 더 이상 진행하지 않고 안전하게 종료
+        if (pages.isEmpty()) {
+            finish()
+            return
+        }
+
         // 처음 상태
         updateButtonText(0)
         updatePageInfo(0)
@@ -114,10 +166,19 @@ class TutorialActivity : AppCompatActivity() {
 
     private fun updateButtonText(position: Int) {
         binding.btnNext.text =
-            if (position == pages.lastIndex) "시작하기" else "다음"
+            if (position == pages.lastIndex) {
+                when {
+                    goToMenu -> "튜토리얼 메뉴로 가기"
+                    isFeatureTutorial -> "메뉴로 돌아가기"
+                    else -> "시작하기"
+                }
+            } else {
+                "다음"
+            }
     }
 
     private fun updatePageInfo(position: Int) {
+        if (pages.isEmpty()) return
         val page = pages[position]
         binding.tvPageInfo.text = "${page.feature}  ${position + 1}/${pages.size}"
     }
@@ -127,15 +188,30 @@ class TutorialActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("tutorial_prefs", MODE_PRIVATE)
         prefs.edit().putBoolean("completed", true).commit()
 
-        val returnToSettings = intent.getBooleanExtra(EXTRA_RETURN_TO_SETTINGS, false)
+        when {
+            // Main/Home 에서 인트로용으로 들어온 경우: 메뉴로 이동
+            goToMenu -> {
+                startActivity(Intent(this, TutorialMenuActivity::class.java).apply {
+                    putExtra(EXTRA_RETURN_TO_SETTINGS, returnToSettings)
+                })
+                finish()
+            }
 
-        if (returnToSettings) {
-            // 설정 화면에서 진입한 경우: 단순히 종료하여 이전 Activity(설정 화면)로 돌아감
-            finish()
-        } else {
-            // 온보딩 플로우 등에서 진입한 경우: 홈 화면으로 이동
-            startActivity(Intent(this, HomeActivity::class.java))
-            finish()
+            // 설정 화면에서 온 경우: 원래 화면으로 돌아가기
+            returnToSettings -> {
+                finish()
+            }
+
+            // 튜토리얼 메뉴에서 특정 기능을 골라 들어온 경우: 뒤로 돌아가면 메뉴로 복귀
+            isFeatureTutorial -> {
+                finish()
+            }
+
+            // 그 외 기존 플로우: 튜토리얼 끝나면 홈 화면으로 이동
+            else -> {
+                startActivity(Intent(this, HomeActivity::class.java))
+                finish()
+            }
         }
     }
 
