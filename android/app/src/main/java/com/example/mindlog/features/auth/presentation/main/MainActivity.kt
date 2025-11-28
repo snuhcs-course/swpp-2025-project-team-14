@@ -85,8 +85,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun goToTutorial() {
         // 온보딩 플로우에서 진입하는 튜토리얼이므로, returnToSettings = false
-        val intent = Intent(this, TutorialMenuActivity::class.java).apply {
-            putExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, false)
+        val intent = Intent(this, TutorialActivity::class.java).apply {
+            putExtra(TutorialActivity.EXTRA_GO_TO_MENU, true)
         }
         startActivity(intent)
         finish()

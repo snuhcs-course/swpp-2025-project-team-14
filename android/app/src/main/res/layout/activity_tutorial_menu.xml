@@ -58,4 +58,40 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/groupMenuContent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:constraint_referenced_ids="tvTitle,tvSubtitle,rvTutorialMenu" />
+
+    <LinearLayout
+        android:id="@+id/finishContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnFinishTutorialMenu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/ivFinishCharacter"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:src="@drawable/ic_mindlog_character" />
+
+        <TextView
+            android:id="@+id/tvFinishMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="50dp"
+            android:textAlignment="center"
+            android:text="이제 어플을 사용하러 가볼까요?\n사용법을 잘 모르겠다면 설정 화면에서 다시 튜토리얼을 볼 수 있어요!"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

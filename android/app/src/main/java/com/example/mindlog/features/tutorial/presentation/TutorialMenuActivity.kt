@@ -2,6 +2,7 @@ package com.example.mindlog.features.tutorial
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.mindlog.databinding.ActivityTutorialMenuBinding
@@ -14,6 +15,7 @@ import com.example.mindlog.features.tutorial.presentation.TutorialFeatureAdapter
 class TutorialMenuActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTutorialMenuBinding
+    private var isFinishScreen: Boolean = false
 
     private val returnToSettings: Boolean by lazy {
         intent.getBooleanExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, false)
@@ -42,20 +44,33 @@ class TutorialMenuActivity : AppCompatActivity() {
         }
         binding.rvTutorialMenu.adapter = adapter
         binding.btnFinishTutorialMenu.setOnClickListener {
-            if (returnToSettings) {
-                finish()
-            } else {
-                startActivity(Intent(this, HomeActivity::class.java))
-                finish()
-            }
+            onFinishButtonClicked()
+        }
+    }
+
+    private fun onFinishButtonClicked() {
+        // 설정 화면에서 들어온 경우: 캐릭터 엔딩 화면 없이 바로 복귀
+        if (returnToSettings) {
+            finish()
+            return
+        }
+
+        if (!isFinishScreen) {
+            // 1️⃣ 첫 번째 클릭: 메뉴 → 엔딩 화면 전환
+            isFinishScreen = true
+
+            binding.groupMenuContent.visibility = View.GONE
+            binding.finishContainer.visibility = View.VISIBLE
+            binding.btnFinishTutorialMenu.text = "시작하기"  // 버튼 텍스트 변경
+        } else {
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
         }
     }
 
     private fun openTutorialFor(feature: TutorialFeature) {
         val intent = Intent(this, TutorialActivity::class.java).apply {
             putExtra(TutorialActivity.EXTRA_FEATURE_LABEL, feature.label)
-            // 설정 화면에서 열린 메뉴라면, 필요 시 true로 넘겨도 됨
-            // putExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, true)
         }
         startActivity(intent)
     }
