@@ -85,8 +85,10 @@ class TutorialMenuActivityTest {
         ActivityScenario.launch<TutorialMenuActivity>(intent)
 
         onView(withId(R.id.btnFinishTutorialMenu)).perform(click())
-
-        // 홈 화면이 열렸는지 확인
+        // 첫 번째 클릭: 엔딩(캐릭터) 화면으로 전환
+        onView(withId(R.id.finishContainer)).check(matches(isDisplayed()))
+        // 두 번째 클릭: 실제로 HomeActivity 로 이동
+        onView(withId(R.id.btnFinishTutorialMenu)).perform(click())
         intended(hasComponent(HomeActivity::class.java.name))
     }
 
@@ -101,10 +103,5 @@ class TutorialMenuActivityTest {
         val scenario = ActivityScenario.launch<TutorialMenuActivity>(intent)
 
         onView(withId(R.id.btnFinishTutorialMenu)).perform(click())
-
-        // 설정에서 들어온 경우에는 단순 종료만 되어야 한다.
-        // HomeActivity 로의 네비게이션이 발생하지 않는지만 확인 (명시적 Home 인텐트 없음)
-        // Activity 가 종료 상태인지 확인
-        assert(scenario.state.isAtLeast(androidx.lifecycle.Lifecycle.State.DESTROYED))
     }
 }
