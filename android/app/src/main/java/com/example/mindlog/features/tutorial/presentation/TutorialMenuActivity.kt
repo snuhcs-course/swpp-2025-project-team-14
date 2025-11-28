@@ -24,7 +24,7 @@ class TutorialMenuActivity : AppCompatActivity() {
         TutorialFeature("일기 작성", "일기를 새로 작성하는 방법을 안내합니다."),
         TutorialFeature("일기 상세 보기 및 수정", "기존 일기를 열어보고 수정하는 방법을 안내합니다."),
         TutorialFeature("일기 검색", "원하는 일기를 찾는 다양한 방법을 안내합니다."),
-        TutorialFeature("질문을 통해 나 알아가기", "AI가 생성한 질문과 답변을 통해 자신을 알아가는 방법을 안내합니다."),
+        TutorialFeature("질문으로 나 알아가기", "AI가 생성한 질문과 답변을 통해 자신을 알아가는 방법을 안내합니다."),
         TutorialFeature("일기 통계", "일기 데이터에 대한 다양한 통계를 확인하는 방법을 안내합니다."),
         TutorialFeature("나에 대한 분석", "질문/답변을 기반으로 생성된 나에 대한 분석을 보는 방법을 안내합니다."),
         TutorialFeature("설정", "다양한 설정을 변경하는 방법을 안내합니다."),

@@ -85,10 +85,10 @@ class TutorialActivity : AppCompatActivity() {
             addAll(pagesFrom("tutorial_write", "일기 작성"))
             addAll(pagesFrom("tutorial_detail", "일기 상세 보기 및 수정"))
             addAll(pagesFrom("tutorial_search", "일기 검색"))
-            addAll(pagesFrom("tutorial_selfaware", "나 알아가기"))
-            addAll(pagesFrom("tutorial_statistic", "통계"))
-            addAll(pagesFrom("tutorial_analysis", "분석"))
-            addAll(pagesFrom("tutorial_setting", "튜토리얼 완료"))
+            addAll(pagesFrom("tutorial_selfaware", "질문으로 나 알아가기"))
+            addAll(pagesFrom("tutorial_statistic", "일기 통계"))
+            addAll(pagesFrom("tutorial_analysis", "나에 대한 분석"))
+            addAll(pagesFrom("tutorial_setting", "설정"))
         }
     }
 

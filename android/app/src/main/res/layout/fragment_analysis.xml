@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="분석"
+        android:text="나에 대한 분석"
         android:textColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"
