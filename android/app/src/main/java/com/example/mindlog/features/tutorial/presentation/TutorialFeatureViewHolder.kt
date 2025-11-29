@@ -17,7 +17,7 @@ class TutorialFeatureViewHolder(
             "일기 검색" -> R.drawable.ic_search
             "질문으로 나 알아가기" -> R.drawable.ic_selfaware
             "일기 통계" -> R.drawable.ic_stats
-            "나에 대한 분석" -> R.drawable.ic_analysis
+            "나의 심리 성향 분석" -> R.drawable.ic_analysis
             "설정" -> R.drawable.ic_settings
             else -> R.drawable.ic_settings
         }
