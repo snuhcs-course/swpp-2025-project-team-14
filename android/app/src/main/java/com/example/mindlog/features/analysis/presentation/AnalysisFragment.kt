@@ -143,12 +143,22 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
         if (advice == null) {
             binding.tvAdviceType.text = "아직 개인화 조언이 없어요"
             binding.tvAdviceBody.text = "기록이 조금 더 쌓이면 맞춤형 조언을 드릴게요."
+            binding.tvAdviceTypeDescription.isVisible = false
             return
         }
 
         // 예시: emoji + title + body 구조라고 가정
         binding.tvAdviceType.text = "조언 유형: " + advice.adviceType
         binding.tvAdviceBody.text = advice.personalizedAdvice
+
+        binding.tvAdviceTypeDescription.isVisible = true
+        val typeDescription = when (advice.adviceType) {
+            "EQ" -> "EQ(Emotional Intelligence Quotient)는 감정을 인식·이해·조절하고 타인의 감정에 공감하는 능력, 관계 유지와 의사결정의 질을 높이기 위한 조언입니다."
+            "CBT" -> "CBT(Cognitive Behavioral Therapy)는 비합리적 사고 패턴을 인식해 재구성하고, 행동 실험을 통해 현실적이고 도움이 되는 사고·행동으로 교체하기 위한 조언입니다."
+            "ACT" -> "ACT(Acceptance and Commitment Therapy)는 불편한 감정을 억누르기보다 받아들이고, 개인의 핵심가치에 기반한 행동을 선택하도록 돕는 수용·헌신 중심의 조언입니다."
+            else -> ""
+        }
+        binding.tvAdviceTypeDescription.text = typeDescription
     }
 
     override fun onDestroyView() {
