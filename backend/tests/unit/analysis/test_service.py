@@ -66,6 +66,6 @@ def test_get_comment_from_big_5_score(service, mocker):
     assert type(response[4]) == str
 
 def test_extract_personalized_advice(service, mocker, mock_analysis_repo):
-    theory, response = service.extract_personalized_advice(user_id=1, age=23, gender="Male")
-    assert theory in ["CBT", "ACT", "EQ"]
-    assert len(response) > 0
+    response = service.extract_personalized_advice(user_id=1, age=23, gender="Male")
+    assert response.theory in ["CBT", "ACT", "EQ"]
+    assert len(response.advice) > 0
