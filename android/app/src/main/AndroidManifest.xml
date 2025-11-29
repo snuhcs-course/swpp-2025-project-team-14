@@ -53,8 +53,13 @@
             android:exported="false"
             android:theme="@style/Theme.MindLog" />
 
-        <activity android:name=".features.auth.presentation.login.LoginActivity" />
-        <activity android:name=".features.auth.presentation.signup.SignupActivity" />
+        <activity android:name=".features.auth.presentation.login.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name=".features.auth.presentation.signup.SignupActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity android:name=".features.tutorial.TutorialMenuActivity" />
         <activity android:name=".features.tutorial.TutorialActivity" />
         <activity android:name=".features.home.presentation.HomeActivity" />
