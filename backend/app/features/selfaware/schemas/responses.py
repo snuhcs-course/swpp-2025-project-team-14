@@ -52,6 +52,8 @@ class QACursorResponse(BaseModel):
     
     @staticmethod
     def from_QAs(questions: List[Question], answers: List[Answer]) -> "QACursorResponse":
+        if questions[0].id != answers[0].question_id:
+            questions = questions[1:]
         items = [
             QAResponse(
                 question=QuestionResponse.from_question(q),

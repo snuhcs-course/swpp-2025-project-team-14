@@ -65,6 +65,16 @@ class QuestionRepository:
             .order_by(Question.created_at.desc())
             .limit(1)
         )
+    
+    def delete_question_by_id(self, question_id: int) -> None:
+        # 1. 삭제할 객체 조회 (기존 메서드 활용)
+        question = self.get_question_by_id(question_id)
+        
+        # 2. 객체가 존재하면 세션에서 삭제 표시
+        if question:
+            self.session.delete(question)
+            # 3. 변경 사항을 DB 트랜잭션에 반영 (commit은 서비스/컨트롤러 레벨에서 처리 가정)
+            self.session.flush()
 
 
 
