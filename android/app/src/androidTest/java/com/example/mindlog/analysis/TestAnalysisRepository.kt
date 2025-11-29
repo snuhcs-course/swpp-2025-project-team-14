@@ -46,7 +46,7 @@ class TestAnalysisRepository @Inject constructor() : AnalysisRepository {
 
         return Result.Success(
             PersonalizedAdvice(
-                adviceType = "오늘의 탐험 가이드",
+                adviceType = "EQ",
                 personalizedAdvice = "오늘은 ‘완벽한 계획’보다 작은 시도를 먼저 해보는 게 좋아요.\n" +
                         "마음속에만 있던 아이디어 중 하나를 아주 가볍게 실험해보면 어떨까요?",
                 updatedAt = LocalDate.now().toString()

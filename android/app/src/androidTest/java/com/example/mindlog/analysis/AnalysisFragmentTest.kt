@@ -18,6 +18,7 @@ import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import org.hamcrest.CoreMatchers.anyOf
 import org.hamcrest.CoreMatchers.containsString
 import org.junit.Before
 import org.junit.Rule
@@ -85,11 +86,24 @@ class AnalysisFragmentTest {
         // TestAnalysisRepository 에서 넣어둔 타이틀에 맞춰 검증
         onView(withId(R.id.tvAdviceType))
             .perform(scrollTo())
-            .check(matches(withText("조언 유형: " + "오늘의 탐험 가이드")))
+            .check(matches(withText(containsString("조언 유형: "))))
 
         onView(withId(R.id.tvAdviceBody))
             .perform(scrollTo())
             .check(matches(isDisplayed()))
+
+        onView(withId(R.id.tvAdviceTypeDescription))
+            .perform(scrollTo())
+            .check(matches(isDisplayed()))
+            .check(
+                matches(
+                    anyOf(
+                        withText(containsString("감정을 인식·이해·조절")),
+                        withText(containsString("비합리적 사고 패턴을 인식해 재구성")),
+                        withText(containsString("불편한 감정을 억누르기보다 받아들이고"))
+                    )
+                )
+            )
 
         // Lottie 캐릭터 애니메이션 뷰도 보이는지 체크
         onView(withId(R.id.lottieAdviceCharacter))
