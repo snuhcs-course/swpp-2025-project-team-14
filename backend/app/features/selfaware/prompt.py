@@ -29,6 +29,18 @@ class QuestionGenerationResponse(BaseModel):
     question: str = Field(description="생성된 자기성찰 질문")
     rationale: str = Field(description="질문 생성 이유")
 
+summary_prompt = ChatPromptTemplate.from_template(
+    """다음은 한 사용자의 최근 일기 내용입니다. 
+    이 일기들의 전반적인 감정과 주제를 간결하게 요약해 주세요.
+    
+    최근 일기 내용:
+    {journal_text}
+
+    Return JSON:
+    - summary
+    """
+)
+
 # 감정 분석 프롬프트
 emotion_prompt = ChatPromptTemplate.from_template(
     """
