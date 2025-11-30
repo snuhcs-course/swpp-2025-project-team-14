@@ -73,7 +73,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
     private var wasLoading = false
 
     private val dateFormatter: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("yyyy년 MM월 dd일", Locale.KOREAN)
+        DateTimeFormatter.ofPattern("yyyy.MM.dd", Locale.KOREAN)
     private fun formatRange(start: LocalDate, end: LocalDate): String =
         "${start.format(dateFormatter)} ~ ${end.format(dateFormatter)}"
 

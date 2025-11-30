@@ -100,11 +100,11 @@ class StatisticsFragmentTest {
 
         // 주간 버튼 클릭 후 형식 검사: yyyy.MM.dd~yyyy.MM.dd
         onView(withId(R.id.btnWeekly)).perform(scrollTo(), click())
-        onView(withId(R.id.tvPeriodRange)).check(matchesTextMatches("\\d{4}\\.\\d{2}\\.\\d{2}~\\d{4}\\.\\d{2}\\.\\d{2}"))
+        onView(withId(R.id.tvPeriodRange)).check(matchesTextMatches("\\d{4}\\.\\d{2}\\.\\d{2} ~ \\d{4}\\.\\d{2}\\.\\d{2}"))
 
         // 월간 버튼 클릭 후에도 동일 형식 유지
         onView(withId(R.id.btnMonthly)).perform(scrollTo(), click())
-        onView(withId(R.id.tvPeriodRange)).check(matchesTextMatches("\\d{4}\\.\\d{2}\\.\\d{2}~\\d{4}\\.\\d{2}\\.\\d{2}"))
+        onView(withId(R.id.tvPeriodRange)).check(matchesTextMatches("\\d{4}\\.\\d{2}\\.\\d{2} ~ \\d{4}\\.\\d{2}\\.\\d{2}"))
     }
 
     @Test
