@@ -26,7 +26,7 @@ class QuestionService:
     def generate_question(self, user_id: int) -> Question:
         navigation = NatigationContext()
         flag = random.randint(0, 2)
-        if flag == 0:
+        if flag == 0 and self.journal_repository.list_journals_by_user(user_id, 1):
             navigation.set_question_strategy(SelfawareStrategy())
         elif flag == 1:
             navigation.set_question_strategy(SingleStrategy())
