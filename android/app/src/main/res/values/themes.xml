@@ -14,6 +14,10 @@
         <!-- 상태바 / 네비게이션바 색 -->
         <item name="android:statusBarColor">#2C2C54</item>
         <item name="android:navigationBarColor">#F2F0E9</item>
+
+        <item name="materialCalendarTheme">@style/ThemeOverlay.MindLog.DatePicker</item>
+        <item name="colorSurface">@color/bg</item>
+        <item name="colorSurfaceContainerHigh">@color/bg</item>
     </style>
 
     <!-- 실제 앱에서 사용할 테마 -->
@@ -50,7 +54,55 @@
     <style name="TextAppearance.Mindlog.Caption" parent="TextAppearance.AppCompat.Caption">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
-        <!-- lineHeight(18sp) - textSize(12sp) = 6sp -->
         <item name="android:lineSpacingExtra">6sp</item>
+    </style>
+
+    <style name="ThemeOverlay.MindLog.DatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/factor_conscientious_bg</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+
+        <item name="materialCalendarStyle">@style/Widget.MindLog.MaterialCalendar</item>
+
+        <item name="colorSurface">@color/bg</item>
+        <item name="colorSurfaceContainerHigh">@color/bg</item>
+        <item name="android:windowBackground">@color/bg</item>
+
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <item name="colorSecondaryContainer">@color/factor_conscientious_bg</item>
+        <item name="colorOnSecondaryContainer">@color/text_primary</item>
+
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.MindLog.Button.TextButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.MindLog.Button.TextButton</item>
+
+        <item name="materialCalendarHeaderLayout">@style/Widget.Material3.MaterialCalendar.HeaderLayout</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.MindLog.Dialog</item>
+
+        <item name="materialCalendarHeaderTitle">@style/TextAppearance.MindLog.DatePicker.Title</item>
+    </style>
+
+    <style name="Widget.MindLog.MaterialCalendar" parent="Widget.Material3.MaterialCalendar">
+        <item name="dayTodayStyle">@style/Widget.MindLog.MaterialCalendar.Day.Today</item>
+        <item name="daySelectedStyle">@style/Widget.MindLog.MaterialCalendar.Day.Selected</item>
+    </style>
+
+    <style name="Widget.MindLog.MaterialCalendar.Day.Today" parent="Widget.Material3.MaterialCalendar.Day.Today">
+        <item name="itemStrokeColor">@color/accent</item>
+        <item name="itemTextColor">@color/accent</item>
+        <item name="android:textColor">@color/accent</item>
+    </style>
+
+    <style name="Widget.MindLog.MaterialCalendar.Day.Selected" parent="Widget.Material3.MaterialCalendar.Day.Selected">
+        <item name="itemFillColor">@color/factor_conscientious_bg</item>
+        <item name="itemTextColor">@color/text_primary</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="Widget.MindLog.Button.TextButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.MindLog.DatePicker.Title" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textSize">20sp</item>
     </style>
 </resources>

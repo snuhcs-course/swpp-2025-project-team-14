@@ -109,8 +109,8 @@ class SettingsFragment : Fragment() {
                     user.birthdate?.let { infoParts.add(it) }
                     user.gender?.let { gender ->
                         val displayGender = when (gender.uppercase()) {
-                            "M", "MALE" -> "남자"
-                            "F", "FEMALE" -> "여자"
+                            "M", "Male" -> "남자"
+                            "F", "Female" -> "여자"
                             else -> "기타"
                         }
                         infoParts.add(displayGender)
