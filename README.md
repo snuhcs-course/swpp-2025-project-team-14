@@ -359,11 +359,6 @@ It currently provides a solid foundation for:
     - Emotion trends, keyword summaries, ValueMap aggregation
     - Personality insights (Five-Factor), daily personalized advice
 - Android integration for all features
-- EC2 deployment and stable communication between client & server
-- Extensive Unit & Integration Test coverage (Journal, Self-Aware, Analysis, Statistics)
-
-Next steps include:
-
 - Tutorials Page
     - Onboarding-style walkthrough
     - For new users to understand Journals, Self-Aware, Statistics, and Analysis features
@@ -373,6 +368,8 @@ Next steps include:
 	- Increase test coverage across Android & Backend
 	- API response consistency audit
 	- UI/UX polishing (animation, error states, empty states)
+ 	- Extensive Unit & Integration Test coverage (Journal, Self-Aware, Analysis, Statistics, User, Auth)
+- EC2 deployment and stable communication between client & server
 
 ---
 
