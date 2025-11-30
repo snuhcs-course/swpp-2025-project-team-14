@@ -131,7 +131,7 @@
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
                             android:text="기간 선택"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:textColor="#2D3142"
                             app:cornerRadius="14dp"
                             app:backgroundTint="#EDE7DE" />
