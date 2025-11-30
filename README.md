@@ -1,7 +1,7 @@
 # SWPP Team 14 - Iteration 5 Working Demo
 
-The demo demonstrates the backend API implementation of user authorization, journal features, self‑aware features, as well as newly added **journal statistics** and **personality analysis** functionalities. All components are tested in a local Docker‑based environment. AWS EC2 connection and deployment were successfully completed, and the backend API is now accessible through the EC2 public endpoint (currently providing user authorization, journal features, self‑aware features, and partial statistics/analysis).  
-In the Android client, users can sign up, log in, create journals, view statistics, use self‑aware features, and check persaonlity analysis.
+The demo demonstrates the backend API implementation of user authorization, journal features, self‑aware features, journal statistics, personality analysis functionalities. All components are tested in a local Docker‑based environment, and pytest environment. AWS EC2 connection and deployment were successfully completed, and the backend API is now accessible through the EC2 public endpoint.  
+In the Android client, users can user every feature of this app(Mindlog, same as UAT version).
 
 ---
 
