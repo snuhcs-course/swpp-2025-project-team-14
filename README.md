@@ -169,6 +169,8 @@ This demo illustrates the following key features:
 - **Token Refresh:** Automatically refresh access tokens using refresh tokens to keep users logged in.
 - **Access Token Verification:** Validate and verify access tokens for secure API access.
 - **User Information Retrieval:** Fetch authenticated user details using JWT-based access control.
+- **Update user profile:** Update the currently authenticated user data and retrieve info.
+- **Update user password:** Update the currently authenticated user password.
 
 These features form the foundation of a secure and scalable authentication system suitable for modern android applications.
 
@@ -183,11 +185,19 @@ These features form the foundation of a secure and scalable authentication syste
 
 These features provide create, get, update, delete user's journal entry.
 
-- **Self-Aware Question & Answer:** Interactive Q&A feature to promote self-awareness and reflection.
-- **AI Integration:** Use of OpenAI models for value extraction and reflection analysis.
+- **Calculate emotion-rate:** Calculates the rates by searching the emotional data history for a specific period of time.
 
-- **Journal Statistics:** Aggregation of emotion ratios, emotion trends over time, emotion-triggering events, and keyword frequencies extracted from journal entries.
-- **Comprehensive Analysis:** Personality insights based on Five-Factor theory, including user type classification, descriptive summaries, and personalized daily advice generated from self-aware Q&A data.
+This feature provide actual values for statistic feature.
+
+- **Self-Aware Question & Answer:** Interactive Q&A feature to promote self-awareness and reflection.
+- **ValueScore & ValueMap Extraction:** Request AI to generate instant psychological analysis of user from selfaware entries.
+
+These features form the selfaware feature which app interacts with user after journal writing.
+
+- **Comprehensive Analysis:** Personality insights based on Five-Factor model of personality, including user type classification, descriptive summaries, and personalized daily advice generated from self-aware Q&A data.
+
+This feature form analysis feature which gives more accurate psychological insight of user based on authorized theory and its method; FFM and IPIP-NEO-PI.
+
 - **End-to-End Flow:** Demonstration of how journal data and self-aware answers are combined into statistical summaries and psychological analysis, fully integrated with the Android frontend.
 
 ### API Endpoints
@@ -198,6 +208,8 @@ These features provide create, get, update, delete user's journal entry.
 - **User Logout:** `POST /api/v1/auth/logout`
 - **Token Refresh:** `POST /api/v1/auth/refresh`
 - **Get User Info:** `GET /api/v1/auth/user`
+- **Update User Profile:** `PATCH /api/v1/user/me`
+- **Update User Password:** `PATCH /api/vi/user/update-password`
 
 #### Journal
 - **Create Journal:** `POST /api/v1/journal/`
