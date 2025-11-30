@@ -22,11 +22,10 @@ class SelfawareStrategy(QuestionStrategy):
         question_parser = PydanticOutputParser(pydantic_object=QuestionGenerationResponse)
 
         # ✅ 1. 유저의 일기 가져오기
-        journals = journal_repository.list_journals_by_user(user_id)
+        journals = journal_repository.list_journals_by_user(user_id, 5)
 
         # ✅ 2. 최근 일기 3~5개만 선택 (토큰 제한 방지)
-        recent_journals = journals[-5:]
-        combined_content = "\n".join([f"- {j.content}" for j in recent_journals])
+        combined_content = "\n".join([f"- {j.content}" for j in journals])
 
         summary_chain = summary_prompt | llm | summary_parser
 
