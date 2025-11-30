@@ -1,7 +1,8 @@
 # backend/tests/unit/analysis/test_service.py
 import pytest
+
 from app.features.analysis.service import AnalysisService
-from app.features.analysis.comprehensive_analysis.score import NeoPiAnswers
+
 
 # ------------------------------
 # 공통 fixture
@@ -28,9 +29,13 @@ def mock_analysis_repo(mocker):
     )
     return repo
 
+
 @pytest.fixture
 def service(mock_answer_repo, mock_analysis_repo):
-    return AnalysisService(answer_repository=mock_answer_repo, analysis_repository=mock_analysis_repo)
+    return AnalysisService(
+        answer_repository=mock_answer_repo, analysis_repository=mock_analysis_repo
+    )
+
 
 def test_create_and_get_analysis(service, mock_analysis_repo):
     created = service.create_analysis(1)
@@ -41,29 +46,36 @@ def test_create_and_get_analysis(service, mock_analysis_repo):
     assert "id" in created
     assert fetched.neo_pi_score["CONSCIENTIOUSNESS"] == 70
 
+
 def test_evaluate_user_type_returns_expected(service, mock_analysis_repo):
     user_type = service.evaluate_user_type(user_id=1)
     assert user_type == "목표 지향형"  # C >=65, N <=45
+
 
 def test_extract_neo_pi_from_answer(service, mocker, mock_answer_repo):
     responses = service.extract_neo_pi_from_answer(user_id=1)
     assert isinstance(responses, list)
     assert len(responses) > 0
 
+
 def test_evaluate_big_5_score(service, mocker):
     mocker.patch.object(service, "extract_neo_pi_from_answer", return_value=[1] * 121)
-    mock_evaluate = mocker.patch("app.features.analysis.service.evaluate", return_value={"O": 60})
+    mock_evaluate = mocker.patch(
+        "app.features.analysis.service.evaluate", return_value={"O": 60}
+    )
     result = service.evaluate_big_5_score(user_id=1, age=23, gender="Male")
     mock_evaluate.assert_called_once()
     assert result == {"O": 60}
 
+
 def test_get_comment_from_big_5_score(service, mocker):
     response = service.get_comment_from_big_5_score(user_id=1, age=23, gender="Male")
-    assert type(response[0]) == str
-    assert type(response[1]) == str
-    assert type(response[2]) == str
-    assert type(response[3]) == str
-    assert type(response[4]) == str
+    assert isinstance(response[0], str)
+    assert isinstance(response[1], str)
+    assert isinstance(response[2], str)
+    assert isinstance(response[3], str)
+    assert isinstance(response[4], str)
+
 
 def test_extract_personalized_advice(service, mocker, mock_analysis_repo):
     response = service.extract_personalized_advice(user_id=1, age=23, gender="Male")

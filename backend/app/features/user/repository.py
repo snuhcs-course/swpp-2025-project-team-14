@@ -40,11 +40,11 @@ class UserRepository:
     def update_me(
         self,
         user: User,
-        password: str | None,
-        username: str | None,
-        gender: str | None,
-        birthdate: date | None,
-        appearance: str | None,
+        password: str | None = None,
+        username: str | None = None,
+        gender: str | None = None,
+        birthdate: date | None = None,
+        appearance: str | None = None,
     ) -> None:
         if password is not None:
             user.hashed_password = hash_password(password)

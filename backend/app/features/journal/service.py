@@ -1,9 +1,7 @@
 import json
-import os
-import uuid
+import logging
 from datetime import date
 from functools import partial
-from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -13,13 +11,14 @@ from langchain_openai import ChatOpenAI
 from openai import AsyncOpenAI
 
 from app.features.journal.errors import (
-    ImageUploadError,
+    ImageGenerationError,
     JournalBadRequestError,
     JournalNotFoundError,
     JournalUpdateError,
 )
+from app.features.journal.facade import JournalImageFacade
 from app.features.journal.models import Journal, JournalImage, JournalKeyword
-from app.features.journal.repository import JournalRepository, S3Repository
+from app.features.journal.repository import JournalRepository
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
     ImageGenerateRequest,
@@ -29,30 +28,20 @@ from app.features.journal.schemas.responses import (
     JournalKeywordsListResponse,
     PresignedUrlResponse,
 )
+from app.features.journal.strategies import ImageStyleFactory, _load_prompt
 from app.features.user.models import User
 
-BASE_PROMPT_PATH = Path(__file__).parent / "prompt"
-
-
-def _load_prompt(file_name: str) -> str:
-    """(Helper) prompts 디렉터리에서 .txt 파일을 읽어옵니다."""
-    try:
-        with open(BASE_PROMPT_PATH / file_name, encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError as e:
-        raise RuntimeError(f"Prompt file not found: {file_name}") from e
-    except Exception as e:
-        raise RuntimeError(f"Error loading prompt {file_name}: {e}") from e
+logger = logging.getLogger(__name__)
 
 
 class JournalService:
     def __init__(
         self,
         journal_repository: Annotated[JournalRepository, Depends()],
-        s3_repository: Annotated[S3Repository, Depends()],
+        image_facade: Annotated[JournalImageFacade, Depends()],
     ) -> None:
         self.journal_repository = journal_repository
-        self.s3_repository = s3_repository
+        self.image_facade = image_facade
 
     def create_journal(
         self,
@@ -141,67 +130,17 @@ class JournalService:
             user_id=user_id, keyword=keyword, limit=limit, cursor=cursor
         )
 
-    # image upload via S3 presigned URL
     async def create_image_presigned_url(
         self, journal_id: int, payload: ImageUploadRequest
     ) -> PresignedUrlResponse:
-        """클라이언트가 이미지 업로드를 시작할 때 호출됩니다."""
-        find_journal_task = partial(
-            self.journal_repository.get_journal_by_id, journal_id=journal_id
+        return await self.image_facade.initiate_image_upload(
+            journal_id, payload.filename, payload.content_type
         )
-        journal = await run_in_threadpool(find_journal_task)
-
-        if not journal:
-            raise JournalNotFoundError(journal_id)
-
-        # 고유 파일 키 생성
-        _, file_extension = os.path.splitext(payload.filename)
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
-        s3_key = f"images/journals/{journal_id}/{unique_filename}"
-
-        # 비동기 S3 작업 실행
-        url_data = await self.s3_repository.generate_upload_url(
-            s3_key, payload.content_type
-        )
-        if not url_data:
-            raise ImageUploadError("Could not generate S3 presigned URL.")
-
-        return PresignedUrlResponse(**url_data, s3_key=s3_key)
 
     async def complete_image_upload(
         self, journal_id: int, payload: ImageCompletionRequest
     ) -> JournalImage:
-        """클라이언트가 이미지 업로드 완료를 알릴 때 호출됩니다."""
-        file_exists = await self.s3_repository.check_file_exists(payload.s3_key)
-        if not file_exists:
-            raise ImageUploadError("Uploaded image not found in S3.")
-
-        # 저널 존재 확인
-        find_journal_task = partial(
-            self.journal_repository.get_journal_by_id, journal_id=journal_id
-        )
-        journal = await run_in_threadpool(find_journal_task)
-        if not journal:
-            raise JournalNotFoundError(journal_id)
-
-        # 기존 업로드 이미지가 있으면 S3에서 삭제
-        existing = await run_in_threadpool(
-            self.journal_repository.get_image_by_journal_id,
-            journal_id,
-        )
-        if existing and existing.s3_key:
-            # S3에서 삭제
-            await self.s3_repository.delete_object(existing.s3_key)
-
-        # DB에서 교체 (replace_journal_image) — image_type='uploaded'
-        replace_task = partial(
-            self.journal_repository.replace_journal_image,
-            journal_id=journal_id,
-            existing_image=existing,
-            s3_key=payload.s3_key,
-        )
-        journal_image = await run_in_threadpool(replace_task)
-        return journal_image
+        return await self.image_facade.finalize_image_upload(journal_id, payload.s3_key)
 
 
 class JournalOpenAIService:
@@ -209,17 +148,13 @@ class JournalOpenAIService:
     OpenAI 관련 로직을 전담하는 서비스
     """
 
-    def __init__(self, journal_repository: JournalRepository = Depends()):
-        """
-        서비스 초기화 시, 레포지토리 주입 및 OpenAI 비동기 클라이언트 생성
-        """
+    def __init__(
+        self,
+        journal_repository: Annotated[JournalRepository, Depends()],
+        style_factory: Annotated[ImageStyleFactory, Depends()],
+    ):
         self.journal_repository = journal_repository
-
-        self.prompt_american_comics = _load_prompt("image_american_comics.txt")
-        self.prompt_natural = _load_prompt("image_natural.txt")
-        self.prompt_watercolor = _load_prompt("image_watercolor.txt")
-        self.prompt_3d_animation = _load_prompt("image_3d_animation.txt")
-        self.prompt_pixel_art = _load_prompt("image_pixel_art.txt")
+        self.style_factory = style_factory
 
         keyword_prompt_text = _load_prompt("keyword_prompt.txt")
 
@@ -239,16 +174,8 @@ class JournalOpenAIService:
         """
         일기를 받아 이미지를 생성하고 Base64로 반환합니다.
         """
-
-        style_prompt_map = {
-            "american-comics": self.prompt_american_comics,
-            "natural": self.prompt_natural,
-            "watercolor": self.prompt_watercolor,
-            "3d-animation": self.prompt_3d_animation,
-            "pixel-art": self.prompt_pixel_art,
-        }
-
-        prompt_template = style_prompt_map.get(request.style)
+        strategy = self.style_factory.create_strategy(request.style)
+        prompt_template = strategy.get_system_prompt()
 
         user_parts = [
             f"The protagonist of this diary is a {user.gender}, aged {user.age}."
@@ -262,12 +189,20 @@ class JournalOpenAIService:
                 request.content, prompt_template, user_description
             )
         except Exception as e:
-            print(f"GPT 호출 실패: {e}")
+            logger.error(
+                f"GPT call failed during scene prompt generation: {e}", exc_info=True
+            )
+            raise ImageGenerationError(
+                "Failed to generate scene description from diary."
+            ) from e
 
         try:
             image_b64 = await self._generate_image_from_prompt(prompt)
         except Exception as e:
-            print(f"DALL-E 3 호출 실패: {e}")
+            logger.error(f"DALL-E 3 call failed: {e}", exc_info=True)
+            raise ImageGenerationError(
+                "Failed to create image from the description."
+            ) from e
 
         return image_b64
 
@@ -333,12 +268,20 @@ class JournalOpenAIService:
             res_envelope = await chain.ainvoke(input_data)
             res = res_envelope.data
         except Exception as e:
-            print(f"LangChain(ainvoke) 호출 실패: {e}")
-
-        if not res:
+            logger.error(
+                f"LangChain(ainvoke) call failed for journal {journal_id}: {e}",
+                exc_info=True,
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="LLM이 유효한 키워드를 반환하지 않았습니다.",
+                detail="Failed to extract keywords.",
+            ) from e
+
+        if not res:
+            logger.warning(f"LLM returned empty result for journal {journal_id}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="LLM returned invalid format.",
             )
 
         save_task = partial(

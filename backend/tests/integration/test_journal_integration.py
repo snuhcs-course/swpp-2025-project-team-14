@@ -83,7 +83,7 @@ def test_get_journal_entries_by_user_success(
     # 2. 상태 코드 검증
     assert response.status_code == 200
 
-    # 3. 응답 데이터 검증 (커서 기반, total 없음)
+    # 3. 응답 데이터 검증 (커서 기반)
     response_data = response.json()
     assert len(response_data["items"]) == 2
     assert response_data["next_cursor"] is None  # 10개 limit인데 2개뿐이므로
@@ -184,7 +184,7 @@ def test_search_journals_by_title_success(
 def test_search_journals_by_date_success(
     client: TestClient,
     auth_headers: dict[str, str],
-    test_journal: Journal,  # conftest에서 생성됨
+    test_journal: Journal,
 ):
     """
     일지 검색 (GET /api/v1/journal/search) (기간) 성공 테스트
@@ -249,7 +249,7 @@ def test_search_journals_bad_request(
 def test_search_journals_by_keyword_success(
     client: TestClient,
     auth_headers: dict[str, str],
-    test_journal: Journal,  # 'fixture', 'database' 키워드 가짐
+    test_journal: Journal,
 ):
     """
     키워드 기반 일지 검색 (GET /api/v1/journal/search-keyword) 성공 테스트
@@ -371,7 +371,7 @@ def test_delete_journal_entry_success(
     # 2. 상태 코드 검증 (200)
     assert response.status_code == 200
 
-    # 3. 응답 데이터 검증 (단순 문자열 "Deletion Success")
+    # 3. 응답 데이터 검증
     assert response.text == '"Deletion Success"'
 
     # 4. DB 검증 (Cascade로 Emotion, Keyword도 삭제되어야 함)

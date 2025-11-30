@@ -13,8 +13,12 @@ from app.features.auth.schemas.requests import (
 
 
 class UpdateMeRequest(BaseModel):
-    password: Annotated[str | None, AfterValidator(validate_password)] = None
     username: Annotated[str | None, AfterValidator(validate_username)] = None
     gender: Annotated[str | None, AfterValidator(validate_gender)] = None
     birthdate: Annotated[date | None, AfterValidator(validate_birthdate)] = None
     appearance: str | None = None
+
+
+class UpdatePasswordRequest(BaseModel):
+    current_password: str
+    new_password: Annotated[str, AfterValidator(validate_password)]

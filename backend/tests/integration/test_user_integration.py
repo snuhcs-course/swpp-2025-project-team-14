@@ -8,6 +8,8 @@ from app.features.user.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# --- 1. 회원가입 (POST /auth/signup) ---
+
 
 def test_signup_success(client: TestClient, db_session: Session):
     """Test successful user signup with database integration."""
@@ -15,13 +17,12 @@ def test_signup_success(client: TestClient, db_session: Session):
     data = {
         "login_id": "new_user",
         "password": "qwerQWER123!",
-        "username": "new-user",
+        "username": "사용자",
         "gender": "Female",
         "birthdate": date(2002, 2, 2).isoformat(),
     }
 
     # Act: API 엔드포인트를 호출합니다.
-    # 이 client는 conftest.py에서 DB 연결이 오버라이드된 상태입니다.
     response = client.post("/api/v1/auth/signup", json=data)
     db_session.flush()
 
@@ -121,14 +122,16 @@ def test_signup_missing_fields(client: TestClient, db_session: Session):
     assert response.status_code == 422
     response_json = response.json()
     error_detail = response_json["detail"][0]
-    assert error_detail["loc"] == ["body", "username"]  # 에러 위치: body의 'username'
-    assert error_detail["msg"] == "Field required"  # 에러 메시지
-    assert error_detail["type"] == "missing"  # 에러 타입
+    assert error_detail["loc"] == ["body", "username"]
+    assert error_detail["msg"] == "Field required"
+    assert error_detail["type"] == "missing"
+
+
+# --- 2. 로그인 (POST /auth/login) ---
 
 
 def test_login_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful user login with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 올바른 자격 증명으로 로그인 시도
     data = {
@@ -149,7 +152,6 @@ def test_login_invalid_password(
     client: TestClient, db_session: Session, test_user: User
 ):
     """Test user login with an invalid password."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # Act: 잘못된 비밀번호로 로그인 시도
     data = {
@@ -195,14 +197,16 @@ def test_login_missing_fields(client: TestClient, db_session: Session):
     assert response.status_code == 422
     response_json = response.json()
     error_detail = response_json["detail"][0]
-    assert error_detail["loc"] == ["body", "password"]  # 에러 위치: body의 'password'
-    assert error_detail["msg"] == "Field required"  # 에러 메시지
-    assert error_detail["type"] == "missing"  # 에러 타입
+    assert error_detail["loc"] == ["body", "password"]
+    assert error_detail["msg"] == "Field required"
+    assert error_detail["type"] == "missing"
+
+
+# --- 3. 로그아웃 (POST /auth/logout) ---
 
 
 def test_logout_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful user logout with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -244,9 +248,11 @@ def test_logout_invalid_token(client: TestClient, db_session: Session):
     assert response_json["detail"] == "Invalid token"
 
 
+# --- 4. 토큰 리프레시 (POST /auth/refresh) ---
+
+
 def test_refresh_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful token refresh with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -287,9 +293,11 @@ def test_refresh_invalid_token(client: TestClient, db_session: Session):
     assert response_json["detail"] == "Invalid token"
 
 
+# --- 5. 토큰 검증 (POST /auth/verify) ---
+
+
 def test_verify_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful access token verification with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -301,7 +309,6 @@ def test_verify_success(client: TestClient, db_session: Session, test_user: User
     login_response_json = login_response.json()
     access_token = login_response_json["access"]
 
-    # Pass the token in the Authorization header if required by your API
     headers = {"Authorization": f"Bearer {access_token}"}
     response = client.post(
         "/api/v1/auth/verify", json={"access": access_token}, headers=headers
@@ -331,9 +338,11 @@ def test_verify_invalid_token(client: TestClient, db_session: Session):
     assert response_json["detail"] == "Not authenticated"
 
 
+# --- 6. 내정보조회 (GET /user/me) ---
+
+
 def test_me_success(client: TestClient, db_session: Session, test_user: User):
     """Test successful retrieval of user profile with database integration."""
-    # Arrange: 이미 존재하는 사용자를 DB에 추가합니다. (test_user)
 
     # 먼저 로그인하여 토큰을 얻습니다.
     login_data = {
@@ -345,7 +354,6 @@ def test_me_success(client: TestClient, db_session: Session, test_user: User):
     login_response_json = login_response.json()
     access_token = login_response_json["access"]
 
-    # Pass the token in the Authorization header
     headers = {"Authorization": f"Bearer {access_token}"}
     response = client.get("/api/v1/user/me", headers=headers)
     db_session.flush()
@@ -380,3 +388,137 @@ def test_me_invalid_token(client: TestClient, db_session: Session):
     assert response.status_code == 401
     response_json = response.json()
     assert response_json["detail"] == "Invalid token"
+
+
+# --- 7. 내정보 업데이트 (PATCH /user/me) ---
+
+
+def test_update_me_success(client: TestClient, db_session: Session, test_user: User):
+    """Test successful user profile update."""
+    # Arrange: 로그인하여 토큰 발급
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    login_resp = client.post("/api/v1/auth/login", json=login_data)
+    token = login_resp.json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 회원 정보 수정 요청 (username, gender, appearance, birthdate)
+    new_birthdate = date(2000, 1, 1)
+    update_data = {
+        "username": "Updated-User",
+        "gender": "Male",
+        "appearance": "Cool Style",
+        "birthdate": new_birthdate.isoformat(),
+    }
+
+    response = client.patch("/api/v1/user/me", json=update_data, headers=headers)
+    db_session.flush()
+    db_session.refresh(test_user)
+
+    # Assert: 응답 및 DB 업데이트 검증
+    assert response.status_code == 200
+    assert response.json() == "Update Success"
+
+    assert test_user.username == update_data["username"]
+    assert test_user.gender == update_data["gender"]
+    assert test_user.appearance == update_data["appearance"]
+    assert test_user.birthdate == new_birthdate
+
+
+def test_update_me_invalid_data(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test user update with invalid data format."""
+    # Arrange: 로그인
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 유효하지 않은 비밀번호 형식으로 업데이트 시도
+    update_data = {"password": "short"}
+    response = client.patch("/api/v1/user/me", json=update_data, headers=headers)
+
+    # Assert: 400 Bad Request
+    assert response.status_code == 400
+
+
+def test_update_me_no_fields(client: TestClient, db_session: Session, test_user: User):
+    """Test user update without providing any fields."""
+    # Arrange: 로그인
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 빈 JSON body 전송
+    response = client.patch("/api/v1/user/me", json={}, headers=headers)
+
+    # Assert: 400 Bad Request
+    assert response.status_code == 400
+
+
+# --- 8. 비밀번호 변경 (PATCH /user/update-password) ---
+
+
+def test_update_password_success(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test successful password update."""
+    # Arrange: 로그인하여 토큰 발급
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    login_resp = client.post("/api/v1/auth/login", json=login_data)
+    token = login_resp.json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 비밀번호 변경 요청
+    new_password = "NewPassword123!"
+    data = {"current_password": "ValidPass123!", "new_password": new_password}
+    response = client.patch("/api/v1/user/update-password", json=data, headers=headers)
+    db_session.flush()
+
+    # Assert: 응답 상태 확인
+    assert response.status_code == 200
+    assert response.json() == "Update Success"
+
+    # Act & Assert: 새 비밀번호로 로그인 성공 확인
+    new_login_data = {"login_id": "test_user", "password": new_password}
+    new_login_resp = client.post("/api/v1/auth/login", json=new_login_data)
+    assert new_login_resp.status_code == 201
+
+    # Act & Assert: 구 비밀번호로 로그인 실패 확인
+    old_login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    old_login_resp = client.post("/api/v1/auth/login", json=old_login_data)
+    assert old_login_resp.status_code == 401
+
+
+def test_update_password_wrong_current(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test password update with incorrect current password."""
+    # Arrange: 로그인
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 틀린 현재 비밀번호로 요청
+    data = {"current_password": "WrongPassword123!", "new_password": "NewPassword123!"}
+    response = client.patch("/api/v1/user/update-password", json=data, headers=headers)
+
+    # Assert: 401 Unauthorized
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid current password"
+
+
+def test_update_password_invalid_new_format(
+    client: TestClient, db_session: Session, test_user: User
+):
+    """Test password update with invalid new password format."""
+    # Arrange: 로그인
+    login_data = {"login_id": "test_user", "password": "ValidPass123!"}
+    token = client.post("/api/v1/auth/login", json=login_data).json()["access"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Act: 너무 짧거나 유효하지 않은 형식의 새 비밀번호로 요청
+    data = {"current_password": "ValidPass123!", "new_password": "short"}
+    response = client.patch("/api/v1/user/update-password", json=data, headers=headers)
+
+    # Assert: 400 Bad Request (Validation Error)
+    assert response.status_code == 400
