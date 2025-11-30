@@ -57,6 +57,7 @@ class TutorialActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        hideSystemUI()
         binding = ActivityTutorialBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -64,6 +65,16 @@ class TutorialActivity : AppCompatActivity() {
         setupButtons()
 
         binding.btnSkip.bringToFront()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun hideSystemUI() {
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN
+
+        actionBar?.hide()
     }
 
     private fun getDrawableIds(prefix: String): List<Int> {
