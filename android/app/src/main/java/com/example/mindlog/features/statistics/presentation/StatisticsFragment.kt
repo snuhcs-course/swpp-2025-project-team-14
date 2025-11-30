@@ -72,9 +72,10 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
     private var hasLoadedOnce = false
     private var wasLoading = false
 
-    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+    private val dateFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("yyyy년 MM월 dd일", Locale.KOREAN)
     private fun formatRange(start: LocalDate, end: LocalDate): String =
-        "${start.format(dateFormatter)}~${end.format(dateFormatter)}"
+        "${start.format(dateFormatter)} ~ ${end.format(dateFormatter)}"
 
     override fun onFabClick() {
         val intent = Intent(requireContext(), JournalWriteActivity::class.java)
@@ -118,7 +119,9 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
         // 사용자 지정: MaterialDatePicker (range)
         binding.btnCustom.setOnClickListener {
             val picker = MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText("기간 선택")
+                .setTitleText("기간으로 검색")
+                .setTheme(R.style.ThemeOverlay_MindLog_DatePicker)
+                .setPositiveButtonText("검색")
                 .build()
             picker.addOnPositiveButtonClickListener { sel ->
                 val startMillis = sel.first ?: return@addOnPositiveButtonClickListener
