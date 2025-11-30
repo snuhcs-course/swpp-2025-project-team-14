@@ -377,6 +377,6 @@ It currently provides a solid foundation for:
 
 You can watch the working demo below:
 
-[▶️ Demo Videos](https://drive.google.com/file/d/1UvCSZwnp8PLHQysFvRSObGxfgmJsh1uf/view?usp=share_link)
+[▶️ Demo Videos](https://drive.google.com/file/d/1Xdco83sr80qsVEQAtJbNjE5fvYkctAys/view?usp=sharing)
 
 > 💡 If the video doesn’t automatically play, right-click the link and choose **“Open in new tab”** or **“Save link as…”** to download it.
