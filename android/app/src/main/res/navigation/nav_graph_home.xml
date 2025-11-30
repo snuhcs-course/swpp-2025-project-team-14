@@ -8,19 +8,24 @@
     <fragment
         android:id="@+id/journalFragment"
         android:name="com.example.mindlog.features.journal.presentation.list.JournalFragment"
-        android:label="Journal" />
+        android:label="fragment_journal_list"
+        tools:layout="@layout/fragment_journal_list" >
+        <action
+            android:id="@+id/action_journalFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/selfAwareFragment"
         android:name="com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareFragment"
         android:label="fragment_self_aware"
-        tools:layout="@layout/fragment_self_aware" >
+        tools:layout="@layout/fragment_self_aware">
 
         <!-- Optional: You can define an action from selfAwareFragment to selfAwareHistoryFragment -->
         <action
             android:id="@+id/action_selfAwareFragment_to_selfAwareHistoryFragment"
             app:destination="@id/selfAwareHistoryFragment" />
-
     </fragment>
 
     <!-- This is the missing destination you need to add -->
@@ -30,14 +35,40 @@
         android:label="fragment_self_aware_history"
         tools:layout="@layout/fragment_self_aware_history" />
 
-
     <fragment
         android:id="@+id/statisticsFragment"
         android:name="com.example.mindlog.features.statistics.presentation.StatisticsFragment"
-        android:label="Statistics"/>
+        android:label="Statistics"
+        tools:layout="@layout/fragment_statistics"/>
 
     <fragment
         android:id="@+id/analysisFragment"
         android:name="com.example.mindlog.features.analysis.presentation.AnalysisFragment"
-        android:label="Analysis"/>
+        android:label="Analysis"
+        tools:layout="@layout/fragment_analysis"/>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.mindlog.features.settings.presentation.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" >
+        <action
+            android:id="@+id/action_settingsFragment_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.mindlog.features.settings.presentation.ChangePasswordFragment"
+        android:label="fragment_change_password"
+        tools:layout="@layout/fragment_change_password" />
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.mindlog.features.settings.presentation.EditProfileFragment"
+        android:label="fragment_edit_profile"
+        tools:layout="@layout/fragment_edit_profile" />
 </navigation>

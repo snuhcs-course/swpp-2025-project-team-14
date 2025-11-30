@@ -38,16 +38,11 @@ class StatisticsFragmentTest {
     }
 
     @Test
-    fun initial_render_shows_happy_events_then_chip_switches_to_sad() {
+    fun initial_render_shows_neutral_reason_title_for_all_emotions() {
         launchFragmentInHiltContainer<StatisticsFragment>()
 
-        // 초기 선택: rates에서 HAPPY가 최대 → "최근 행복했던 이유는?" 노출
-        onView(withText("최근 행복했던 이유는?"))
-            .check(matches(isDisplayed()))
-
-        // SAD 칩 클릭 → "최근 슬픔했던 이유는?"으로 변경
-        onView(withId(R.id.chipSad)).perform(click())
-        onView(withText("최근 슬픔했던 이유는?"))
+        // 초기 상태: 선택된 감정 없음(null) → "최근 그렇게 느꼈던 이유는?" 노출
+        onView(withText("최근 그렇게 느꼈던 이유는?"))
             .check(matches(isDisplayed()))
     }
 
@@ -88,16 +83,15 @@ class StatisticsFragmentTest {
     }
 
     @Test
-    fun chip_selection_syncs_with_viewmodel_and_updates_on_click() {
+    fun selecting_emotion_in_spinner_updates_title() {
         launchFragmentInHiltContainer<StatisticsFragment>()
 
-        // 초기 상태: 행복 칩이 체크되어 있는지 확인 (페이크 레포가 행복 최대 비율을 제공한다고 가정)
-        onView(withId(R.id.chipHappy)).check(matches(isChecked()))
+        // 스피너에서 "슬픔" 선택 → 제목이 "최근 슬펐던 이유는?" 으로 변경되어야 함
+        onView(withId(R.id.spinnerEmotions)).perform(click())
+        onView(withText("슬픔")).perform(click())
 
-        // 슬픔 칩 클릭 후 체크 상태 변경 및 제목 문구 변경 확인
-        onView(withId(R.id.chipSad)).perform(scrollTo(), click())
-        onView(withId(R.id.chipSad)).check(matches(isChecked()))
-        onView(withText("최근 슬픔했던 이유는?")).check(matches(isDisplayed()))
+        onView(withText("최근 슬펐던 이유는?"))
+            .check(matches(isDisplayed()))
     }
 
     @Test

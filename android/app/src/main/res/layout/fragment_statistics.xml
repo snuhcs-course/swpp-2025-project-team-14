@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="통계"
+        android:text="일기 통계"
         android:textColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -130,8 +130,8 @@
                             android:layout_height="40dp"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
-                            android:text="사용자 지정"
-                            android:textSize="10sp"
+                            android:text="기간 선택"
+                            android:textSize="12sp"
                             android:textColor="#2D3142"
                             app:cornerRadius="14dp"
                             app:backgroundTint="#EDE7DE" />
@@ -163,12 +163,69 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
+                    <!-- 감정 비율 데이터 없음 상태 -->
+                    <LinearLayout
+                        android:id="@+id/emptyEmotionRates"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/lottieEmotionRatesEmpty"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            app:lottie_rawRes="@raw/anim_empty_ratio"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvEmotionRatesEmpty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="작성한 일기 데이터가 없어요. 일기를 작성해 보세요!"
+                            android:textColor="#636779"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
                     <com.github.mikephil.charting.charts.PieChart
                         android:id="@+id/chartEmotionRates"
                         android:layout_width="match_parent"
                         android:layout_height="220dp" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/emotionSelectorContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="15dp">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvEmotionFilterLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="감정 선택"
+                    android:textColor="#636779"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="12dp"/>
+
+                <Spinner
+                    android:id="@+id/spinnerEmotions"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:spinnerMode="dropdown" />
+            </LinearLayout>
 
             <!-- 3) 감정 변화 (LineChart) -->
             <com.google.android.material.card.MaterialCardView
@@ -194,108 +251,51 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
 
+                    <!-- 감정 변화 그래프 데이터 없음 상태 -->
+                    <LinearLayout
+                        android:id="@+id/emptyEmotionTrend"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/lottieEmotionTrendEmpty"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            app:lottie_rawRes="@raw/anim_empty_emotiontrend"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvEmotionTrendEmpty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="작성한 일기 데이터가 없어요. 일기를 작성해 보세요!"
+                            android:textColor="#636779"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/chartEmotionTrend"
                         android:layout_width="match_parent"
-                        android:layout_height="220dp" />
+                        android:layout_height="220dp" >
+                    </com.github.mikephil.charting.charts.LineChart>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- 감정 칩 (카드 밖, 아래 줄) -->
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupEmotions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="15dp"
-                app:layout_constraintTop_toBottomOf="@+id/cardPeriod"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:singleLine="true"
-                app:singleSelection="true"
-                app:selectionRequired="false"
-                app:chipSpacingHorizontal="10dp"
-                app:checkedChip="@id/chipHappy">
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.Material3.Chip.Assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/chipHappy"
-                    android:checkable="true"
-                    android:text="행복"
-                    android:textAllCaps="false"
-                    android:textColor="#2D3142"
-                    app:chipMinHeight="36dp"
-                    app:chipCornerRadius="18dp"
-                    app:chipBackgroundColor="#EDE7DE"
-                    app:ensureMinTouchTargetSize="false" />
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.Material3.Chip.Assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/chipSad"
-                    android:checkable="true"
-                    android:text="슬픔"
-                    android:textColor="#2D3142"
-                    android:textAllCaps="false"
-                    app:chipMinHeight="36dp"
-                    app:chipCornerRadius="18dp"
-                    app:chipBackgroundColor="#EDE7DE"
-                    app:ensureMinTouchTargetSize="false" />
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.Material3.Chip.Assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/chipAnxious"
-                    android:checkable="true"
-                    android:text="불안"
-                    android:textAllCaps="false"
-                    android:textColor="#2D3142"
-                    app:chipMinHeight="36dp"
-                    app:chipCornerRadius="18dp"
-                    app:chipBackgroundColor="#EDE7DE"
-                    app:ensureMinTouchTargetSize="false" />
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.Material3.Chip.Assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/chipLethargy"
-                    android:checkable="true"
-                    android:text="무기력"
-                    android:textAllCaps="false"
-                    android:textColor="#2D3142"
-                    app:chipMinHeight="36dp"
-                    app:chipCornerRadius="18dp"
-                    app:chipBackgroundColor="#EDE7DE"
-                    app:ensureMinTouchTargetSize="false" />
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.Material3.Chip.Assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/chipExciting"
-                    android:checkable="true"
-                    android:text="흥미"
-                    android:textAllCaps="false"
-                    android:textColor="#2D3142"
-                    app:chipMinHeight="36dp"
-                    app:chipCornerRadius="18dp"
-                    app:chipBackgroundColor="#EDE7DE"
-                    app:ensureMinTouchTargetSize="false" />
-            </com.google.android.material.chip.ChipGroup>
 
             <com.google.android.material.card.MaterialCardView
                 style="@style/CardViewStyle"
                 android:id="@+id/cardEmotionEvents"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                app:layout_constraintTop_toBottomOf="@+id/chipGroupEmotions"
-                >
+                android:layout_marginBottom="15dp" >
 
                 <LinearLayout
                     android:id="@+id/cardEmotionEventsContainer"
@@ -362,7 +362,7 @@
                 android:id="@+id/cardWordCloud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="120dp">
+                android:layout_marginBottom="170dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -378,6 +378,37 @@
                         android:textStyle="bold"
                         android:textSize="16sp"
                         android:layout_marginBottom="10dp"/>
+
+                    <!-- 워드클라우드 데이터 없음 상태 -->
+                    <LinearLayout
+                        android:id="@+id/emptyWordCloud"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/lottieWordCloudEmpty"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            app:lottie_rawRes="@raw/anim_empty_worldcloud"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvWordCloudEmpty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="작성한 일기 데이터가 없어요. 일기를 작성해 보세요!"
+                            android:textColor="#636779"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:textAlignment="center" />
+                    </LinearLayout>
 
                     <FrameLayout
                         android:id="@+id/wordCloudView"

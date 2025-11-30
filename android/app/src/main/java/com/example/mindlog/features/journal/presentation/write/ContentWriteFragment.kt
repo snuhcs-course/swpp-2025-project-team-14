@@ -15,6 +15,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.mindlog.R
+import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.DialogAiStyleSelectorBinding
 import com.example.mindlog.databinding.FragmentContentWriteBinding
 import com.example.mindlog.features.journal.presentation.detail.JournalDetailActivity
@@ -22,18 +23,23 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 @AndroidEntryPoint
 class ContentWriteFragment : Fragment() {
 
     private var _binding: FragmentContentWriteBinding? = null
     private val binding get() = _binding!!
 
-    // Activity와 ViewModel 공유
+    private val dateFormat = SimpleDateFormat(
+        "yyyy년 MM월 dd일 E요일",
+        Locale.KOREAN
+    )
+
     private val writeViewModel: JournalWriteViewModel by activityViewModels()
     private val editViewModel: JournalEditViewModel by activityViewModels()
 
-    // 갤러리 런처
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             when (activity) {
@@ -54,22 +60,18 @@ class ContentWriteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✨ [핵심 수정 1] 모드에 따라 데이터 관찰과 UI 설정을 올바른 순서로 호출
         when (activity) {
             is JournalDetailActivity -> {
-                // 상세 모드: 데이터를 먼저 바인딩하고, 그 후에 UI를 읽기 전용으로 만듦
                 bindViewModelToUi()
                 observeEditViewModel()
                 configureUiForReadOnly()
             }
             is JournalEditActivity -> {
-                // 수정 모드: 데이터를 바인딩하고 UI를 편집 가능하게 설정
                 bindViewModelToUi()
                 observeEditViewModel()
                 configureUiForEditing()
             }
             is JournalWriteActivity -> {
-                // 작성 모드: 데이터를 바인딩하고 UI를 편집 가능하게 설정
                 bindViewModelToUi()
                 observeWriteViewModel()
                 configureUiForEditing()
@@ -77,25 +79,24 @@ class ContentWriteFragment : Fragment() {
         }
     }
 
-    // ✨ [핵심 수정 2] 상세 화면 (읽기 전용) UI 설정 - 가장 안정적인 방식으로 변경
     private fun configureUiForReadOnly() {
         binding.etTitle.apply {
             isFocusable = false
             isClickable = false
             isLongClickable = false
-            background = null // 밑줄 배경 제거
+            background = null
         }
         binding.etContent.apply {
             isFocusable = false
             isClickable = false
             isLongClickable = false
-            background = null // 밑줄 배경 제거
+            background = null
         }
         binding.etGratitude.apply {
             isFocusable = false
             isClickable = false
             isLongClickable = false
-            background = null // 밑줄 배경 제거
+            background = null
         }
 
         // 하단 버튼들을 모두 숨김
@@ -135,6 +136,7 @@ class ContentWriteFragment : Fragment() {
     private fun bindViewModelToUi() {
         when (val currentViewModel = if (activity is JournalWriteActivity) writeViewModel else editViewModel) {
             is JournalWriteViewModel -> {
+                binding.tvDate.text = dateFormat.format(Date())
                 binding.etTitle.addTextChangedListener { text -> currentViewModel.title.value = text.toString() }
                 binding.etContent.addTextChangedListener { text -> currentViewModel.content.value = text.toString() }
                 binding.etGratitude.addTextChangedListener { text -> currentViewModel.gratitude.value = text.toString() }
@@ -147,7 +149,6 @@ class ContentWriteFragment : Fragment() {
         }
     }
 
-    // 클릭 이벤트 리스너 설정 (작성/수정 모드에서만 호출됨)
     private fun setupClickListeners() {
         binding.ivPreview.setOnClickListener {
             showImageDeleteConfirmDialog()
@@ -197,6 +198,12 @@ class ContentWriteFragment : Fragment() {
         vm.title.observe(viewLifecycleOwner) { if (binding.etTitle.text.toString() != it) binding.etTitle.setText(it) }
         vm.content.observe(viewLifecycleOwner) { if (binding.etContent.text.toString() != it) binding.etContent.setText(it) }
         vm.gratitude.observe(viewLifecycleOwner) { if (binding.etGratitude.text.toString() != it) binding.etGratitude.setText(it) }
+
+        vm.journalState.observe(viewLifecycleOwner) { result ->
+            if (result is Result.Success) {
+                binding.tvDate.text = dateFormat.format(result.data.createdAt)
+            }
+        }
     }
 
     private fun updateImageView(uri: Uri?, url: String?, bitmap: Bitmap?) {
@@ -222,6 +229,11 @@ class ContentWriteFragment : Fragment() {
             )
             if (isAdded) {
                 Glide.with(this).load(sources.first()).into(binding.ivPreview)
+                val previewLayoutParams = binding.ivPreview.layoutParams
+                previewLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                binding.ivPreview.layoutParams = previewLayoutParams
+                binding.ivPreview.adjustViewBounds = true
+                binding.ivPreview.requestLayout()
             }
         } else {
             constraintSet.connect(
@@ -302,7 +314,7 @@ class ContentWriteFragment : Fragment() {
     }
 
     private fun showImageDeleteConfirmDialog() {
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_MindLog_AlertDialog)
             .setTitle("이미지 삭제")
             .setMessage("선택한 이미지를 삭제하시겠습니까?")
             .setNegativeButton("취소", null)

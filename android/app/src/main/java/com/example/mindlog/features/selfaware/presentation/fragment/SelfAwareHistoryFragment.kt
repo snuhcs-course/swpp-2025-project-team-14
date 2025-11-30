@@ -3,6 +3,7 @@ package com.example.mindlog.features.selfaware.presentation.fragment
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -29,6 +30,10 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
 
     private val viewModel: SelfAwareHistoryViewModel by viewModels()
     private val adapter by lazy { SelfAwareHistoryAdapter() }
+
+    private var hasLoadedOnce = false
+    private var wasLoading = false
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareHistoryBinding.bind(view)
@@ -77,7 +82,23 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
                     adapter.submitList(s.items.toList())
-                    binding.recyclerHistory.isEnabled = s.items.isNotEmpty()
+
+                    val isAnyLoading = s.isRefreshing || s.isLoading
+
+                    // 로딩이 한 번이라도 끝난 뒤부터 empty 상태를 보여주고 싶을 때
+                    if (isAnyLoading) {
+                        wasLoading = true
+                    }
+                    if (!isAnyLoading && wasLoading) {
+                        hasLoadedOnce = true
+                    }
+
+                    val hasItems = s.items.isNotEmpty()
+                    val showEmpty = hasLoadedOnce && !isAnyLoading && !hasItems
+
+                    binding.recyclerHistory.isVisible = hasItems
+                    binding.recyclerHistory.isEnabled = hasItems
+                    binding.emptyContainer.isVisible = showEmpty
                 }
             }
         }

@@ -2,16 +2,21 @@ package com.example.mindlog.features.auth.data.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.common.toResult
 import com.example.mindlog.features.auth.data.api.*
 import com.example.mindlog.features.auth.data.dto.LoginRequest
+import com.example.mindlog.features.auth.data.dto.LogoutResponse
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.data.dto.SignupRequest
+import com.example.mindlog.features.auth.data.dto.TokenResponse
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.util.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -26,88 +31,57 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signup(
         loginId: String,
         password: String,
-        username: String
-    ): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val resp = authApi.signup(SignupRequest(loginId, password, username)).execute()
-            if (!resp.isSuccessful) return@withContext false
-
-            // 서버가 회원가입 시 토큰을 줄 수도/안 줄 수도 있음 → 있으면 저장
-            resp.body()?.data?.let { tokenPair ->
-                val access = tokenPair.access
-                val refresh = tokenPair.refresh
-                if (!access.isNullOrBlank()) {
-                    tokenManager.saveTokens(access, refresh)
-                }
-            }
+        username: String,
+        gender: String,
+        birthDate: LocalDate
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
+        runCatching {
+            val request = SignupRequest(
+                loginId, password, username, gender, birthDate.toString()
+            )
+            val res: TokenResponse = authApi.signup(request)
+            tokenManager.saveTokens(res.access, res.refresh)
             true
-        } catch (e: Exception) {
-            false
-        }
+        }.toResult()
     }
 
     override suspend fun login(
         loginId: String,
         password: String
-    ): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val resp = authApi.login(LoginRequest(loginId, password)).execute()
-            if (!resp.isSuccessful) return@withContext false
-
-            val body = resp.body() ?: return@withContext false
-            val access = body.data.access ?: return@withContext false
-            val refresh = body.data.refresh
-            tokenManager.saveTokens(access, refresh)
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
+        runCatching {
+            val res: TokenResponse = authApi.login(LoginRequest(loginId, password))
+            tokenManager.saveTokens(res.access, res.refresh)
             true
-        } catch (_: Exception) {
-            false
-        }
+        }.toResult()
     }
 
-    override suspend fun refresh(refresh: String): Boolean = withContext(Dispatchers.IO) {
-        val currentRefresh = tokenManager.getRefreshToken() ?: return@withContext false
-        try {
-            val resp = refreshApi.refresh(RefreshTokenRequest(currentRefresh)).execute()
-            if (!resp.isSuccessful) return@withContext false
-
-            val body = resp.body() ?: return@withContext false
-            val newAccess = body.data.access ?: return@withContext false
-            val newRefresh = body.data.refresh ?: currentRefresh
-            tokenManager.saveTokens(newAccess, newRefresh)
+    override suspend fun refresh(): Result<Boolean> = withContext(Dispatchers.IO) {
+        runCatching {
+            val refresh = tokenManager.getRefreshToken() ?: throw IllegalStateException("Refresh token missing")
+            val res: TokenResponse = refreshApi.refresh(RefreshTokenRequest(refresh))
+            tokenManager.saveTokens(res.access, res.refresh)
             true
-        } catch (_: HttpException) {
-            false
-        } catch (_: Exception) {
-            false
-        }
+        }.toResult()
     }
 
-    override suspend fun verify(): Boolean = withContext(Dispatchers.IO) {
-        val access = tokenManager.getAccessToken() ?: return@withContext false
-        try {
-            // verify는 Authorization을 직접 넘겨야 하므로 Bearer 작성
-            val resp = authApi.verify("Bearer $access").execute()
-            resp.isSuccessful
-        } catch (_: Exception) {
-            false
-        }
+    override suspend fun verify(): Result<Boolean> = withContext(Dispatchers.IO) {
+        runCatching {
+            val access = tokenManager.getAccessToken() ?: throw IllegalStateException("Refresh token missing")
+            val res = authApi.verify("Bearer $access")
+            true
+        }.toResult()
     }
 
-    override suspend fun logout(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            // 서버 알림은 실패해도 로컬 토큰은 반드시 삭제
-            val access = tokenManager.getAccessToken()
-            if (!access.isNullOrBlank()) {
-                kotlin.runCatching {
-                    authApi.logout("Bearer $access").execute()
-                }
+    override suspend fun logout(): Result<Boolean> = withContext(Dispatchers.IO) {
+        runCatching {
+            val refresh = tokenManager.getRefreshToken() ?: throw IllegalStateException("Refresh token missing")
+            val res: LogoutResponse = authApi.logout(RefreshTokenRequest(refresh))
+            if (!res.ok) {
+                throw IllegalStateException(res.error ?: "Logout failed on server")
             }
             tokenManager.clearTokens()
             true
-        } catch (_: Exception) {
-            // 그래도 토큰은 비운다 (로그아웃 관점에서 성공)
-            tokenManager.clearTokens()
-            true
-        }
+        }.toResult()
     }
 }

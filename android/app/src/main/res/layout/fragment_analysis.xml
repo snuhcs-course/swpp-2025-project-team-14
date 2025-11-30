@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="분석"
+        android:text="나의 심리 성향 분석"
         android:textColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -178,10 +178,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✨"
-                            android:textSize="18sp" />
+                            android:textSize="14dp" />
 
                         <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvAdviceType"
+                            android:id="@+id/tvAdvice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
@@ -193,14 +193,35 @@
                     </LinearLayout>
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvAdviceBody"
+                        android:id="@+id/tvAdviceType"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textColor="#2D3142"
                         android:textSize="13sp"
                         android:lineSpacingExtra="2dp"
+                        tools:text="EQ" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvAdviceBody"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:textColor="#2D3142"
+                        android:textSize="13sp"
+                        android:lineSpacingExtra="2dp"
                         tools:text="오늘은 '완벽한 답'보다 '충분히 좋은 시도'에 초점을 맞춰보세요. 지금의 선택이 다음 탐험의 단서를 만들어 줄 거예요." />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvAdviceTypeDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2.5dp"
+                        android:textColor="#9E9E9E"
+                        android:textSize="10sp"
+                        android:lineSpacingExtra="1dp"
+                        android:visibility="gone"
+                        tools:text="감정을 인식·이해·조절하고 타인의 감정에 공감하는 능력, 관계 유지와 의사결정의 질을 높이기 위한 조언입니다." />
 
                     <!-- 🧠 조언 캐릭터 애니메이션 -->
                     <com.airbnb.lottie.LottieAnimationView

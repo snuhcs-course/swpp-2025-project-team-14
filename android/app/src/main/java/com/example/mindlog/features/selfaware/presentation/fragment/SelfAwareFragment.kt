@@ -1,5 +1,7 @@
 package com.example.mindlog.features.selfaware.presentation.fragment
 
+import android.content.Intent
+import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -26,12 +28,17 @@ import android.text.Spannable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.inputmethod.BaseInputConnection
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
+import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 
 @AndroidEntryPoint
-class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
+class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.FabClickListener {
     private var _binding: FragmentSelfAwareBinding? = null
     private val binding get() = _binding!!
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private val vm: SelfAwareViewModel by viewModels()
 
     private var answerWatcher: TextWatcher? = null
@@ -39,11 +46,29 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
     private var radarInitDone = false
     private var lastRadarCats: List<String>? = null
     private var lastRadarScores: List<Float>? = null
+    private var valueMapLoadedOnce = false
+    private var wasValueMapLoading = false
 
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        activityResultLauncher.launch(intent)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareBinding.bind(view)
         binding.completionOverlay.bringToFront()
+
+        // Journal 작성 화면에서 돌아올 때 결과를 처리하기 위한 launcher 설정
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 작성 완료 시 홈의 Journal 탭으로 이동
+                (activity as? HomeActivity)?.let { homeActivity ->
+                    homeActivity.navigateToJournalTab()
+                }
+            }
+        }
 
         answerWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -72,6 +97,20 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                     val isLoading = s.isLoading
                     val isQuestionError = s.isQuestionError
                     binding.progressValueMap.isVisible = isLoading
+
+                    if (isLoading) {
+                        wasValueMapLoading = true
+                    }
+                    if (!isLoading && wasValueMapLoading) {
+                        valueMapLoadedOnce = true
+                    }                    // valueMap 로딩 상태 추적: 최초 로딩이 끝난 이후에만 empty 상태를 보여주기 위함
+                    if (isLoading) {
+                        wasValueMapLoading = true
+                    }
+                    if (!isLoading && wasValueMapLoading) {
+                        valueMapLoadedOnce = true
+                    }
+
 
                     val shouldShowOverlay = s.showCompletionOverlay || s.isSubmitting || s.isAnsweredToday
                     val showQuestionLoading = (s.isLoadingQuestion || isQuestionError) && !shouldShowOverlay
@@ -125,21 +164,57 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
                             (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
                     }
 
-                    // 카테고리/점수 안전 매핑 + 빈 차트 방어
+                    // 카테고리/점수 안전 매핑 + 빈 차트/플레이스홀더 처리
                     val categories = s.valueMap.map { it.categoryKo }
                     val scores = s.valueMap.map { (it.score ?: 0).toFloat() }
-                    val chartEmpty = (binding.radar.data == null || binding.radar.data.dataSetCount == 0)
-                    val needRender = chartEmpty || lastRadarCats != categories || lastRadarScores != scores
+                    val hasValueMap = categories.isNotEmpty() && scores.isNotEmpty()
 
-                    val visible = s.valueMap.isNotEmpty()
-                    if (needRender) {
-                        renderRadar(binding.radar, categories, scores)
-                        lastRadarCats = categories.toList()
-                        lastRadarScores = scores.toList()
+                    val chartEmpty = binding.radar.data == null || binding.radar.data.dataSetCount == 0
+                    val needRender = hasValueMap && (chartEmpty || lastRadarCats != categories || lastRadarScores != scores)
+                    val showEmptyValueMap = valueMapLoadedOnce && !isLoading && !hasValueMap
+
+                    when {
+                        isLoading -> {
+                            // 로딩 중: 차트/empty 둘 다 숨기고, 프로그레스만
+                            binding.radar.isVisible = false
+                            binding.lottieSelfAwareEmpty.isVisible = false
+                        }
+
+                        hasValueMap -> {
+                            if (needRender) {
+                                renderRadar(binding.radar, categories, scores)
+                                lastRadarCats = categories.toList()
+                                lastRadarScores = scores.toList()
+                            }
+                            binding.radar.isVisible = true
+                            binding.lottieSelfAwareEmpty.isVisible = false
+                            binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
+                        }
+                        showEmptyValueMap -> {
+                            // 로딩이 한 번 이상 끝났고, 데이터가 실제로 없을 때만 empty Lottie 노출
+                            binding.radar.clear()
+                            binding.radar.isVisible = false
+                            binding.lottieSelfAwareEmpty.isVisible = true
+                            binding.tvValueSummary.text =
+                                "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
+                        }
+                        else -> {
+                            // 초기 상태 등: 아무것도 보여주지 않음 (깜빡임 방지)
+                            binding.radar.isVisible = false
+                            binding.lottieSelfAwareEmpty.isVisible = false
+                        }
                     }
-                    binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
 
-                    // chips
+                    // 핵심 가치 키워드가 하나도 없으면 안내 문구 및 칩 숨김
+                    val hasTopValues = s.topValueScores.any { !it.value.isNullOrBlank() }
+                    if (!hasTopValues) {
+                        binding.tvTopValueScoresSummary.text = "핵심 가치 키워드가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
+                        binding.chipGroupValuesContainer.isVisible = false
+                    } else {
+                        binding.tvTopValueScoresSummary.text = "사용자님이 중시하는 가치들은 위와 같아요."
+                        binding.chipGroupValuesContainer.isVisible = true
+                    }
+
                     val chips = listOf(
                         binding.chipValueFirst,
                         binding.chipValueSecond,
@@ -167,6 +242,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware) {
         lastRadarCats = null
         lastRadarScores = null
     }
+
 
     private fun isComposing(text: CharSequence?): Boolean {
         val sp = text as? Spannable ?: return false

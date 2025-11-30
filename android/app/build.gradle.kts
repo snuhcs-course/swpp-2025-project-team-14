@@ -118,10 +118,12 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("app.cash.turbine:turbine:1.1.0")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
 
     // ---- Instrumented Test + UI (androidTest) ----
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test:rules:1.6.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
@@ -154,6 +156,7 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("com.google.truth:truth:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.7.7")
 }
 
 kapt {
@@ -169,7 +172,7 @@ configurations.all {
 }
 
 jacoco {
-    toolVersion = "0.8.12"   // 또는 최신 권장 버전
+    toolVersion = "0.8.12"
 }
 
 tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
@@ -177,6 +180,14 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
     extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
+    }
+}
+
+tasks.register("cleanCoverageData") {
+    doLast {
+        delete("${buildDir}/jacoco")
+        delete("${buildDir}/outputs/code_coverage")
+        println("🧹 Old coverage data deleted.")
     }
 }
 
@@ -255,35 +266,35 @@ tasks.register("debugCoverageReport", org.gradle.testing.jacoco.tasks.JacocoRepo
         "**/databinding/**", "**/BR.class"
     )
 
-    val kotlinClassesDir = layout.buildDirectory.dir("tmp/kotlin-classes/debug").get().asFile
-    val javaClassesDir = layout.buildDirectory.dir("intermediates/javac/debug/classes").get().asFile
-    classDirectories.setFrom(
-        files(
-            fileTree(kotlinClassesDir) { exclude(excludes) },
-            fileTree(javaClassesDir) { exclude(excludes) }
-        )
-    )
+    // ⬇⬇⬇ 여기 부분만 이렇게 고치기
+    val kotlinClasses = fileTree("${buildDir}/tmp/kotlin-classes/debug") {
+        exclude(excludes)
+    }
+    val javaClasses = fileTree("${buildDir}/intermediates/javac/debug/classes") {
+        exclude(excludes)
+    }
+    classDirectories.setFrom(files(kotlinClasses, javaClasses))
+    // ⬆⬆⬆ intermediates/classes/debug 는 빼기
 
     sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
-    executionData.setFrom(
-        files(
-            // unit test exec candidates
-            fileTree(layout.buildDirectory.asFile.get()) {
-                include(
-                    "jacoco/testDebugUnitTest.exec",
-                    "outputs/unit_test_code_coverage/**/testDebugUnitTest.exec",
-                    "outputs/unit_test_code_coverage/**/*.exec"
-                )
-            },
-            // androidTest ec candidates
-            fileTree(layout.buildDirectory.asFile.get()) {
-                include(
-                    "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
-                    "outputs/code_coverage/**/*.ec"
-                )
-            }
+
+    val unitExec = fileTree(layout.buildDirectory.asFile.get()) {
+        include(
+            "jacoco/testDebugUnitTest.exec",
+            "outputs/unit_test_code_coverage/**/testDebugUnitTest.exec"
         )
-    )
+    }
+
+    // 가장 최근 ec 하나만 선택
+    val latestEcFile = fileTree(layout.buildDirectory.asFile.get()) {
+        include("outputs/code_coverage/debugAndroidTest/connected/**/*.ec")
+    }.files.maxByOrNull { it.lastModified() }
+
+    if (latestEcFile != null) {
+        executionData.setFrom(files(unitExec, latestEcFile))
+    } else {
+        executionData.setFrom(files(unitExec))
+    }
 
     reports {
         html.required.set(true)
@@ -292,10 +303,12 @@ tasks.register("debugCoverageReport", org.gradle.testing.jacoco.tasks.JacocoRepo
         xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/mergedDebug.xml"))
     }
 }
+
 // ---- Convenience: run all tests and generate merged coverage in one go ----
 tasks.register("coverageAll") {
     // Run unit tests -> run androidTest -> build merged coverage report
     dependsOn(
+        "cleanCoverageData",
         "testDebugUnitTest",
         "connectedDebugAndroidTest",
         "debugCoverageReport"
@@ -319,3 +332,4 @@ tasks.register("coverageUnitOnly") {
         )
     }
 }
+

@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="나 알아보기"
+        android:text="질문으로 나 알아보기"
         android:textColor="#2D3142"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -248,6 +248,16 @@
                         app:indicatorColor="#64B5F6"
                         android:visibility="gone"/>
 
+                    <com.airbnb.lottie.LottieAnimationView
+                        android:id="@+id/lottieSelfAwareEmpty"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
+                        android:visibility="gone"
+                        app:lottie_rawRes="@raw/anim_empty_selfaware"
+                        android:layout_gravity="center_horizontal"
+                        app:lottie_autoPlay="true"
+                        app:lottie_loop="true" />
+
                     <com.github.mikephil.charting.charts.RadarChart
                         android:id="@+id/radar"
                         android:layout_width="match_parent"
@@ -384,11 +394,12 @@
                     </LinearLayout>
 
                     <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvTopValueScoresSummary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:text="사용자님이 중시하는 가치들은 위와 같아요."
-                        android:textColor="#636779"
+                        android:textColor="#2D3142"
                         android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
