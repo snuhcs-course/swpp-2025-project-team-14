@@ -185,16 +185,22 @@ These features form the foundation of a secure and scalable authentication syste
 
 These features provide create, get, update, delete user's journal entry.
 
-- **Calculate emotion-rate:** Calculates the rates by searching the emotional data history for a specific period of time.
-
-This feature provide actual values for statistic feature.
-
-- **Self-Aware Question & Answer:** Interactive Q&A feature to promote self-awareness and reflection.
-- **ValueScore & ValueMap Extraction:** Request AI to generate instant psychological analysis of user from selfaware entries.
+- **Self-Aware Question & Answer:**  Interactive Q&A system that prompts users with reflective psychological questions after journaling to enhance self-awareness.
+- **ValueMap & ValueScore Extraction:**  Based on the user's answers to questions, producing value map based on psychological model(five factor model) and user's core values keywords.
+- **Question/Answer History:**  All self-aware interactions are stored and can be revisited.
 
 These features form the selfaware feature which app interacts with user after journal writing.
 
-- **Comprehensive Analysis:** Personality insights based on Five-Factor model of personality, including user type classification, descriptive summaries, and personalized daily advice generated from self-aware Q&A data.
+- **Emotion Rates:** Ratio-based distribution of user emotions aggregated from journal entries
+- **Emotion Trends:** Time-series visualization of emotional changes of all emotions or selected emotion.
+- **Emotion Events:** Summarize events that cause certain types of emotions.
+- **Keyword WorldCloud:** Visualization of frequently occurring keywords in journal history.
+
+This feature provide actual values for statistic feature.
+
+- **User Type:** Personality type classification based on extracted Big Five trait distributions of Five Factor Model.
+- **Comprehensive Analysis:** Personality insights based on Five-Factor model of personality (Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism).
+- **Personalized Daily Advice:** AI-generated daily feedback and guidance tailored to the user’s personality profile.
 
 This feature form analysis feature which gives more accurate psychological insight of user based on authorized theory and its method; FFM and IPIP-NEO-PI.
 
