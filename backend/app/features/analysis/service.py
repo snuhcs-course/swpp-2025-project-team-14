@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 
 from app.features.selfaware.repository import (
     AnswerRepository, 
@@ -23,7 +24,10 @@ from app.features.analysis.comprehensive_analysis.data.en.prompts import (
     neuroticism_explanations
 )
 from app.features.analysis.repository import AnalysisRepository
-from app.features.analysis.prompt import personalized_advice_prompt
+from app.features.analysis.prompt import (
+    personalized_advice_prompt,
+    AdviceGenerationResponse
+)
 
 load_dotenv()
 
@@ -158,14 +162,15 @@ class AnalysisService:
             raise
 
         llm = ChatOpenAI(model="gpt-5-nano")
-        personalized_advice_chain = personalized_advice_prompt | llm | StrOutputParser()
+        output_parser = PydanticOutputParser(pydantic_object=AdviceGenerationResponse)
+        personalized_advice_chain = personalized_advice_prompt | llm | output_parser
 
         theory = random.choice(["CBT", "ACT", "EQ"])
 
         response = personalized_advice_chain.invoke({"theory": theory, "neo_pi_summary": score})
 
-        return theory, response
+        return response
     
     def update_personalized_advice(self, user_id: int, age: int = 23, gender: str = "Male"):
-        advice_type, personalized_advice = self.extract_personalized_advice(user_id, age, gender)
-        self.analysis_repository.update_analysis(user_id=user_id, advice_type=advice_type ,personalized_advice=personalized_advice)
+        response = self.extract_personalized_advice(user_id, age, gender)
+        self.analysis_repository.update_analysis(user_id=user_id, advice_type=response.theory ,personalized_advice=response.advice)

@@ -139,7 +139,12 @@ def create_or_get_today_question(
     question = question_service.get_questions_by_date(user.id, date)
     if not question:
         try: 
+            recent_question = question_service.list_questions_by_user(user.id, 1)[0]
             question = question_service.generate_question(user.id)
+            # Delete unanswered question
+            recent_answer = answer_service.get_answer_by_question(recent_question.id)
+            if recent_answer == None:
+                question_service.delete_question_by_id(recent_question.id)
         except IntegrityError:
             question = question_service.get_questions_by_date(user.id, date)
         assert type(question) == Question
