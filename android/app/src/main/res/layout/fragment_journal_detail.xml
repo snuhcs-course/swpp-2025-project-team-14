@@ -72,7 +72,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:src="@tools:sample/backgrounds/scenic"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+            android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/label_content"

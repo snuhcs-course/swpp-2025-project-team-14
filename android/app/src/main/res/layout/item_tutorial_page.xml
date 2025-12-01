@@ -24,7 +24,8 @@
             android:id="@+id/ivTutorial"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitXY" />
+            android:scaleType="fitXY"
+            android:contentDescription="@null" />
     </com.google.android.material.card.MaterialCardView>
 
     <!-- 2) 투명 프레임 오버레이 -->
@@ -40,6 +41,7 @@
         android:scaleType="fitXY"
         android:adjustViewBounds="false"
         android:clickable="false"
-        android:focusable="false"/>
+        android:focusable="false"
+        android:contentDescription="@null"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

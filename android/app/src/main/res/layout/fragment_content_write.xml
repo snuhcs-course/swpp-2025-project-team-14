@@ -80,7 +80,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scaleType="fitCenter"
-                android:adjustViewBounds="true"  />
+                android:adjustViewBounds="true"
+                android:contentDescription="@null" />
 
             <!-- ✨ [핵심 수정 1] 로딩 시 어두워지는 오버레이 -->
             <View
