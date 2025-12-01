@@ -2,27 +2,21 @@ package com.example.mindlog.features.auth.presentation.main
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.core.ui.SystemUiHelper
-import com.example.mindlog.core.domain.Result
 import com.example.mindlog.databinding.ActivityMainBinding
-import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
-import com.example.mindlog.core.data.token.TokenManager
 import com.example.mindlog.features.home.presentation.HomeActivity
 import com.example.mindlog.features.tutorial.TutorialActivity
 import com.example.mindlog.features.tutorial.TutorialMenuActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
-    @Inject lateinit var authRepository: AuthRepository
-    @Inject lateinit var tokenManager: TokenManager
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,49 +25,18 @@ class MainActivity : AppCompatActivity() {
 
         SystemUiHelper.hideSystemUI(this)
 
-        lifecycleScope.launch {
-            checkAutoLogin()
-        }
+        observeState()
+
+        val completed = hasCompletedTutorial()
+        viewModel.checkAutoLogin(completed)
     }
 
-    private suspend fun checkAutoLogin() {
-        val access = tokenManager.getAccessToken()
-        val refresh = tokenManager.getRefreshToken()
-
-        when {
-            access.isNullOrEmpty() || refresh.isNullOrEmpty() -> {
-                goToLogin()
-            }
-            tokenManager.isAccessTokenExpired() -> {
-                // refresh 시도
-                when (val result = authRepository.refresh()) {
-                    is Result.Success -> {
-                        if (hasCompletedTutorial()) {
-                            goToJournal()
-                        } else {
-                            goToTutorial()
-                        }
-                    }
-                    is Result.Error -> {
-                        tokenManager.clearTokens()
-                        goToLogin()
-                    }
-                }
-            }
-            else -> {
-                when (val result = authRepository.verify()) {
-                    is Result.Success -> {
-                        if (hasCompletedTutorial()) {
-                            goToJournal()
-                        } else {
-                            goToTutorial()
-                        }
-                    }
-                    is Result.Error -> {
-                        tokenManager.clearTokens()
-                        goToLogin()
-                    }
-                }
+    private fun observeState() {
+        viewModel.state.observe(this) { state ->
+            when (state) {
+                MainState.GoLogin -> goToLogin()
+                MainState.GoTutorial -> goToTutorial()
+                MainState.GoHome -> goToJournal()
             }
         }
     }
@@ -84,9 +47,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToTutorial() {
-        // 온보딩 플로우에서 진입하는 튜토리얼이므로, returnToSettings = false
-        val intent = Intent(this, TutorialActivity::class.java).apply {
-            putExtra(TutorialActivity.EXTRA_GO_TO_MENU, true)
+        val intent = Intent(this, TutorialMenuActivity::class.java).apply {
+            putExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, false)
         }
         startActivity(intent)
         finish()
@@ -100,12 +62,5 @@ class MainActivity : AppCompatActivity() {
     private fun goToJournal() {
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            SystemUiHelper.hideSystemUI(this)
-        }
     }
 }

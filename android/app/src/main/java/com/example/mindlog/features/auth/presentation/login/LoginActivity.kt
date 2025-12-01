@@ -35,23 +35,8 @@ class LoginActivity : AppCompatActivity() {
             val id = binding.etLoginId.text.toString()
             val password = binding.etPassword.text.toString()
 
-            var isIdEmpty = false
-            var isPasswordEmpty = false
-
-            if (id.isEmpty()) {
-                binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg_error)
-                isIdEmpty = true
-            } else {
-                binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg)
-            }
-
-            // 비밀번호 검증
-            if (password.isEmpty()) {
-                binding.etPassword.setBackgroundResource(R.drawable.edittext_bg_error)
-                isPasswordEmpty = true
-            } else {
-                binding.etPassword.setBackgroundResource(R.drawable.edittext_bg)
-            }
+            updateLoginIdBackground(id)
+            updatePasswordBackground(password)
 
             val validationResult = loginValidator.validate(id, password)
             if (!validationResult.isValid) {
@@ -65,12 +50,7 @@ class LoginActivity : AppCompatActivity() {
             viewModel.login(id, password)
         }
 
-        binding.etLoginId.setOnFocusChangeListener { _, hasFocus ->
-            binding.etLoginId.hint = if (hasFocus) "" else "아이디를 입력하세요"
-        }
-        binding.etPassword.setOnFocusChangeListener { _, hasFocus ->
-            binding.etPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
-        }
+        setupHintListeners()
 
         binding.tvGoSignup.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
@@ -88,9 +68,34 @@ class LoginActivity : AppCompatActivity() {
                 binding.tvError.text = "아이디와 비밀번호를 확인해주세요"
                 binding.tvError.visibility = View.VISIBLE
             } else {
-                // ✅ 초기 상태 또는 성공 시에는 에러 숨김
+                // 초기 상태 또는 성공 시에는 에러 숨김
                 binding.tvError.visibility = View.GONE
             }
+        }
+    }
+
+    private fun updateLoginIdBackground(id: String) {
+        if (id.isEmpty()) {
+            binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg_error)
+        } else {
+            binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg)
+        }
+    }
+
+    private fun updatePasswordBackground(password: String) {
+        if (password.isEmpty()) {
+            binding.etPassword.setBackgroundResource(R.drawable.edittext_bg_error)
+        } else {
+            binding.etPassword.setBackgroundResource(R.drawable.edittext_bg)
+        }
+    }
+
+    private fun setupHintListeners() {
+        binding.etLoginId.setOnFocusChangeListener { _, hasFocus ->
+            binding.etLoginId.hint = if (hasFocus) "" else "아이디를 입력하세요"
+        }
+        binding.etPassword.setOnFocusChangeListener { _, hasFocus ->
+            binding.etPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
         }
     }
 
