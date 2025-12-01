@@ -9,12 +9,3 @@ data class SignupRequest(
     @SerializedName("gender") val gender: String,
     @SerializedName("birthdate") val birthDate: String
 )
-
-data class LoginRequest(
-    @SerializedName("login_id") val loginId: String,
-    @SerializedName("password") val password: String
-)
-
-data class RefreshTokenRequest(
-    @SerializedName("refresh") val refreshToken: String
-)
