@@ -8,7 +8,6 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-// feature/selfaware/data/mapper/SelfAwareMapper.kt
 class SelfAwareMapper @Inject constructor() {
 
     fun parseToLocalDate(raw: String?): LocalDate {
@@ -23,10 +22,10 @@ class SelfAwareMapper @Inject constructor() {
                 LocalDateTime.parse(raw, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalDate()
             } catch (_: Exception) {
                 try {
-                    // 3) 혹시 그냥 날짜만 오는 경우
+                    // 3) 날짜만 오는 경우
                     LocalDate.parse(raw, DateTimeFormatter.ISO_LOCAL_DATE)
                 } catch (_: Exception) {
-                    // 혹시 이상한 값이 와도 앱이 안죽도록 fallback
+                    // 4) fall back
                     LocalDate.now()
                 }
             }
