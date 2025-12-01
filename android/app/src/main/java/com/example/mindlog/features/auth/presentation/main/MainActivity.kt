@@ -47,8 +47,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToTutorial() {
-        val intent = Intent(this, TutorialMenuActivity::class.java).apply {
-            putExtra(TutorialActivity.EXTRA_RETURN_TO_SETTINGS, false)
+        val intent = Intent(this, TutorialActivity::class.java).apply {
+            putExtra(TutorialActivity.EXTRA_GO_TO_MENU, true)
         }
         startActivity(intent)
         finish()
