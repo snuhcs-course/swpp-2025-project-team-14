@@ -6,7 +6,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.core.data.token.TokenManager
@@ -62,18 +61,13 @@ class AuthIntegrationTest {
             .build()
 
         val authApi = retrofit.create(AuthApi::class.java)
-        val refreshApi = retrofit.create(RefreshApi::class.java)
         val context = ApplicationProvider.getApplicationContext<Context>()
 
         tokenManager = TokenManager(context).also {
             it.clearTokens()
         }
 
-        repo = AuthRepositoryImpl(
-            authApi,
-            refreshApi,
-            tokenManager
-        )
+        repo = AuthRepositoryImpl(authApi, tokenManager)
     }
 
     @After

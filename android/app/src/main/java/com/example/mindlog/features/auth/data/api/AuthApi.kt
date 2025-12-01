@@ -20,10 +20,14 @@ interface AuthApi {
     @POST("auth/login")
     suspend fun login(@Body loginRequest: LoginRequest): TokenResponse
 
+    @Headers("No-Auth: true")
+    @POST("auth/logout")
+    suspend fun logout(@Body refreshTokenRequest: RefreshTokenRequest): LogoutResponse
+
     @POST("auth/verify")
     suspend fun verify(@Header("Authorization") bearerToken: String): Unit
 
     @Headers("No-Auth: true")
-    @POST("auth/logout")
-    suspend fun logout(@Body refreshTokenRequest: RefreshTokenRequest): LogoutResponse
+    @POST("auth/refresh")
+    suspend fun refresh(@Body refreshTokenRequest: RefreshTokenRequest): TokenResponse
 }

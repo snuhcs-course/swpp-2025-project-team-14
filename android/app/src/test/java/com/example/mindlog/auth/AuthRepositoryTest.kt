@@ -2,7 +2,6 @@ package com.example.mindlog.auth
 
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.dto.*
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
 import com.example.mindlog.core.data.token.TokenManager
@@ -10,7 +9,6 @@ import com.example.mindlog.utils.MainDispatcherRule
 import com.example.mindlog.utils.TestDispatcherProvider
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import okhttp3.ResponseBody
 import org.mockito.Mockito.mock
 import org.junit.Assert.*
 import org.junit.Before
@@ -23,7 +21,6 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
-import retrofit2.Response
 import java.time.LocalDate
 
 class AuthRepositoryTest {
@@ -32,7 +29,6 @@ class AuthRepositoryTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var authApi: AuthApi
-    private lateinit var refreshApi: RefreshApi
     private lateinit var tokenManager: TokenManager
     private lateinit var repo: AuthRepositoryImpl
 
@@ -41,9 +37,8 @@ class AuthRepositoryTest {
     @Before
     fun setUp() {
         authApi = mock(AuthApi::class.java)
-        refreshApi = mock(RefreshApi::class.java)
         tokenManager = mock(TokenManager::class.java)
-        repo = AuthRepositoryImpl(authApi, refreshApi, tokenManager)
+        repo = AuthRepositoryImpl(authApi, tokenManager)
     }
 
     @Test
@@ -122,14 +117,14 @@ class AuthRepositoryTest {
         // 코드 상 runCatching 블록에서 false를 반환 → Result.Success(false)
         assertTrue(result is Result.Error)
         verify(tokenManager, never()).saveTokens(any(), any())
-        verifyNoInteractions(refreshApi)
+        verifyNoInteractions(authApi)
     }
 
     @Test
     fun `refresh returns Success(true) and saves tokens on success`() = runTest {
         // given
         `when`(tokenManager.getRefreshToken()).thenReturn("RRR")
-        `when`(refreshApi.refresh(RefreshTokenRequest("RRR")))
+        `when`(authApi.refresh(RefreshTokenRequest("RRR")))
             .thenReturn(TokenResponse("NA", "NR"))
 
         // when
@@ -146,7 +141,7 @@ class AuthRepositoryTest {
     fun `refresh returns Error on exception`() = runTest {
         // given
         `when`(tokenManager.getRefreshToken()).thenReturn("RRR")
-        `when`(refreshApi.refresh(RefreshTokenRequest("RRR")))
+        `when`(authApi.refresh(RefreshTokenRequest("RRR")))
             .thenThrow(RuntimeException("network"))
 
         // when

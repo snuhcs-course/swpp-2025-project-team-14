@@ -3,11 +3,8 @@ package com.example.mindlog.features.auth.di
 import android.content.Context
 import com.example.mindlog.BuildConfig
 import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.network.AuthInterceptor
 import com.example.mindlog.features.auth.data.network.TokenAuthenticator
-import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
-import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.core.data.token.TokenManager
 import dagger.Module
 import dagger.Provides
@@ -49,9 +46,9 @@ object AuthNetworkModule {
 
     @Provides
     @Singleton
-    @Named("refreshApi")
-    fun provideRefreshApi(@Named("refreshRetrofit") retrofit: Retrofit): RefreshApi =
-        retrofit.create(RefreshApi::class.java)
+    @Named("refreshAuthApi")
+    fun provideRefreshAuthApi(@Named("refreshRetrofit") retrofit: Retrofit): AuthApi =
+        retrofit.create(AuthApi::class.java)
 
     @Provides
     @Singleton
@@ -62,6 +59,6 @@ object AuthNetworkModule {
     @Singleton
     fun provideTokenAuthenticator(
         tokenManager: TokenManager,
-        @Named("refreshApi") refreshApi: RefreshApi
-    ): Authenticator = TokenAuthenticator(tokenManager, refreshApi)
+        @Named("refreshAuthApi") refreshAuthApi: AuthApi
+    ): Authenticator = TokenAuthenticator(tokenManager, refreshAuthApi)
 }

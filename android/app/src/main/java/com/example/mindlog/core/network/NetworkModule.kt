@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     @Provides @Singleton
-    fun createClient(
+    fun provideClient(
         interceptor: Interceptor,
         authenticator: Authenticator
     ): OkHttpClient = OkHttpClient.Builder()
@@ -34,7 +34,7 @@ object NetworkModule {
      * Default baseUrl comes from BuildConfig
      */
     @Provides @Singleton
-    fun createRetrofit(
+    fun provideRetrofit(
         client: OkHttpClient,
     ): Retrofit = Retrofit.Builder()
         .baseUrl(BuildConfig.API_BASE_URL)

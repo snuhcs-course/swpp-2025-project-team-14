@@ -1,10 +1,8 @@
 package com.example.mindlog.features.auth.data.repository
 
-import android.content.Context
-import android.util.Log
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.domain.toResult
-import com.example.mindlog.features.auth.data.api.*
+import com.example.mindlog.features.auth.data.api.AuthApi
 import com.example.mindlog.features.auth.data.dto.LoginRequest
 import com.example.mindlog.features.auth.data.dto.LogoutResponse
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
@@ -15,14 +13,12 @@ import com.example.mindlog.core.data.token.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import retrofit2.HttpException
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Named
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
-    @Named("refreshApi") private val refreshApi: RefreshApi,
     private val tokenManager: TokenManager
 ) : AuthRepository {
 
@@ -59,7 +55,7 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun refresh(): Result<Boolean> = withContext(Dispatchers.IO) {
         runCatching {
             val refresh = tokenManager.getRefreshToken() ?: throw IllegalStateException("Refresh token missing")
-            val res: TokenResponse = refreshApi.refresh(RefreshTokenRequest(refresh))
+            val res: TokenResponse = authApi.refresh(RefreshTokenRequest(refresh))
             tokenManager.saveTokens(res.access, res.refresh)
             true
         }.toResult()

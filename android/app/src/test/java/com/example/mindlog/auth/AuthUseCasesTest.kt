@@ -4,7 +4,7 @@ import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.domain.usecase.LoginUseCase
 import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
-import com.example.mindlog.features.auth.domain.usecase.RreshTokenUseCase
+import com.example.mindlog.features.auth.domain.usecase.RefreshTokenUseCase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -17,14 +17,14 @@ class AuthUseCasesTest {
     private lateinit var repo: AuthRepository
     private lateinit var loginUseCase: LoginUseCase
     private lateinit var signupUseCase: SignupUseCase
-    private lateinit var refreshUseCase: RreshTokenUseCase
+    private lateinit var refreshUseCase: RefreshTokenUseCase
 
     @Before
     fun setUp() {
         repo = mock(AuthRepository::class.java)
         loginUseCase = LoginUseCase(repo)
         signupUseCase = SignupUseCase(repo)
-        refreshUseCase = RreshTokenUseCase(repo)
+        refreshUseCase = RefreshTokenUseCase(repo)
     }
 
     @Test

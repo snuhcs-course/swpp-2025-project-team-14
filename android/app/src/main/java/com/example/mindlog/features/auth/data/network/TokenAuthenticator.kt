@@ -1,8 +1,8 @@
 package com.example.mindlog.features.auth.data.network
 
-import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.core.data.token.TokenManager
+import com.example.mindlog.features.auth.data.api.AuthApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
@@ -14,7 +14,7 @@ import kotlin.concurrent.Volatile
 
 class TokenAuthenticator @Inject constructor(
     private val tokenManager: TokenManager,
-    @Named("refreshApi") private val refreshApi: RefreshApi
+    @Named("refreshAuthApi") private val authApi: AuthApi
 ) : Authenticator {
 
     @Volatile private var refreshing = false
@@ -31,7 +31,7 @@ class TokenAuthenticator @Inject constructor(
 
         return try {
             val res = runBlocking {
-                refreshApi.refresh(RefreshTokenRequest(refresh))
+                authApi.refresh(RefreshTokenRequest(refresh))
             }
 
             val newAccess = res.access ?: return null
