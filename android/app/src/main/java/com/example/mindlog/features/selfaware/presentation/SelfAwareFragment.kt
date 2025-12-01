@@ -37,7 +37,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
     private var _binding: FragmentSelfAwareBinding? = null
     private val binding get() = _binding!!
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
-    private val vm: SelfAwareViewModel by viewModels()
+    private val viewModel: SelfAwareViewModel by viewModels()
 
     private var answerWatcher: TextWatcher? = null
     private var suppressAnswerTextChange = false
@@ -72,14 +72,14 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
             override fun afterTextChanged(editable: Editable?) {
                 if (suppressAnswerTextChange) return
                 if (isComposing(editable)) return
-                vm.updateAnswerText(editable?.toString().orEmpty())
+                viewModel.updateAnswerText(editable?.toString().orEmpty())
             }
         }
         binding.etAnswer.addTextChangedListener(answerWatcher)
 
         binding.btnSubmit.setOnClickListener {
             if (!binding.btnSubmit.isEnabled) return@setOnClickListener
-            vm.submit()
+            viewModel.submit()
         }
 
         binding.btnOpenHistory.setOnClickListener {
@@ -88,157 +88,15 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                vm.state.collect { s ->
-                    // Show spinner if loading question, submitting, or loading value map (if present)
-                    val isLoading = s.isLoading
-                    val isQuestionError = s.isQuestionError
-                    binding.progressValueMap.isVisible = isLoading
-
-                    if (isLoading) {
-                        wasValueMapLoading = true
-                    }
-                    if (!isLoading && wasValueMapLoading) {
-                        valueMapLoadedOnce = true
-                    }                    // valueMap 로딩 상태 추적: 최초 로딩이 끝난 이후에만 empty 상태를 보여주기 위함
-                    if (isLoading) {
-                        wasValueMapLoading = true
-                    }
-                    if (!isLoading && wasValueMapLoading) {
-                        valueMapLoadedOnce = true
-                    }
-
-
-                    val shouldShowOverlay = s.showCompletionOverlay || s.isSubmitting || s.isAnsweredToday
-                    val showQuestionLoading = (s.isLoadingQuestion || isQuestionError) && !shouldShowOverlay
-                    binding.groupQuestionLoading.isVisible = showQuestionLoading
-                    binding.completionOverlay.isVisible = shouldShowOverlay
-
-                    if (shouldShowOverlay) {
-                        binding.completionOverlay.bringToFront()
-                        binding.groupQuestion.isVisible = false
-                        binding.groupQuestionLoading.isVisible = false
-                        binding.btnSubmit.isEnabled = false
-                        binding.etAnswer.isEnabled = false
-                    } else {
-                        val isQuestionVisible =
-                            !s.isAnsweredToday && !s.isSubmitting && !s.isLoadingQuestion && !isQuestionError
-
-                        binding.groupQuestion.isVisible = isQuestionVisible
-                        binding.groupQuestionLoading.isVisible = s.isLoadingQuestion || isQuestionError
-                        binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
-
-                        if (isQuestionError) {
-                            binding.progressQuestion.isVisible = false
-                            binding.ivQuestionError.isVisible = true
-                            binding.tvQuestionLoading.text =
-                                s.questionErrorMessage ?: "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요."
-                        } else if (s.isLoadingQuestion) {
-                            binding.progressQuestion.isVisible = true
-                            binding.ivQuestionError.isVisible = false
-                            binding.tvQuestionLoading.text = "오늘의 질문을 생성하는 중이에요…"
-                        } else {
-                            // 질문도 있고, 로딩/에러도 아님
-                            binding.progressQuestion.isVisible = false
-                            binding.ivQuestionError.isVisible = false
-                        }
-
-                        // 질문 텍스트: 질문이 있을 때만 의미 있음
-                        binding.tvQuestion.text = s.questionText ?: "오늘의 질문을 불러오고 있어요…"
-
-                        val desired = s.answerText
-                        val et = binding.etAnswer
-                        val current = et.text?.toString().orEmpty()
-                        val composing = isComposing(et.text)
-                        if (!et.hasFocus() && !composing && current != desired) {
-                            suppressAnswerTextChange = true
-                            et.setText(desired)
-                            et.setSelection(et.text?.length ?: 0)
-                            suppressAnswerTextChange = false
-                        }
-
-                        binding.btnSubmit.isEnabled =
-                            (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
-                    }
-
-                    // 카테고리/점수 안전 매핑 + 빈 차트/플레이스홀더 처리
-                    val categories = s.valueMap.map { it.categoryKo }
-                    val scores = s.valueMap.map { (it.score ?: 0).toFloat() }
-                    val hasValueMap = categories.isNotEmpty() && scores.isNotEmpty()
-
-                    val chartEmpty = binding.radar.data == null || binding.radar.data.dataSetCount == 0
-                    val needRender = hasValueMap && (chartEmpty || lastRadarCats != categories || lastRadarScores != scores)
-                    val showEmptyValueMap = valueMapLoadedOnce && !isLoading && !hasValueMap
-
-                    when {
-                        isLoading -> {
-                            // 로딩 중: 차트/empty 둘 다 숨기고, 프로그레스만
-                            binding.radar.isVisible = false
-                            binding.lottieSelfAwareEmpty.isVisible = false
-                        }
-
-                        hasValueMap -> {
-                            if (needRender) {
-                                renderRadar(binding.radar, categories, scores)
-                                lastRadarCats = categories.toList()
-                                lastRadarScores = scores.toList()
-                            }
-                            binding.radar.isVisible = true
-                            binding.lottieSelfAwareEmpty.isVisible = false
-                            binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
-                        }
-                        showEmptyValueMap -> {
-                            // 로딩이 한 번 이상 끝났고, 데이터가 실제로 없을 때만 empty Lottie 노출
-                            binding.radar.clear()
-                            binding.radar.isVisible = false
-                            binding.lottieSelfAwareEmpty.isVisible = true
-                            binding.tvValueSummary.text =
-                                "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
-                        }
-                        else -> {
-                            // 초기 상태 등: 아무것도 보여주지 않음 (깜빡임 방지)
-                            binding.radar.isVisible = false
-                            binding.lottieSelfAwareEmpty.isVisible = false
-                        }
-                    }
-
-                    // 핵심 가치 키워드가 하나도 없으면 안내 문구 및 칩 숨김
-                    val hasTopValues = s.topValueScores.any { !it.value.isNullOrBlank() }
-                    if (!hasTopValues) {
-                        binding.tvTopValueScoresSummary.text = "핵심 가치 키워드가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
-                        binding.chipGroupValuesContainer.isVisible = false
-                    } else {
-                        binding.tvTopValueScoresSummary.text = "사용자님이 중시하는 가치들은 위와 같아요."
-                        binding.chipGroupValuesContainer.isVisible = true
-                    }
-
-                    val chips = listOf(
-                        binding.chipValueFirst,
-                        binding.chipValueSecond,
-                        binding.chipValueThird,
-                        binding.chipValueFourth,
-                        binding.chipValueFifth
-                    )
-                    for (i in chips.indices) {
-                        val chip = chips[i]
-                        val value = s.topValueScores.getOrNull(i)?.value ?: ""
-                        chip.text = value
-                        chip.isVisible = value.isNotBlank()
-                    }
+                viewModel.state.collect { s ->
+                    renderState(s)
                 }
             }
         }
 
         // initial load
-        vm.load()
+        viewModel.load()
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-        lastRadarCats = null
-        lastRadarScores = null
-    }
-
 
     private fun isComposing(text: CharSequence?): Boolean {
         val sp = text as? Spannable ?: return false
@@ -246,6 +104,138 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
         val end = BaseInputConnection.getComposingSpanEnd(sp)
         return start != -1 && end != -1 && start != end
     }
+
+    private fun renderState(s: SelfAwareViewModel.UiState) {
+        // Show spinner if loading question, submitting, or loading value map (if present)
+        val isLoading = s.isLoading
+        val isQuestionError = s.isQuestionError
+        binding.progressValueMap.isVisible = isLoading
+
+        if (isLoading) {
+            wasValueMapLoading = true
+        }
+        if (!isLoading && wasValueMapLoading) {
+            valueMapLoadedOnce = true
+        }
+
+        val shouldShowOverlay = s.showCompletionOverlay || s.isSubmitting || s.isAnsweredToday
+        val showQuestionLoading = (s.isLoadingQuestion || isQuestionError) && !shouldShowOverlay
+        binding.groupQuestionLoading.isVisible = showQuestionLoading
+        binding.completionOverlay.isVisible = shouldShowOverlay
+
+        if (shouldShowOverlay) {
+            binding.completionOverlay.bringToFront()
+            binding.groupQuestion.isVisible = false
+            binding.groupQuestionLoading.isVisible = false
+            binding.btnSubmit.isEnabled = false
+            binding.etAnswer.isEnabled = false
+        } else {
+            val isQuestionVisible =
+                !s.isAnsweredToday && !s.isSubmitting && !s.isLoadingQuestion && !isQuestionError
+
+            binding.groupQuestion.isVisible = isQuestionVisible
+            binding.groupQuestionLoading.isVisible = s.isLoadingQuestion || isQuestionError
+            binding.etAnswer.isEnabled = isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
+
+            if (isQuestionError) {
+                binding.progressQuestion.isVisible = false
+                binding.ivQuestionError.isVisible = true
+                binding.tvQuestionLoading.text =
+                    s.questionErrorMessage ?: "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요."
+            } else if (s.isLoadingQuestion) {
+                binding.progressQuestion.isVisible = true
+                binding.ivQuestionError.isVisible = false
+                binding.tvQuestionLoading.text = "오늘의 질문을 생성하는 중이에요…"
+            } else {
+                // 질문도 있고, 로딩/에러도 아님
+                binding.progressQuestion.isVisible = false
+                binding.ivQuestionError.isVisible = false
+            }
+
+            // 질문 텍스트: 질문이 있을 때만 의미 있음
+            binding.tvQuestion.text = s.questionText ?: "오늘의 질문을 불러오고 있어요…"
+
+            val desired = s.answerText
+            val et = binding.etAnswer
+            val current = et.text?.toString().orEmpty()
+            val composing = isComposing(et.text)
+            if (!et.hasFocus() && !composing && current != desired) {
+                suppressAnswerTextChange = true
+                et.setText(desired)
+                et.setSelection(et.text?.length ?: 0)
+                suppressAnswerTextChange = false
+            }
+
+            binding.btnSubmit.isEnabled =
+                (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
+        }
+
+        // 카테고리/점수 안전 매핑 + 빈 차트/플레이스홀더 처리
+        val categories = s.valueMap.map { it.categoryKo }
+        val scores = s.valueMap.map { (it.score ?: 0).toFloat() }
+        val hasValueMap = categories.isNotEmpty() && scores.isNotEmpty()
+
+        val chartEmpty = binding.radar.data == null || binding.radar.data.dataSetCount == 0
+        val needRender = hasValueMap && (chartEmpty || lastRadarCats != categories || lastRadarScores != scores)
+        val showEmptyValueMap = valueMapLoadedOnce && !isLoading && !hasValueMap
+
+        when {
+            isLoading -> {
+                // 로딩 중: 차트/empty 둘 다 숨기고, 프로그레스만
+                binding.radar.isVisible = false
+                binding.lottieSelfAwareEmpty.isVisible = false
+            }
+
+            hasValueMap -> {
+                if (needRender) {
+                    renderRadar(binding.radar, categories, scores)
+                    lastRadarCats = categories.toList()
+                    lastRadarScores = scores.toList()
+                }
+                binding.radar.isVisible = true
+                binding.lottieSelfAwareEmpty.isVisible = false
+                binding.tvValueSummary.text = "최근 답변을 바탕으로 산출된 가치 분포예요."
+            }
+            showEmptyValueMap -> {
+                // 로딩이 한 번 이상 끝났고, 데이터가 실제로 없을 때만 empty Lottie 노출
+                binding.radar.clear()
+                binding.radar.isVisible = false
+                binding.lottieSelfAwareEmpty.isVisible = true
+                binding.tvValueSummary.text =
+                    "자기 가치 지도가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
+            }
+            else -> {
+                // 초기 상태 등: 아무것도 보여주지 않음 (깜빡임 방지)
+                binding.radar.isVisible = false
+                binding.lottieSelfAwareEmpty.isVisible = false
+            }
+        }
+
+        // 핵심 가치 키워드가 하나도 없으면 안내 문구 및 칩 숨김
+        val hasTopValues = s.topValueScores.any { !it.value.isNullOrBlank() }
+        if (!hasTopValues) {
+            binding.tvTopValueScoresSummary.text = "핵심 가치 키워드가 생성되지 않았어요. 스스로를 알아가는 질문에 답변해 보세요!"
+            binding.chipGroupValuesContainer.isVisible = false
+        } else {
+            binding.tvTopValueScoresSummary.text = "사용자님이 중시하는 가치들은 위와 같아요."
+            binding.chipGroupValuesContainer.isVisible = true
+        }
+
+        val chips = listOf(
+            binding.chipValueFirst,
+            binding.chipValueSecond,
+            binding.chipValueThird,
+            binding.chipValueFourth,
+            binding.chipValueFifth
+        )
+        for (i in chips.indices) {
+            val chip = chips[i]
+            val value = s.topValueScores.getOrNull(i)?.value ?: ""
+            chip.text = value
+            chip.isVisible = value.isNotBlank()
+        }
+    }
+
 
     private fun renderRadar(
         chart: RadarChart,
@@ -315,6 +305,13 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
         } else {
             chart.animateXY(500, 500)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        lastRadarCats = null
+        lastRadarScores = null
     }
 
 }
