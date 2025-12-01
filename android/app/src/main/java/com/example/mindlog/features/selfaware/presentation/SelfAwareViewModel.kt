@@ -219,7 +219,7 @@ class SelfAwareViewModel @Inject constructor(
                         isLoadingQuestion = false,
                         isQuestionError = true,
                         questionErrorMessage = TIMEOUT_QUESTION_ERROR,
-                        error = GENERIC_QUESTION_ERROR
+                        error = TIMEOUT_QUESTION_ERROR
                     )
                 }
             }
