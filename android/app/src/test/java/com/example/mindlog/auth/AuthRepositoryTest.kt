@@ -5,7 +5,7 @@ import com.example.mindlog.features.auth.data.api.AuthApi
 import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.dto.*
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
-import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.core.data.token.TokenManager
 import com.example.mindlog.utils.MainDispatcherRule
 import com.example.mindlog.utils.TestDispatcherProvider
 import kotlinx.coroutines.runBlocking

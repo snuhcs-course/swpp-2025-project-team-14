@@ -7,15 +7,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.example.mindlog.core.network.NetworkModule
 import com.example.mindlog.databinding.ActivityLoginBinding
-import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.network.AuthInterceptor
-import com.example.mindlog.features.auth.data.network.TokenAuthenticator
-import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
-import com.example.mindlog.features.auth.domain.usecase.LoginUseCase
-import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint

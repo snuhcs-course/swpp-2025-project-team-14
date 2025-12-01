@@ -11,7 +11,7 @@ import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.data.dto.SignupRequest
 import com.example.mindlog.features.auth.data.dto.TokenResponse
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
-import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.core.data.token.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext

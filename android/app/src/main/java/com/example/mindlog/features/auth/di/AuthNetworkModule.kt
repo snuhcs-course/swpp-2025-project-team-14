@@ -8,7 +8,7 @@ import com.example.mindlog.features.auth.data.network.AuthInterceptor
 import com.example.mindlog.features.auth.data.network.TokenAuthenticator
 import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
-import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.core.data.token.TokenManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

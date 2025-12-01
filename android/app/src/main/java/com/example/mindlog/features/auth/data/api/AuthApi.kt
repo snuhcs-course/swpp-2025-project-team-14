@@ -5,7 +5,6 @@ import com.example.mindlog.features.auth.data.dto.LogoutResponse
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
 import com.example.mindlog.features.auth.data.dto.SignupRequest
 import com.example.mindlog.features.auth.data.dto.TokenResponse
-import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.Headers

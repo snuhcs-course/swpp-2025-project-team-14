@@ -1,6 +1,6 @@
 package com.example.mindlog.features.auth.data.network
 
-import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.core.data.token.TokenManager
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject

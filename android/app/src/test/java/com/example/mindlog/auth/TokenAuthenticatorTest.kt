@@ -3,7 +3,7 @@ package com.example.mindlog.features.auth.data.network
 import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.dto.TokenResponse
 import com.example.mindlog.features.auth.data.dto.RefreshTokenRequest
-import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.core.data.token.TokenManager
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route

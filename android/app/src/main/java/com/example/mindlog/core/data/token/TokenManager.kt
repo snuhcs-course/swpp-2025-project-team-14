@@ -1,4 +1,4 @@
-package com.example.mindlog.features.auth.util
+package com.example.mindlog.core.data.token
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 @Singleton
 class TokenManager @Inject constructor(
