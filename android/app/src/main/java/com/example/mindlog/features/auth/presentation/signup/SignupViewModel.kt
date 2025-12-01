@@ -1,15 +1,15 @@
 package com.example.mindlog.features.auth.presentation.signup
 
-import android.util.Log
+
 import com.example.mindlog.core.domain.Result
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import java.time.LocalDate
 
@@ -19,9 +19,13 @@ class SignupViewModel @Inject constructor(
     private val signupUseCase: SignupUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
-
-    val signupResult = MutableLiveData<Boolean>()
-    val errorMessage = MutableLiveData<String?>()
+    data class UiState(
+        val isLoading: Boolean = false,
+        val isSuccess: Boolean = false,
+        val errorMessage: String? = null
+    )
+    private val _state = MutableLiveData(UiState())
+    val state: LiveData<UiState> get() = _state
 
     fun signup(
         loginId: String,
@@ -33,16 +37,22 @@ class SignupViewModel @Inject constructor(
         viewModelScope.launch(dispatcher.io) {
             when (val result = signupUseCase(loginId, password, username, gender, birthDate)) {
                 is Result.Success -> {
-                    withContext(dispatcher.main) {
-                        signupResult.value = result.data
-                        errorMessage.value = null
-                    }
+                    _state.postValue(
+                        UiState(
+                            isLoading = false,
+                            isSuccess = result.data,
+                            errorMessage = null
+                        )
+                    )
                 }
                 is Result.Error -> {
-                    withContext(dispatcher.main) {
-                        signupResult.value = false
-                        errorMessage.value = result.message ?: "회원가입 중 오류 발생"
-                    }
+                    _state.postValue(
+                        UiState(
+                            isLoading = false,
+                            isSuccess = false,
+                            errorMessage = result.message ?: "회원가입 중 오류 발생"
+                        )
+                    )
                 }
             }
         }

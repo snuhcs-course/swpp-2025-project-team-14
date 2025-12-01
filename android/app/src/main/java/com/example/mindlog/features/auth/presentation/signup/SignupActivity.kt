@@ -86,8 +86,8 @@ class SignupActivity : AppCompatActivity() {
         }
 
         // ViewModel 관찰
-        viewModel.signupResult.observe(this) { success ->
-            if (success) {
+        viewModel.state.observe(this) { s ->
+            if (s.isSuccess) {
                 // 성공 시 에러 메시지 제거
                 showSignupError(null)
                 Toast.makeText(this, "회원가입 성공! 자동 로그인 중...", Toast.LENGTH_SHORT).show()
@@ -95,14 +95,12 @@ class SignupActivity : AppCompatActivity() {
                 finishAffinity()
             } else {
                 // 실패 시 ViewModel의 에러 메시지를 버튼 위에 표시
-                val msg = viewModel.errorMessage.value
-                showSignupError(msg ?: "회원가입에 실패했습니다. 다시 시도해주세요.")
+                if (s.errorMessage != null) {
+                    showSignupError(s.errorMessage)
+                } else {
+                    showSignupError(null)
+                }
             }
-        }
-
-        viewModel.errorMessage.observe(this) { msg ->
-            // 서버/유효성 에러 메시지를 항상 빨간 글씨로 표시
-            showSignupError(msg)
         }
     }
 

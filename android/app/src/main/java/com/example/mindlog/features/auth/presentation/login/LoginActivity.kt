@@ -76,20 +76,22 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, SignupActivity::class.java))
         }
 
-        viewModel.loginResult.observe(this, Observer { success ->
-            if (success) {
+        viewModel.state.observe(this) { s ->
+            if (s.isSuccess) {
                 Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, MainActivity::class.java))
                 finishAffinity()
-            } else {
+            }
+
+            if (s.errorMessage != null) {
+                // ViewModel에서 내려온 에러 메시지 우선 사용
                 binding.tvError.text = "아이디와 비밀번호를 확인해주세요"
                 binding.tvError.visibility = View.VISIBLE
+            } else {
+                // ✅ 초기 상태 또는 성공 시에는 에러 숨김
+                binding.tvError.visibility = View.GONE
             }
-        })
-
-        viewModel.errorMessage.observe(this, Observer { message ->
-            message?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
-        })
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

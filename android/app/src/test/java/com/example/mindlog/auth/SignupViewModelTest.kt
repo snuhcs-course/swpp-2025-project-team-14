@@ -71,11 +71,10 @@ class SignupViewModelTest {
             eq(birth)
         )
 
-        val result = vm.signupResult.getOrAwaitValue()
-        val error  = vm.errorMessage.getOrAwaitValue()
+        val state = vm.state.getOrAwaitValue()
 
-        Assert.assertEquals(true, result)
-        Assert.assertEquals(null, error)
+        Assert.assertEquals(true, state.isSuccess)
+        Assert.assertEquals(null, state.errorMessage)
     }
 
     @Test
@@ -98,10 +97,9 @@ class SignupViewModelTest {
         // then
         verify(signupUseCase).invoke(eq("bad"), eq("pw"), eq("user"), eq("F"), eq(birth))
 
-        val result = vm.signupResult.getOrAwaitValue()
-        val error  = vm.errorMessage.getOrAwaitValue()
+        val state = vm.state.getOrAwaitValue()
 
-        Assert.assertEquals(false, result)
-        Assert.assertEquals("이미 존재하는 아이디입니다.", error)
+        Assert.assertEquals(false, state.isSuccess)
+        Assert.assertEquals("이미 존재하는 아이디입니다.", state.errorMessage)
     }
 }

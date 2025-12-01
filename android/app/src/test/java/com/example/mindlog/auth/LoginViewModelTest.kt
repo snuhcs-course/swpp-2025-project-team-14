@@ -53,9 +53,10 @@ class LoginViewModelTest {
         // UseCase가 정확히 호출되었는지 검증
         verify(loginUseCase).invoke("id", "pw")
 
-        // LiveData 검증 (getOrAwaitValue를 쓰고 있다면 그대로 사용)
-        assertEquals(true, vm.loginResult.getOrAwaitValue())
-        assertNull(vm.errorMessage.getOrAwaitValue())
+        // UI State 검증
+        val state = vm.state.getOrAwaitValue()
+        assertEquals(true, state.isSuccess)
+        assertNull(state.errorMessage)
     }
 
     @Test
@@ -67,10 +68,11 @@ class LoginViewModelTest {
         vm.login("bad", "pw")
         advanceUntilIdle()
 
-        assertEquals(false, vm.loginResult.getOrAwaitValue())
+        val state = vm.state.getOrAwaitValue()
+        assertEquals(false, state.isSuccess)
         assertEquals(
             "아이디 혹은 비밀번호가 올바르지 않습니다.",
-            vm.errorMessage.getOrAwaitValue()
+            state.errorMessage
         )
     }
 }
