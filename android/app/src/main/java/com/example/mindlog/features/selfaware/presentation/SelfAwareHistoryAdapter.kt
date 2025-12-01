@@ -1,13 +1,11 @@
-package com.example.mindlog.features.selfaware.presentation.adapter
+package com.example.mindlog.features.selfaware.presentation
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mindlog.databinding.ItemQaHistoryBinding
-import com.google.android.material.chip.Chip
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 
 /**

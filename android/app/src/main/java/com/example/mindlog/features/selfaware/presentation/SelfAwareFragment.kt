@@ -1,4 +1,4 @@
-package com.example.mindlog.features.selfaware.presentation.fragment
+package com.example.mindlog.features.selfaware.presentation
 
 import android.content.Intent
 import android.app.Activity
@@ -14,7 +14,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentSelfAwareBinding
-import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareViewModel
 import com.github.mikephil.charting.charts.RadarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.RadarData
@@ -26,7 +25,6 @@ import kotlinx.coroutines.launch
 import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.inputmethod.BaseInputConnection
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,9 +62,7 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
         ) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // 작성 완료 시 홈의 Journal 탭으로 이동
-                (activity as? HomeActivity)?.let { homeActivity ->
-                    homeActivity.navigateToJournalTab()
-                }
+                (activity as? HomeActivity)?.navigateToJournalTab()
             }
         }
 

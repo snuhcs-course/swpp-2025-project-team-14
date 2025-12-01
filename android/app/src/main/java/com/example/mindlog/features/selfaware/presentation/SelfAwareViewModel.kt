@@ -1,4 +1,4 @@
-package com.example.mindlog.features.selfaware.presentation.viewmodel
+package com.example.mindlog.features.selfaware.presentation
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -75,7 +75,6 @@ class SelfAwareViewModel @Inject constructor(
             )
         }
 
-        var errorMessage: String? = null
         pollJob?.cancel()
 
         try {
@@ -103,19 +102,17 @@ class SelfAwareViewModel @Inject constructor(
                 when (val todayQARes = todayQA.await()) {
                     is Result.Success -> {
                         val qaRes = todayQARes.data
-                        if (qaRes?.question != null) {
-                            _state.update {
-                                it.copy(
-                                    questionId = qaRes.question.id,
-                                    questionText = qaRes.question.text,
-                                    isAnsweredToday = qaRes.answer != null,
-                                    isLoadingQuestion = false,
-                                    showCompletionOverlay = qaRes.answer != null,
-                                    isQuestionError = false,
-                                    questionErrorMessage = null
-                                )
-                            }
-                        } else startPolling()
+                        _state.update {
+                            it.copy(
+                                questionId = qaRes.question.id,
+                                questionText = qaRes.question.text,
+                                isAnsweredToday = qaRes.answer != null,
+                                isLoadingQuestion = false,
+                                showCompletionOverlay = qaRes.answer != null,
+                                isQuestionError = false,
+                                questionErrorMessage = null
+                            )
+                        }
                     }
                     is Result.Error -> {
                         val code = todayQARes.code
@@ -173,21 +170,19 @@ class SelfAwareViewModel @Inject constructor(
                         when (val res = getTodayQAUseCase(date)) {
                             is Result.Success -> {
                                 val qa = res.data
-                                if (qa?.question != null) {
-                                    _state.update {
-                                        it.copy(
-                                            questionId = qa.question.id,
-                                            questionText = qa.question.text,
-                                            isAnsweredToday = qa.answer != null,
-                                            isLoadingQuestion = false,
-                                            showCompletionOverlay = qa.answer != null,
-                                            isQuestionError = false,
-                                            questionErrorMessage = null,
-                                            error = null
-                                        )
-                                    }
-                                    return@withTimeout
+                                _state.update {
+                                    it.copy(
+                                        questionId = qa.question.id,
+                                        questionText = qa.question.text,
+                                        isAnsweredToday = qa.answer != null,
+                                        isLoadingQuestion = false,
+                                        showCompletionOverlay = qa.answer != null,
+                                        isQuestionError = false,
+                                        questionErrorMessage = null,
+                                        error = null
+                                    )
                                 }
+                                return@withTimeout
                             }
                             is Result.Error -> {
                                 val code = res.code
