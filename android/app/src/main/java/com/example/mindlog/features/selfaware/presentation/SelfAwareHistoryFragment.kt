@@ -33,11 +33,23 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareHistoryBinding.bind(view)
 
+        setupToolbar()
+        setupRecyclerView()
+
+        // 초기 로드
+        viewModel.refresh()
+
+        collectState()
+    }
+
+    private fun setupToolbar() {
         // Toolbar: 뒤로가기
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
+    }
 
+    private fun setupRecyclerView() {
         // RecyclerView
         binding.recyclerHistory.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerHistory.adapter = adapter
@@ -59,19 +71,20 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
                     viewModel.loadNext()
                 }
             }
+
             override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
                 tryLoadNext(rv)
             }
+
             override fun onScrollStateChanged(rv: RecyclerView, newState: Int) {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     tryLoadNext(rv)
                 }
             }
         })
+    }
 
-        // 초기 로드
-        viewModel.refresh()
-
+    private fun collectState() {
         // 상태 구독
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

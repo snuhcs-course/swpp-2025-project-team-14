@@ -22,9 +22,13 @@ class SelfAwareHistoryViewModel @Inject constructor(
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
+    companion object {
+        private const val DEFAULT_LIMIT = 10
+    }
+
     data class UiState(
         val nextCursor: Int? = null,
-        val limit: Int = 10,
+        val limit: Int = DEFAULT_LIMIT,
         val items: List<QAItem> = emptyList(),
         val isRefreshing: Boolean = false,  // 최초/새로고침 로딩
         val isLoading: Boolean = false,     // 다음 페이지 로딩

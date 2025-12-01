@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mindlog.R
 import com.example.mindlog.databinding.ItemQaHistoryBinding
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 
@@ -18,10 +19,13 @@ class SelfAwareHistoryAdapter :
         private val binding: ItemQaHistoryBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: QAItem) = with(binding) {
-            tvDate.text = item.question?.createdAt.toString()
-            tvQuestion.text = "Q. ${item.question.text}"
-            tvAnswer.text = "A. ${item.answer?.text}"
+        fun bind(item: QAItem) = binding.apply {
+            tvDate.text = item.question.createdAt.toString()
+            val ctx = root.context
+            tvQuestion.text =
+                ctx.getString(R.string.selfaware_history_question, item.question.text)
+            tvAnswer.text =
+                ctx.getString(R.string.selfaware_history_answer, item.answer?.text)
         }
     }
 
