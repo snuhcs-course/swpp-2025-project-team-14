@@ -8,7 +8,6 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.hamcrest.CoreMatchers.containsString
 import com.example.mindlog.R
 import com.example.mindlog.core.dispatcher.DispatcherModule
 import com.example.mindlog.features.auth.di.AuthBindModule
