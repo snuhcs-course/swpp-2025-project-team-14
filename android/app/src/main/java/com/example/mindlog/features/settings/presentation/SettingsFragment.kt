@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.mindlog.R
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.databinding.FragmentSettingsBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.tutorial.TutorialActivity

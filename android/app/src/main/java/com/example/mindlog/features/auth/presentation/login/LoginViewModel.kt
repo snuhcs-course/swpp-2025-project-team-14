@@ -3,7 +3,7 @@ package com.example.mindlog.features.auth.presentation.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.MutableLiveData
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.auth.domain.usecase.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

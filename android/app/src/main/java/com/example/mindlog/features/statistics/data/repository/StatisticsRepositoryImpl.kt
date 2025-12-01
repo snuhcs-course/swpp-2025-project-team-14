@@ -1,8 +1,8 @@
 package com.example.mindlog.features.statistics.data.repository
 
 
-import com.example.mindlog.core.common.Result
-import com.example.mindlog.core.common.toResult
+import com.example.mindlog.core.domain.Result
+import com.example.mindlog.core.domain.toResult
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse

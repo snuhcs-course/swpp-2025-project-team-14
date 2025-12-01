@@ -4,8 +4,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
-import com.example.mindlog.core.common.Time
+import com.example.mindlog.core.domain.Result
+import com.example.mindlog.core.time.Time
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.selfaware.domain.model.CategoryScore
 import com.example.mindlog.features.selfaware.domain.model.ValueScore

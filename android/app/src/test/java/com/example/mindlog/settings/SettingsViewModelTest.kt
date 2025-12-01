@@ -1,7 +1,7 @@
 package com.example.mindlog.settings
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.model.UserInfo
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.settings.domain.usecase.GetUserInfoUseCase

@@ -4,8 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.mindlog.core.common.SystemUiHelper
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.ui.SystemUiHelper
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.databinding.ActivityMainBinding
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity

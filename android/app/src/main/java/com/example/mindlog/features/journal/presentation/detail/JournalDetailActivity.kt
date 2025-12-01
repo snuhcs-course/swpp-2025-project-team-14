@@ -9,8 +9,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.R
-import com.example.mindlog.core.common.Result
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.domain.Result
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivityJournalDetailBinding
 import com.example.mindlog.features.journal.presentation.write.JournalEditActivity
 import com.example.mindlog.features.journal.presentation.write.JournalEditViewModel

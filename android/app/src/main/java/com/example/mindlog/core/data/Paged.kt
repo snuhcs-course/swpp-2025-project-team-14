@@ -1,4 +1,4 @@
-package com.example.mindlog.core.common
+package com.example.mindlog.core.data
 
 /**
  * 서버의 페이징 API 결과를 공통 구조로 담는 클래스.

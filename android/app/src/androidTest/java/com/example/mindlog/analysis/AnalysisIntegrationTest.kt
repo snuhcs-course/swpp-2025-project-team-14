@@ -1,7 +1,7 @@
 package com.example.mindlog.analysis
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.analysis.data.api.AnalysisApi
 import com.example.mindlog.features.analysis.data.mapper.AnalysisMapper
 import com.example.mindlog.features.analysis.data.repository.AnalysisRepositoryImpl

@@ -22,7 +22,7 @@ import org.junit.Assert.assertNotNull
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.LocalDate
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 
 
 @HiltAndroidTest

@@ -7,7 +7,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivitySignupBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity

@@ -1,6 +1,6 @@
 package com.example.mindlog.auth
 
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.auth.data.api.AuthApi
 import com.example.mindlog.features.auth.data.api.RefreshApi
 import com.example.mindlog.features.auth.data.dto.*

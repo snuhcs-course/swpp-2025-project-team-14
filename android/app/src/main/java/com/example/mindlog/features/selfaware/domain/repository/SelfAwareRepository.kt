@@ -1,7 +1,7 @@
 package com.example.mindlog.features.selfaware.domain.repository
 
-import com.example.mindlog.core.common.Result
-import com.example.mindlog.core.common.Paged
+import com.example.mindlog.core.domain.Result
+import com.example.mindlog.core.data.Paged
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.PersonalityInsight
 import com.example.mindlog.features.selfaware.domain.model.QAItem

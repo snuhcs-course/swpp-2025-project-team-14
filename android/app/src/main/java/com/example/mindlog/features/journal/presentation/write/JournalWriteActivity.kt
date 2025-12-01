@@ -14,8 +14,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.semantics.setText
 import androidx.lifecycle.lifecycleScope
 import com.example.mindlog.R
-import com.example.mindlog.core.common.Result
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.domain.Result
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivityJournalWriteBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

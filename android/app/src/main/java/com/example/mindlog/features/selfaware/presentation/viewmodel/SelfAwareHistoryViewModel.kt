@@ -3,7 +3,7 @@ package com.example.mindlog.features.selfaware.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 import com.example.mindlog.features.selfaware.domain.usecase.GetQAHistoryUseCase

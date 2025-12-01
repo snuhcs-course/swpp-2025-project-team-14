@@ -1,4 +1,4 @@
-package com.example.mindlog.core.common
+package com.example.mindlog.core.domain
 
 import org.json.JSONObject
 import retrofit2.HttpException
@@ -10,6 +10,7 @@ sealed class Result<out T> {
         val message: String? = null,    // 에러 메시지
     ) : Result<Nothing>()
 }
+
 fun <T> kotlin.Result<T>.toResult(): Result<T> =
     fold(
         onSuccess = { Result.Success(it) },

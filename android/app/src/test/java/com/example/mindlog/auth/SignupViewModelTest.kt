@@ -1,7 +1,7 @@
 package com.example.mindlog.auth
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
 import com.example.mindlog.features.auth.presentation.signup.SignupViewModel
 import com.example.mindlog.testutil.getOrAwaitValue
@@ -83,7 +83,7 @@ class SignupViewModelTest {
         // given
         val birth = LocalDate.parse("1999-12-31")
         whenever(signupUseCase.invoke("bad", "pw", "user", "F", birth))
-            .thenReturn(com.example.mindlog.core.common.Result.Error(code = 400, message = "이미 존재하는 아이디입니다."))
+            .thenReturn(Result.Error(code = 400, message = "이미 존재하는 아이디입니다."))
 
         // when
         vm.signup(

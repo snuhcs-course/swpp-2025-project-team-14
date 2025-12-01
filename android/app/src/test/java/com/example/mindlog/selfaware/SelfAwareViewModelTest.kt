@@ -1,7 +1,7 @@
 package com.example.mindlog.selfaware
 
 import app.cash.turbine.test
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.CategoryScore
 import com.example.mindlog.features.selfaware.domain.model.QAItem

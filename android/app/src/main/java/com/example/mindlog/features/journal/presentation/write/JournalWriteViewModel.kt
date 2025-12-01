@@ -8,7 +8,7 @@ import android.util.Base64
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import com.example.mindlog.features.journal.domain.usecase.CreateJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase

@@ -2,8 +2,8 @@ package com.example.mindlog.features.auth.data.repository
 
 import android.content.Context
 import android.util.Log
-import com.example.mindlog.core.common.Result
-import com.example.mindlog.core.common.toResult
+import com.example.mindlog.core.domain.Result
+import com.example.mindlog.core.domain.toResult
 import com.example.mindlog.features.auth.data.api.*
 import com.example.mindlog.features.auth.data.dto.LoginRequest
 import com.example.mindlog.features.auth.data.dto.LogoutResponse

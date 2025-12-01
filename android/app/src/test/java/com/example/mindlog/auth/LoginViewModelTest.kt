@@ -1,7 +1,7 @@
 package com.example.mindlog.auth
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.auth.domain.usecase.LoginUseCase
 import com.example.mindlog.features.auth.presentation.login.LoginViewModel
 import com.example.mindlog.testutil.getOrAwaitValue

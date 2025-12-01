@@ -1,7 +1,7 @@
 package com.example.mindlog.features.selfaware.data.repository
 
-import com.example.mindlog.core.common.toResult
-import com.example.mindlog.core.common.Paged
+import com.example.mindlog.core.domain.toResult
+import com.example.mindlog.core.data.Paged
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.selfaware.data.api.SelfAwareApi
 import com.example.mindlog.features.selfaware.data.dto.AnswerRequest

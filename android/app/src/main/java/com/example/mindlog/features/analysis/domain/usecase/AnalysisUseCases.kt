@@ -1,6 +1,6 @@
 package com.example.mindlog.features.analysis.domain.usecase
 
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.analysis.domain.model.ComprehensiveAnalysis
 import com.example.mindlog.features.analysis.domain.model.PersonalizedAdvice
 import com.example.mindlog.features.analysis.domain.model.UserType

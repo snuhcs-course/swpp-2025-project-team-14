@@ -2,7 +2,7 @@ package com.example.mindlog.features.auth.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 
 interface AuthRepository {
     suspend fun login(loginId: String, password: String): Result<Boolean>

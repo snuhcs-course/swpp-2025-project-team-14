@@ -1,7 +1,7 @@
 package com.example.mindlog.features.auth.presentation.signup
 
 import android.util.Log
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

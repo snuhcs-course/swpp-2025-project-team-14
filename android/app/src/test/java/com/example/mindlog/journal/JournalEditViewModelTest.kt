@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.model.Emotion
 import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.core.model.Keyword

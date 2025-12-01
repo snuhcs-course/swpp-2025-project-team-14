@@ -20,7 +20,7 @@ import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.mindlog.R
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.ui.SystemUiHelper
 
 
 @AndroidEntryPoint

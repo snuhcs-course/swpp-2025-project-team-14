@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.model.UserInfo
 import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.settings.domain.usecase.GetUserInfoUseCase

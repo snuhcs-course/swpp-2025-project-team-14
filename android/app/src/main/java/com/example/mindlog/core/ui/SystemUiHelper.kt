@@ -1,4 +1,4 @@
-package com.example.mindlog.core.common
+package com.example.mindlog.core.ui
 
 import android.app.Activity
 import android.os.Build

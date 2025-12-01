@@ -1,4 +1,4 @@
-package com.example.mindlog.core.common
+package com.example.mindlog.core.time
 
 import java.time.LocalDate
 import java.time.ZoneId

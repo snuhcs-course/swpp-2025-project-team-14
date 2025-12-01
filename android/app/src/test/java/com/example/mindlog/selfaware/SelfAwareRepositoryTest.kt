@@ -1,7 +1,7 @@
 package com.example.mindlog.selfaware
 
-import com.example.mindlog.core.common.Paged
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.data.Paged
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.selfaware.data.api.SelfAwareApi
 import com.example.mindlog.features.selfaware.data.dto.AnswerRequest
 import com.example.mindlog.features.selfaware.data.dto.AnswerResponse

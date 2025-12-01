@@ -15,7 +15,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.mindlog.R
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.databinding.DialogAiStyleSelectorBinding
 import com.example.mindlog.databinding.FragmentContentWriteBinding
 import com.example.mindlog.features.journal.presentation.detail.JournalDetailActivity
