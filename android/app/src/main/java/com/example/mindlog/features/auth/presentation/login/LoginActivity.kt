@@ -13,6 +13,7 @@ import com.example.mindlog.features.auth.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.mindlog.R
 import com.example.mindlog.core.ui.SystemUiHelper
+import com.example.mindlog.features.auth.domain.validation.LoginValidator
 
 
 @AndroidEntryPoint
@@ -20,6 +21,8 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private val viewModel: LoginViewModel by viewModels()
+    private val loginValidator = LoginValidator()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,18 +53,13 @@ class LoginActivity : AppCompatActivity() {
                 binding.etPassword.setBackgroundResource(R.drawable.edittext_bg)
             }
 
-            if (isIdEmpty && isPasswordEmpty) {
-                binding.tvError.text = "아이디와 비밀번호를 입력해주세요"
+            val validationResult = loginValidator.validate(id, password)
+            if (!validationResult.isValid) {
+                binding.tvError.text = validationResult.errorMessage
                 binding.tvError.visibility = View.VISIBLE
                 return@setOnClickListener
-            } else if (isIdEmpty) {
-                binding.tvError.text = "아이디를 입력해주세요"
-                binding.tvError.visibility = View.VISIBLE
-                return@setOnClickListener
-            } else if (isPasswordEmpty) {
-                binding.tvError.text = "비밀번호를 입력해주세요"
-                binding.tvError.visibility = View.VISIBLE
-                return@setOnClickListener
+            } else {
+                binding.tvError.visibility = View.GONE
             }
 
             viewModel.login(id, password)
