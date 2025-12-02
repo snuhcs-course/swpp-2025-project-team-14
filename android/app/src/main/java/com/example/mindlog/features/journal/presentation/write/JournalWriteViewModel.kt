@@ -135,9 +135,13 @@ class JournalWriteViewModel @Inject constructor(
                     )
                 }
 
-                try {
-                    journalRepository.extractKeywords(journalId)
-                } catch (e: Exception) {
+                // 키워드 추출은 별도 코루틴에서 비동기로 수행
+                viewModelScope.launch {
+                    try {
+                        journalRepository.extractKeywords(journalId)
+                    } catch (e: Exception) {
+                        // 키워드 추출 실패는 현재 UI 흐름을 막지 않고 무시
+                    }
                 }
 
                 _saveResult.emit(Result.Success(Unit))
@@ -174,7 +178,7 @@ class JournalWriteViewModel @Inject constructor(
                 selectedImageUri.value = null
 
             } catch (e: Exception) {
-                aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+                aiGenerationError.emit("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
                 noImage.emit(true)
             } finally {
                 isLoading.value = false
