@@ -71,8 +71,6 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
                     updatedId == -1 && deletedId == -1 -> {
                         scrollToTopOnNextSubmit = true
                         viewModel.clearSearchAndReload()
-
-                        showKeywordProgressBanner()
                     }
                     else -> {
                         viewModel.updateOrRemoveJournalEntry(
@@ -160,29 +158,6 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
             }
         }
     }
-
-    private fun showKeywordProgressBanner() {
-        binding.savingProgressContainer.isVisible = true
-        binding.progressKeyword.progress = 0
-
-        // 약 60초 동안 0 -> 100으로 서서히 채워지는 애니메이션
-        viewLifecycleOwner.lifecycleScope.launch {
-            val durationMs = 60_000L
-            val steps = 100
-            val stepDelay = durationMs / steps
-
-            for (i in 0..steps) {
-                binding.progressKeyword.progress = i
-                delay(stepDelay)
-            }
-
-            // 애니메이션이 끝나면 배너를 숨기고 프로그레스 초기화
-            binding.savingProgressContainer.isVisible = false
-            binding.progressKeyword.progress = 0
-            viewModel.loadJournals()
-        }
-    }
-
 
     private fun toggleSearchView(isSearchVisible: Boolean) {
         binding.topBarLayout.apply {
