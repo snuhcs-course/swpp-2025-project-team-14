@@ -1,8 +1,12 @@
 package com.example.mindlog.features.selfaware.presentation.fragment
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -15,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentSelfAwareHistoryBinding
+import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import com.example.mindlog.features.selfaware.presentation.adapter.SelfAwareHistoryAdapter
 import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareHistoryViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -23,10 +29,11 @@ import java.time.Instant
 import java.time.ZoneId
 
 @AndroidEntryPoint
-class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) {
+class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history), HomeActivity.FabClickListener {
 
     private var _binding: FragmentSelfAwareHistoryBinding? = null
     private val binding get() = _binding!!
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
     private val viewModel: SelfAwareHistoryViewModel by viewModels()
     private val adapter by lazy { SelfAwareHistoryAdapter() }
@@ -34,10 +41,14 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
     private var hasLoadedOnce = false
     private var wasLoading = false
 
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        activityResultLauncher.launch(intent)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareHistoryBinding.bind(view)
-
+        setupFab()
         // Toolbar: 뒤로가기
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
@@ -46,7 +57,6 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
         // RecyclerView
         binding.recyclerHistory.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerHistory.adapter = adapter
-
         // 무한 스크롤(바닥 도달 시 다음 페이지 로드)
         binding.recyclerHistory.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
@@ -73,7 +83,6 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
                 }
             }
         })
-
         // 초기 로드
         viewModel.refresh()
 
@@ -99,6 +108,21 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history) 
                     binding.recyclerHistory.isVisible = hasItems
                     binding.recyclerHistory.isEnabled = hasItems
                     binding.emptyContainer.isVisible = showEmpty
+                }
+            }
+        }
+    }
+
+    private fun setupFab() {
+        // Journal 작성 화면에서 돌아올 때 결과를 처리하기 위한 launcher 설정
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 작성 완료 시 홈의 Journal 탭으로 이동
+                (activity as? HomeActivity)?.let { homeActivity ->
+                    findNavController().navigateUp()
+                    homeActivity.navigateToJournalTab()
                 }
             }
         }

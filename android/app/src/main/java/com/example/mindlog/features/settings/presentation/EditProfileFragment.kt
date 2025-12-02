@@ -14,12 +14,13 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.mindlog.core.common.Result
 import com.example.mindlog.databinding.FragmentEditProfileBinding
+import com.example.mindlog.features.home.presentation.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @AndroidEntryPoint
-class EditProfileFragment : Fragment() {
+class EditProfileFragment : Fragment(), HomeActivity.FabClickListener {
 
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
@@ -44,6 +45,10 @@ class EditProfileFragment : Fragment() {
         // 데이터 관찰 및 로드
         observeViewModel()
         viewModel.loadUserInfo()
+    }
+
+    override fun onFabClick() {
+        Toast.makeText(requireContext(), "먼저 설정을 완료해주세요.", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupToolbar() {
