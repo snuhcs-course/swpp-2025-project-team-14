@@ -88,6 +88,8 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
                 Toast.makeText(requireContext(), "답변을 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            vm.updateAnswerText(answer)
             vm.submit()
         }
 
