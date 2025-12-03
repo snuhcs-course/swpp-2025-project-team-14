@@ -53,7 +53,6 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
-                    renderLoading(s.isLoading)
                     renderUserType(s.userType)
                     renderComprehensive(s.comprehensiveAnalysis)
                     renderAdvice(s.advice)
@@ -63,15 +62,6 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
 
         // 최초 로딩
         viewModel.load()
-    }
-
-
-    // 로딩 상태: 필요하면 ProgressBar 추가해서 연결하면 됨
-    private fun renderLoading(isLoading: Boolean) {
-        // 예시: 상단 카드들을 비/활성화
-        binding.cardUserType.alpha = if (isLoading) 0.4f else 1f
-        binding.cardComprehensive.alpha = if (isLoading) 0.4f else 1f
-        binding.cardAdvice.alpha = if (isLoading) 0.4f else 1f
     }
 
     private fun renderUserType(userType: UserType?) {
