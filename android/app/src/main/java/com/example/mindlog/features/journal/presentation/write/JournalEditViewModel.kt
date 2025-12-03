@@ -200,9 +200,9 @@ class JournalEditViewModel @Inject constructor(
 
     fun setGalleryImageUri(uri: Uri?) {
         if (uri != null) {
-            selectedImageUri.value = uri
             generatedImageBitmap.value = null
             existingImageUrl.value = null
+            selectedImageUri.value = uri
         }
     }
 
@@ -221,13 +221,12 @@ class JournalEditViewModel @Inject constructor(
                 val base64Image = generateImageUseCase(style, textContent)
                 val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
                 val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-
-                generatedImageBitmap.value = decodedBitmap
                 selectedImageUri.value = null
                 existingImageUrl.value = null
+                generatedImageBitmap.value = decodedBitmap
 
             } catch (e: Exception) {
-                aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+                aiGenerationError.emit("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
                 noImage.emit(true)
             } finally {
                 isLoading.value = false

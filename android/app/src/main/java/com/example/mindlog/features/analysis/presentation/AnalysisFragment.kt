@@ -89,7 +89,7 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
             "배려형" -> R.drawable.ic_user_type_supporter
             "사색가형" -> R.drawable.ic_user_type_thinker
             "도전형" -> R.drawable.ic_user_type_challenger
-            "안전추구형" -> R.drawable.ic_user_type_stability_seeker
+            "안정추구형" -> R.drawable.ic_user_type_stability_seeker
             "감성형" -> R.drawable.ic_user_type_sensitive
             "분석형" -> R.drawable.ic_user_type_systematic
             "변화추구형" -> R.drawable.ic_user_type_reformer
