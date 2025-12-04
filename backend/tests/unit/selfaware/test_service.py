@@ -147,7 +147,7 @@ def test_get_top_value_scores(value_score_service):
     result = value_score_service.get_top_value_scores(1)
     for result_element in result:
         assert isinstance(result_element["value"], str)
-        assert isinstance(result_element["intensity"], str)
+        assert isinstance(result_element["intensity"], int)
     assert len(result) == 4
 
 
