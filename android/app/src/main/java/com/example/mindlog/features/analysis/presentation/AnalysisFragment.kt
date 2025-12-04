@@ -53,7 +53,6 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { s ->
-                    renderLoading(s.isLoading)
                     renderUserType(s.userType)
                     renderComprehensive(s.comprehensiveAnalysis)
                     renderAdvice(s.advice)
@@ -63,15 +62,6 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
 
         // 최초 로딩
         viewModel.load()
-    }
-
-
-    // 로딩 상태: 필요하면 ProgressBar 추가해서 연결하면 됨
-    private fun renderLoading(isLoading: Boolean) {
-        // 예시: 상단 카드들을 비/활성화
-        binding.cardUserType.alpha = if (isLoading) 0.4f else 1f
-        binding.cardComprehensive.alpha = if (isLoading) 0.4f else 1f
-        binding.cardAdvice.alpha = if (isLoading) 0.4f else 1f
     }
 
     private fun renderUserType(userType: UserType?) {
@@ -99,7 +89,7 @@ class AnalysisFragment : Fragment(R.layout.fragment_analysis), HomeActivity.FabC
             "배려형" -> R.drawable.ic_user_type_supporter
             "사색가형" -> R.drawable.ic_user_type_thinker
             "도전형" -> R.drawable.ic_user_type_challenger
-            "안전추구형" -> R.drawable.ic_user_type_stability_seeker
+            "안정추구형" -> R.drawable.ic_user_type_stability_seeker
             "감성형" -> R.drawable.ic_user_type_sensitive
             "분석형" -> R.drawable.ic_user_type_systematic
             "변화추구형" -> R.drawable.ic_user_type_reformer

@@ -1,5 +1,6 @@
 package com.example.mindlog.features.settings.presentation
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -18,6 +21,8 @@ import com.example.mindlog.R
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.databinding.FragmentSettingsBinding
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
+import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import com.example.mindlog.features.tutorial.TutorialActivity
 import com.example.mindlog.features.tutorial.TutorialMenuActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -25,10 +30,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class SettingsFragment : Fragment() {
+class SettingsFragment : Fragment(), HomeActivity.FabClickListener {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
     private val viewModel: SettingsViewModel by viewModels()
 
@@ -42,11 +48,32 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupFab()
         setupToolbar()
         setupClickListeners()
         observeViewModel()
 
         viewModel.loadUserInfo()
+    }
+
+    private fun setupFab() {
+        // Journal 작성 화면에서 돌아올 때 결과를 처리하기 위한 launcher 설정
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 작성 완료 시 홈의 Journal 탭으로 이동
+                (activity as? HomeActivity)?.let { homeActivity ->
+                    findNavController().navigateUp()
+                    homeActivity.navigateToJournalTab()
+                }
+            }
+        }
+    }
+
+    override fun onFabClick() {
+        val intent = Intent(requireContext(), JournalWriteActivity::class.java)
+        activityResultLauncher.launch(intent)
     }
 
     private fun setupToolbar() {

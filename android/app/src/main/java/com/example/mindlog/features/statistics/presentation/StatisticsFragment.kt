@@ -169,10 +169,10 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
         val labels = listOf("모든 감정") + emotionOptions.map { toKo(it) ?: it.name }
         val adapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_item,
+            R.layout.item_spinner_selected,
             labels
         ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            setDropDownViewResource(R.layout.item_spinner_dropdown)
         }
         binding.spinnerEmotions.adapter = adapter
 
@@ -186,7 +186,6 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
                 if (suppressEmotionSelectionCallback) return
 
                 if (position == 0) {
-                    // ✅ "모든 감정" 선택 → 필터 해제
                     viewModel.clearEmotionFilter()
                 } else {
                     val emotion = emotionOptions.getOrNull(position - 1) ?: return

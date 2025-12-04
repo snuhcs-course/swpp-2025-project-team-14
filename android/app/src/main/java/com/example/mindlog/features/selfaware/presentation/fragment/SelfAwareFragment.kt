@@ -28,6 +28,7 @@ import android.text.Spannable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.inputmethod.BaseInputConnection
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
@@ -82,7 +83,13 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
         binding.etAnswer.addTextChangedListener(answerWatcher)
 
         binding.btnSubmit.setOnClickListener {
-            if (!binding.btnSubmit.isEnabled) return@setOnClickListener
+            val answer = binding.etAnswer.text?.toString().orEmpty()
+            if (answer.isBlank()) {
+                Toast.makeText(requireContext(), "답변을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            vm.updateAnswerText(answer)
             vm.submit()
         }
 
@@ -160,8 +167,12 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
                             suppressAnswerTextChange = false
                         }
 
-                        binding.btnSubmit.isEnabled =
-                            (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
+                        binding.btnSubmit.isEnabled = (s.questionId != null) && !s.isLoadingQuestion
+                        if (binding.btnSubmit.isEnabled) {
+                            binding.btnSubmit.setTextColor(requireContext().getColor(R.color.text_primary))
+                        } else {
+                            binding.btnSubmit.setTextColor(requireContext().getColor(R.color.text_secondary))
+                        }
                     }
 
                     // 카테고리/점수 안전 매핑 + 빈 차트/플레이스홀더 처리

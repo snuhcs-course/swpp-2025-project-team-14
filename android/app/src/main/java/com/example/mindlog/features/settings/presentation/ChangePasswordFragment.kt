@@ -15,11 +15,12 @@ import com.example.mindlog.R
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.databinding.FragmentChangePasswordBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.example.mindlog.features.home.presentation.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class ChangePasswordFragment : Fragment() {
+class ChangePasswordFragment : Fragment(), HomeActivity.FabClickListener {
 
     private var _binding: FragmentChangePasswordBinding? = null
     private val binding get() = _binding!!
@@ -69,6 +70,10 @@ class ChangePasswordFragment : Fragment() {
         }
 
         observeViewModel()
+    }
+
+    override fun onFabClick() {
+        Toast.makeText(requireContext(), "먼저 설정을 완료해주세요.", Toast.LENGTH_SHORT).show()
     }
 
     private fun observeViewModel() {
