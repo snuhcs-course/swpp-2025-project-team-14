@@ -152,7 +152,9 @@ class JournalRepositoryImpl @Inject constructor(
 
     override suspend fun extractKeywords(journalId: Int): List<Keyword> {
         val response = journalApi.extractKeywords(journalId = journalId)
-        return response.data.map { mapper.toKeyword(it) }
+        return response.data
+            .map { mapper.toKeyword(it) }
+            .distinctBy { it.keyword }
     }
 }
 
