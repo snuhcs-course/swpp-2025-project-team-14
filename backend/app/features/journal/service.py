@@ -284,6 +284,18 @@ class JournalOpenAIService:
                 detail="LLM returned invalid format.",
             )
 
+        unique_res = []
+        set_keywords = set()
+
+        for item in res:
+            normalized_keyword = item.keyword.strip()
+            normalized_keyword = normalized_keyword.lower()
+
+            if normalized_keyword not in set_keywords:
+                set_keywords.add(normalized_keyword)
+                item.keyword = normalized_keyword
+                unique_res.append(item)
+
         save_task = partial(
             self.journal_repository.add_keywords_emotion_associations,
             journal_id=journal_id,
