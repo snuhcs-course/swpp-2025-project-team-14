@@ -38,11 +38,11 @@
             android:text="내추럴 (Natural)"
             android:tag="natural"/>
 
-        <!-- 스타일 선택지 2: American Comics -->
+        <!-- 스타일 선택지 2: Comics -->
         <RadioButton
             android:id="@+id/rb_style_comics"
             style="@style/AiStyleSelectableCell"
-            android:text="아메리칸 코믹스 (Comics)"
+            android:text="코믹스 (Comics)"
             android:tag="american-comics"/>
 
         <!-- 스타일 선택지 3: Watercolor -->

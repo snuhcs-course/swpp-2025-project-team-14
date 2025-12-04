@@ -47,7 +47,7 @@ class JournalWriteViewModel @Inject constructor(
     val emotionScores: StateFlow<Map<String, Int?>> = _emotionScores
 
 
-    fun updateEmotionScore(emotionName: String, score: Int) {
+    fun updateEmotionScore(emotionName: String, score: Int?) {
         val updatedScores = _emotionScores.value.toMutableMap().apply {
             this[emotionName] = score
         }
@@ -135,12 +135,10 @@ class JournalWriteViewModel @Inject constructor(
                     )
                 }
 
-                // 키워드 추출은 별도 코루틴에서 비동기로 수행
                 viewModelScope.launch {
                     try {
                         journalRepository.extractKeywords(journalId)
                     } catch (e: Exception) {
-                        // 키워드 추출 실패는 현재 UI 흐름을 막지 않고 무시
                     }
                 }
 
