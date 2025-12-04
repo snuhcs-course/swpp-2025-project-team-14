@@ -1,6 +1,5 @@
 package com.example.mindlog.features.statistics.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.domain.Result
