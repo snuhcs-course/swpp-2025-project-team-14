@@ -10,6 +10,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from openai import AsyncOpenAI
 
+from app.common.errors import PermissionDeniedError
 from app.features.journal.errors import (
     ImageGenerationError,
     JournalBadRequestError,
@@ -42,6 +43,7 @@ class JournalService:
     ) -> None:
         self.journal_repository = journal_repository
         self.image_facade = image_facade
+        self._db_runner = partial(run_in_threadpool)
 
     def create_journal(
         self,
@@ -109,7 +111,9 @@ class JournalService:
         cursor: int | None = None,
     ) -> list[Journal]:
         if start_date and end_date and start_date > end_date:
-            raise JournalBadRequestError("start_date는 end_date보다 이전이어야 합니다.")
+            raise JournalBadRequestError(
+                "start_date must be earlier than or equal to end_date."
+            )
         return self.journal_repository.search_journals(
             user_id=user_id,
             title=title,
@@ -142,10 +146,19 @@ class JournalService:
     ) -> JournalImage:
         return await self.image_facade.finalize_image_upload(journal_id, payload.s3_key)
 
+    # Ownership helper reused by router to avoid duplicate DB hits.
+    def get_owned_journal(self, journal_id: int, user_id: int) -> Journal:
+        journal = self.journal_repository.get_journal_by_id(journal_id)
+        if journal is None:
+            raise JournalNotFoundError(journal_id)
+        if journal.user_id != user_id:
+            raise PermissionDeniedError()
+        return journal
+
 
 class JournalOpenAIService:
     """
-    OpenAI 관련 로직을 전담하는 서비스
+    Service for OpenAI-powered journal operations.
     """
 
     def __init__(
@@ -155,6 +168,7 @@ class JournalOpenAIService:
     ):
         self.journal_repository = journal_repository
         self.style_factory = style_factory
+        self._db_runner = partial(run_in_threadpool)
 
         keyword_prompt_text = _load_prompt("keyword_prompt.txt")
 
@@ -172,7 +186,7 @@ class JournalOpenAIService:
         self, request: ImageGenerateRequest, user: User
     ) -> str:
         """
-        일기를 받아 이미지를 생성하고 Base64로 반환합니다.
+        Generate an image from diary content and return it as Base64.
         """
         strategy = self.style_factory.create_strategy(request.style)
         prompt_template = strategy.get_system_prompt()
@@ -210,7 +224,7 @@ class JournalOpenAIService:
         self, journal_content: str, input_prompt: str, user_description: str
     ) -> str:
         """
-        (Helper) GPT-5-mini를 비동기 호출하여 DALL-E용 프롬프트를 생성합니다.
+        (Helper) Use GPT-5-mini to produce a DALL-E-ready scene prompt.
         """
         system_prompt = (
             f"{input_prompt}\n\n"
@@ -231,7 +245,7 @@ class JournalOpenAIService:
 
     async def _generate_image_from_prompt(self, prompt: str) -> str:
         """
-        (Helper) DALL-E 3를 비동기 호출하여 Base64 이미지 데이터를 반환합니다.
+        (Helper) Use DALL-E 3 to generate an image and return Base64 data.
         """
         image_response = await self.client.images.generate(
             model="dall-e-3",
@@ -246,10 +260,9 @@ class JournalOpenAIService:
     async def extract_keywords_with_emotion_associations(
         self, journal_id: int
     ) -> list[JournalKeyword]:
-        find_journal = partial(
-            self.journal_repository.get_journal_by_id, journal_id=journal_id
+        journal = await self._db_runner(
+            self.journal_repository.get_journal_by_id, journal_id
         )
-        journal = await run_in_threadpool(find_journal)
         if not journal:
             raise JournalNotFoundError(journal_id)
 
@@ -296,11 +309,10 @@ class JournalOpenAIService:
                 item.keyword = normalized_keyword
                 unique_res.append(item)
 
-        save_task = partial(
+        created_keywords = await self._db_runner(
             self.journal_repository.add_keywords_emotion_associations,
             journal_id=journal_id,
-            keyword_emotion_associations=res,
+            keyword_emotion_associations=unique_res,
         )
-        created_keywords = await run_in_threadpool(save_task)
 
         return created_keywords

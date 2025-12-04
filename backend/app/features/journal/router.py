@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, Query, status
 from fastapi.security import HTTPBearer
 
 from app.common.authorization import get_current_user
-from app.common.errors import PermissionDeniedError
 from app.features.journal.errors import JournalBadRequestError
 from app.features.journal.schemas.requests import (
     ImageCompletionRequest,
@@ -59,7 +58,9 @@ def create_journal_entry(
 def get_journal_entries_by_user(
     journal_service: Annotated[JournalService, Depends()],
     limit: int = Query(default=10, le=50),
-    cursor: int | None = Query(None, description="마지막으로 본 Journal의 ID"),
+    cursor: int | None = Query(
+        None, description="ID of the last journal for cursor pagination"
+    ),
     user: User = Depends(get_current_user),
 ) -> JournalCursorResponse:
     journals = journal_service.list_journals_by_user(user.id, limit, cursor)
@@ -70,24 +71,18 @@ def get_journal_entries_by_user(
     "/search",
     response_model=JournalCursorResponse,
     status_code=status.HTTP_200_OK,
-    summary="일기 검색 (제목, 기간)",
-    description="""
-    다양한 검색 조건(쿼리 파라미터)을 조합하여 일기를 검색합니다.
-
-    - 기간 조회: `start_date`와 `end_date`를 지정합니다. (예: `?start_date=...&end_date=...`)
-    - 특정 날짜 조회: `start_date`와 `end_date`에 동일한 날짜를 지정합니다.
-    - 제목과 조합: `title` 파라미터를 추가할 수 있습니다.
-    """,
+    summary="Search journals (title/date range)",
+    description="Search journals by optional title and date range; provide both start_date and end_date when filtering by date.",
 )
 def search_journals(
     journal_service: Annotated[JournalService, Depends()],
-    start_date: date | None = Query(
-        None, description="조회 시작 날짜 (YYYY-MM-DD 형식)"
-    ),
-    end_date: date | None = Query(None, description="조회 종료 날짜 (YYYY-MM-DD 형식)"),
-    title: str | None = Query(None, description="일기 제목"),
+    start_date: date | None = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="End date (YYYY-MM-DD)"),
+    title: str | None = Query(None, description="Journal title (partial match)"),
     limit: int = Query(default=10, le=50),
-    cursor: int | None = Query(None, description="마지막으로 본 Journal의 ID"),
+    cursor: int | None = Query(
+        None, description="ID of the last journal for cursor pagination"
+    ),
     user: User = Depends(get_current_user),
 ) -> JournalCursorResponse:
     if not any([title, start_date, end_date]):
@@ -109,14 +104,16 @@ def search_journals(
     "/search-keyword",
     response_model=JournalCursorResponse,
     status_code=status.HTTP_200_OK,
-    summary="키워드 기반 일기 검색",
-    description="키워드 입력 시 해당 키워드를 가진 저널 엔트리 리스트를 반환합니다.",
+    summary="Search journals by keyword",
+    description="Return journals containing the specified keyword.",
 )
 def search_journals_by_keyword(
     journal_service: Annotated[JournalService, Depends()],
-    keyword: str = Query(..., description="검색할 키워드"),
+    keyword: str = Query(..., description="Keyword to search for"),
     limit: int = Query(default=10, le=50),
-    cursor: int | None = Query(None, description="마지막으로 본 Journal의 ID"),
+    cursor: int | None = Query(
+        None, description="ID of the last journal for cursor pagination"
+    ),
     user: User = Depends(get_current_user),
 ) -> JournalCursorResponse:
     if not keyword.strip():
@@ -136,9 +133,7 @@ def get_journal_entry(
     journal_service: Annotated[JournalService, Depends()],
     user: User = Depends(get_current_user),
 ) -> JournalResponse:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
-    journal = journal_service.get_journal(journal_id)
+    journal = journal_service.get_owned_journal(journal_id, user.id)
     return JournalResponse.from_journal(journal)
 
 
@@ -153,8 +148,7 @@ def update_journal_entry(
     journal_service: Annotated[JournalService, Depends()],
     user: User = Depends(get_current_user),
 ) -> str:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
+    journal_service.get_owned_journal(journal_id, user.id)
     journal_service.update_journal(
         journal_id=journal_id,
         title=journal.title,
@@ -174,8 +168,7 @@ def delete_journal_entry(
     journal_service: Annotated[JournalService, Depends()],
     user: User = Depends(get_current_user),
 ) -> str:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
+    journal_service.get_owned_journal(journal_id, user.id)
     journal_service.delete_journal(journal_id)
     return "Deletion Success"
 
@@ -193,8 +186,7 @@ async def generate_image_upload_url(
     payload: ImageUploadRequest,
     user: User = Depends(get_current_user),
 ) -> PresignedUrlResponse:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
+    journal_service.get_owned_journal(journal_id, user.id)
     return await journal_service.create_image_presigned_url(
         journal_id=journal_id, payload=payload
     )
@@ -213,8 +205,7 @@ async def complete_image_upload(
     payload: ImageCompletionRequest,
     user: User = Depends(get_current_user),
 ) -> JournalImageResponse:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
+    journal_service.get_owned_journal(journal_id, user.id)
     journal_image = await journal_service.complete_image_upload(
         journal_id=journal_id, payload=payload
     )
@@ -252,8 +243,7 @@ async def analyze_journal(
     journal_service: Annotated[JournalService, Depends()],
     user: User = Depends(get_current_user),
 ) -> JournalKeywordsListResponse:
-    if journal_service.get_journal_owner(journal_id) != user.id:
-        raise PermissionDeniedError()
+    journal_service.get_owned_journal(journal_id, user.id)
     created_keywords_list = (
         await journal_openai_service.extract_keywords_with_emotion_associations(
             journal_id=journal_id
