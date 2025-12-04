@@ -1,7 +1,9 @@
 from __future__ import annotations
-from typing import Literal, List
-from pydantic import BaseModel, Field
+
+from typing import Literal
+
 from langchain_core.prompts import ChatPromptTemplate
+from pydantic import BaseModel, Field
 
 CATEGORIES = [
     ("Neuroticism", "불안정성"),
@@ -15,24 +17,30 @@ CAT_KO = {en: ko for en, ko in CATEGORIES}
 
 Language = Literal["ko", "en"]
 QuestionType = Literal[
-    "single_category",      # 하나의 가치 카테고리에 대한 질문
-    "multi_category",       # 여러 가치 카테고리에 대한 복합 질문
-    "personalized_category" # 사용자의 일기 데이터를 바탕으로 한 질문
+    "single_category",  # 하나의 가치 카테고리에 대한 질문
+    "multi_category",  # 여러 가치 카테고리에 대한 복합 질문
+    "personalized_category",  # 사용자의 일기 데이터를 바탕으로 한 질문
 ]
 
 
 class CategoryExtractionResponse(BaseModel):
-    analysis: str = Field(description="일기의 주요 감정과 그 이유에 대한 분석을 하나의 string 형태")
-    categories: list[tuple[str, str]] = Field(description="관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태")
+    analysis: str = Field(
+        description="일기의 주요 감정과 그 이유에 대한 분석을 하나의 string 형태"
+    )
+    categories: list[tuple[str, str]] = Field(
+        description="관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태"
+    )
+
 
 class QuestionGenerationResponse(BaseModel):
     question: str = Field(description="생성된 자기성찰 질문")
     rationale: str = Field(description="질문 생성 이유")
 
+
 summary_prompt = ChatPromptTemplate.from_template(
-    """다음은 한 사용자의 최근 일기 내용입니다. 
+    """다음은 한 사용자의 최근 일기 내용입니다.
     이 일기들의 전반적인 감정과 주제를 간결하게 요약해 주세요.
-    
+
     최근 일기 내용:
     {journal_text}
 
@@ -49,7 +57,7 @@ emotion_prompt = ChatPromptTemplate.from_template(
 
     일기:
     {journal}
-    
+
     Return Json
     """
 )
@@ -66,7 +74,7 @@ category_prompt = ChatPromptTemplate.from_template(
 
     일기 요약:
     {summary}
-    
+
     Return JSON:
     - analysis: 주요 감정과 그 이유를 포함한 두 문장 내외의 분석
     - categories: 관련 가치 카테고리 리스트 [(영어 표준명, 한국어 표준명)] 형태
@@ -80,10 +88,10 @@ personalized_prompt = ChatPromptTemplate.from_template(
     해당 카테고리와 관련된 사용자가 자기 성찰을 할 수 있도록 돕는 질문 1개를 만들어줘.
     질문은 구체적이고, 감정의 원인을 탐색할 수 있도록 구성해줘.
 
-    일기 요약: {summary}  
+    일기 요약: {summary}
     감정 분석 결과: {analysis}
     Target categories: {categories}
-    
+
     Guidelines:
     - Invite a concrete episode, feelings, and why it mattered.
     - Avoid yes/no; ask one sentence only.
@@ -135,8 +143,10 @@ multi_category_prompt = ChatPromptTemplate.from_template(
     """
 )
 
+
 class MultiValueScoreStructure(BaseModel):
-    detected_values: List[ValueScoreStructure]
+    detected_values: list[ValueScoreStructure]
+
 
 class ValueScoreStructure(BaseModel):
     value: str = Field(
@@ -179,6 +189,7 @@ class ValueScoreStructure(BaseModel):
         )
     )
 
+
 # get value score from prompt
 
 value_score_structured_prompt = ChatPromptTemplate.from_template("""
@@ -202,6 +213,7 @@ Answer:
 Return the structured result following the ValueScoreStructure.
 """)
 
+
 class ValueMapAnalysisStructure(BaseModel):
     comment: str = Field(
         description=(
@@ -219,6 +231,7 @@ class ValueMapAnalysisStructure(BaseModel):
         )
     )
 
+
 value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
 당신은 사람의 가치관과 성향을 분석하여 자연스러운 한국어 문장으로 설명하는 심리 분석 전문가입니다.
 
@@ -233,9 +246,9 @@ value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
 - Neuroticism refers to the tendency to experience negative feelings.
 - Extraversion is marked by pronounced engagement with the external world.
 - Openness to Experience describes a dimension of cognitive style that distinguishes imaginative, creative people from down-to-earth, conventional people.
-- Agreeableness reflects individual differences in concern with cooperation and social harmony. Agreeable individuals value getting along with others.                                                               
+- Agreeableness reflects individual differences in concern with cooperation and social harmony. Agreeable individuals value getting along with others.
 - Conscientiousness concerns the way in which we control, regulate, and direct our impulses.
-                                                                        
+
 이 정보를 바탕으로:
 1. `comment`: 위 사람의 가치관과 성향을 자연스럽게 요약한 **한 문장짜리 코멘트**를 작성하세요.
 2. `personality_insight`: 위 점수의 전반적 패턴을 해석하여, **3~4문장 분량의 심리적 통찰**을 작성하세요.
@@ -244,6 +257,7 @@ value_map_combined_structured_prompt = ChatPromptTemplate.from_template("""
 
 결과는 ValueMapAnalysisStructure에 맞게 구조화하세요.
 """)
+
 
 class OppositeValueStructure(BaseModel):
     opposite_value: str = Field(
@@ -263,6 +277,7 @@ get_opposite_value_prompt = ChatPromptTemplate.from_template("""
 2. 반드시 영어 canonical 형태로 반환하세요.
 3. 출력은 OppositeValueStructure 구조로 작성하세요.
 """)
+
 
 # Journal Summary
 class JournalSummary(BaseModel):

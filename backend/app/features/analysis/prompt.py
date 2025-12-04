@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+
 
 class AdviceGenerationResponse(BaseModel):
     theory: str = Field(description="적용 이론")
     advice: str = Field(description="오늘 하루 실천할 수 있는 피드백")
+
 
 personalized_advice_prompt = ChatPromptTemplate.from_template(
     """

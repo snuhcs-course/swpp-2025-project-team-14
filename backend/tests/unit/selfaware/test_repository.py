@@ -1,10 +1,13 @@
 import pytest
+
 from app.features.selfaware.repository import (
-    QuestionRepository,
     AnswerRepository,
-    ValueScoreRepository,
+    QuestionRepository,
     ValueMapRepository,
+    ValueScoreRepository,
 )
+
+
 # -----------------------
 # Repo Fixtures
 # -----------------------
@@ -12,21 +15,26 @@ from app.features.selfaware.repository import (
 def question_repo(db_session):
     return QuestionRepository(session=db_session)
 
+
 @pytest.fixture
 def answer_repo(db_session):
     return AnswerRepository(session=db_session)
+
 
 @pytest.fixture
 def value_score_repo(db_session):
     return ValueScoreRepository(session=db_session)
 
+
 @pytest.fixture
 def value_map_repo(db_session):
     return ValueMapRepository(session=db_session)
 
+
 # ============================================================
 #                     Question Repository
 # ============================================================
+
 
 def test_create_question(question_repo, db_session):
     q = question_repo.create_question(
@@ -63,14 +71,13 @@ def test_list_questions_by_user(question_repo, db_session):
 #                     Answer Repository
 # ============================================================
 
+
 def test_create_answer(answer_repo, question_repo, db_session):
     q = question_repo.create_question(1, "single_category", "Q1")
     db_session.commit()
 
     a = answer_repo.create_answer(
-        user_id=1,
-        question_id=q.id,
-        text="오늘은 즐거웠어요."
+        user_id=1, question_id=q.id, text="오늘은 즐거웠어요."
     )
     db_session.commit()
 
@@ -100,10 +107,10 @@ def test_list_answers_by_user(answer_repo, question_repo, db_session):
     assert len(answers) == 1
 
 
-
 # ============================================================
 #                ValueScore Repository
 # ============================================================
+
 
 def test_create_value_score(value_score_repo, question_repo, answer_repo, db_session):
     q = question_repo.create_question(1, "single", "Q")
@@ -119,7 +126,7 @@ def test_create_value_score(value_score_repo, question_repo, answer_repo, db_ses
         value="Sociability",
         confidence=0.8,
         intensity=0.6,
-        polarity=1
+        polarity=1,
     )
 
     assert score.id is not None
@@ -127,7 +134,9 @@ def test_create_value_score(value_score_repo, question_repo, answer_repo, db_ses
     assert score.confidence == 0.8
 
 
-def test_get_top_5_value_scores(value_score_repo, question_repo, answer_repo, db_session):
+def test_get_top_5_value_scores(
+    value_score_repo, question_repo, answer_repo, db_session
+):
     q = question_repo.create_question(1, "single", "Q")
     db_session.commit()
     a = answer_repo.create_answer(1, q.id, "A")
@@ -143,17 +152,17 @@ def test_get_top_5_value_scores(value_score_repo, question_repo, answer_repo, db
             value=f"v{i}",
             confidence=0.5 + i * 0.01,
             intensity=0.7,
-            polarity=1
+            polarity=1,
         )
 
     top_scores = value_score_repo.get_top_5_value_scores(1)
     assert len(top_scores) == 5
 
 
-
 # ============================================================
 #                     ValueMap Repository
 # ============================================================
+
 
 def test_create_value_map(value_map_repo, db_session):
     vm = value_map_repo.create_value_map(1)
@@ -161,7 +170,9 @@ def test_create_value_map(value_map_repo, db_session):
     assert vm.user_id == 1
 
 
-def test_update_by_value_score(value_map_repo, value_score_repo, question_repo, answer_repo, db_session):
+def test_update_by_value_score(
+    value_map_repo, value_score_repo, question_repo, answer_repo, db_session
+):
     q = question_repo.create_question(1, "single", "Q")
     db_session.commit()
     a = answer_repo.create_answer(1, q.id, "A")
@@ -187,12 +198,12 @@ def test_update_by_value_score(value_map_repo, value_score_repo, question_repo, 
 
 
 def test_generate_comment(value_map_repo, db_session):
-    vm = value_map_repo.create_value_map(1)
+    vm = value_map_repo.create_value_map(1)  # noqa: F841
 
     value_map_repo.generate_comment(
         user_id=1,
         personality_insight="당신은 친화적인 성향입니다.",
-        comment="대인 관계에서 강점을 보이네요."
+        comment="대인 관계에서 강점을 보이네요.",
     )
 
     fetched = value_map_repo.get_by_user(1)

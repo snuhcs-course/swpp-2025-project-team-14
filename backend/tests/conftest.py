@@ -3,6 +3,7 @@ from datetime import date
 from typing import Any
 
 import pytest
+from dotenv import load_dotenv
 from passlib.context import CryptContext
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -13,9 +14,6 @@ from app.database.session import get_db_session
 from app.features.journal.models import Journal, JournalEmotion, JournalKeyword
 from app.features.user.models import User  # noqa: F401 # 사용하는 모든 모델 임포트
 from app.main import app
-
-from dotenv import load_dotenv
-import os
 
 load_dotenv(".env.local")
 

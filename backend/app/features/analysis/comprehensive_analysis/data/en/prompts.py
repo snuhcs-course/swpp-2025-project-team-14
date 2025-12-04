@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 from langchain_core.prompts import ChatPromptTemplate
 
-agreeableness_summary = 'Agreeableness reflects individual differences in concern with cooperation and social harmony. Agreeable individuals value getting along with others.'
+agreeableness_summary = "Agreeableness reflects individual differences in concern with cooperation and social harmony. Agreeable individuals value getting along with others."
 agreeableness_explanations = """
 `They are therefore considerate, friendly,
 generous, helpful, and willing to compromise their interests with
@@ -104,7 +105,7 @@ with truth and impartial justice than with mercy.`
   ]
 """
 
-openness_summary = 'Openness to Experience describes a dimension of cognitive style that distinguishes imaginative, creative people from down-to-earth, conventional people.'
+openness_summary = "Openness to Experience describes a dimension of cognitive style that distinguishes imaginative, creative people from down-to-earth, conventional people."
 openness_explanations = """
 `Open people are intellectually curious,
 appreciative of art, and sensitive to beauty. They tend to be,
@@ -221,7 +222,9 @@ incline individuals toward certain political parties.`
   ]
 """
 
-neuroticism_summary = 'Neuroticism refers to the tendency to experience negative feelings.'
+neuroticism_summary = (
+    "Neuroticism refers to the tendency to experience negative feelings."
+)
 neuroticism_explanations = """
 `Freud originally used the term neurosis to describe a
 condition marked by mental distress, emotional suffering, and an
@@ -325,7 +328,7 @@ stressed.`
   ]
 """
 
-conscientiousness_summary = 'Conscientiousness concerns the way in which we control, regulate, and direct our impulses.'
+conscientiousness_summary = "Conscientiousness concerns the way in which we control, regulate, and direct our impulses."
 conscientiousness_explanations = """
 `Impulses are not inherently bad;
 occasionally time constraints require a snap decision, and acting on
@@ -457,7 +460,9 @@ probable consequences of those alternatives.`
   ]
 """
 
-extraversion_summary = 'Extraversion is marked by pronounced engagement with the external world.',
+extraversion_summary = (
+    "Extraversion is marked by pronounced engagement with the external world.",
+)
 extraversion_explanations = """
 `Extraverts enjoy being with people, are full of energy, and
 often experience positive emotions. They tend to be enthusiastic,
@@ -559,7 +564,7 @@ big_5_prompt = ChatPromptTemplate.from_template(
 
     점수 설명:
     {big_5_explanations}
-    
+
     사용자의 점수:
     {big_5_score}
 

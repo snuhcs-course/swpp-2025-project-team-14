@@ -1,20 +1,21 @@
+import re
+
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from typing import List
-import re
 
 load_dotenv()
 # -------------------------------
 # 1️⃣ 파일 로드
 # -------------------------------
 
+
 def load_questions_with_keyed(path: str) -> list[str]:
     """
     questions.ts 파일에서 각 문항의 text와 keyed를 추출.
     text가 큰따옴표, 작은따옴표, 줄바꿈 포함해도 동작함.
     """
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         text = f.read()
 
     # text: "..." or text: '...' (줄바꿈 포함 허용)
@@ -25,11 +26,13 @@ def load_questions_with_keyed(path: str) -> list[str]:
     if len(texts) != len(keyeds):
         print(f"text({len(texts)})와 keyed({len(keyeds)}) 개수가 다릅니다!")
 
-    results = [f"{t} (keyed: {k})" for t, k in zip(texts, keyeds)]
+    results = [f"{t} (keyed: {k})" for t, k in zip(texts, keyeds, strict=False)]
     return results
 
 
-questions = load_questions_with_keyed("app/features/analysis/comprehensive_analysis/data/ko/questions.ts")
+questions = load_questions_with_keyed(
+    "app/features/analysis/comprehensive_analysis/data/ko/questions.ts"
+)
 
 choices = """
 각 문항에 대해 1부터 5까지의 5점 척도로 응답합니다.
@@ -83,7 +86,8 @@ template = """
 
 prompt = ChatPromptTemplate.from_template(template)
 
+
 class NeoPiAnswers(BaseModel):
-    answers: List[int] = Field(
+    answers: list[int] = Field(
         description="각 문항(1~5 척도)에 대한 예측 응답 리스트. 길이는 질문 수와 동일해야 함."
     )
