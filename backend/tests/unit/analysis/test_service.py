@@ -49,7 +49,7 @@ def test_create_and_get_analysis(service, mock_analysis_repo):
 
 def test_evaluate_user_type_returns_expected(service, mock_analysis_repo):
     user_type = service.evaluate_user_type(user_id=1)
-    assert user_type == "목표 지향형"  # C >=65, N <=45
+    assert user_type == "Goal oriented"  # C >=65, N <=45
 
 
 def test_extract_neo_pi_from_answer(service, mocker, mock_answer_repo):

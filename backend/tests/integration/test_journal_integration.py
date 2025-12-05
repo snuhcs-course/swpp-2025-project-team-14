@@ -306,7 +306,7 @@ def test_get_journal_not_found(
     response = client.get("/api/v1/journal/99999", headers=auth_headers)
 
     # 2. 상태 코드 검증
-    assert response.status_code == 401
+    assert response.status_code == 404
 
 
 # --- 6. 일지 수정 (PATCH /{journal_id}) ---

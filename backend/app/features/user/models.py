@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+from datetime import date
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Date, Integer, String
-from typing import TYPE_CHECKING, List
-from datetime import date, datetime
-from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 
 if TYPE_CHECKING:
-    from app.features.journal.models import Journal
-    from app.features.selfaware.models import Question, Answer, ValueMap
     from app.features.analysis.models import Analysis
+    from app.features.journal.models import Journal
+    from app.features.selfaware.models import Answer, Question, ValueMap
 
 
 class User(Base):
@@ -40,7 +40,7 @@ class User(Base):
     analysis: Mapped[list[Analysis]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-      
+
     @property
     def age(self) -> int:
         today = date.today()

@@ -1,12 +1,17 @@
 from __future__ import annotations
+
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.common.utilities import get_korea_time
 from app.database.base import Base
-from datetime import datetime
-from sqlalchemy import String, Integer, Text, ForeignKey, DateTime, JSON
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, Optional
+
 if TYPE_CHECKING:
     from app.features.user.models import User
+
 
 class Analysis(Base):
     __tablename__ = "analysis"
@@ -17,9 +22,11 @@ class Analysis(Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
-    user_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # 목표성취형
+    user_type: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # 목표성취형
 
-    neo_pi_score:  Mapped[Optional[dict]] = mapped_column(JSON, nullable=True) # 확인 필요
+    neo_pi_score: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # 확인 필요
 
     conscientiousness: Mapped[str | None] = mapped_column(Text, nullable=True)
     neuroticism: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -27,11 +34,20 @@ class Analysis(Base):
     openness: Mapped[str | None] = mapped_column(Text, nullable=True)
     agreeableness: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    advice_type: Mapped[str | None] = mapped_column(String(50), nullable=True) # 조언 이론 유형
+    advice_type: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # 조언 이론 유형
 
     personalized_advice: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_korea_time, onupdate=get_korea_time, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=get_korea_time, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=get_korea_time,
+        onupdate=get_korea_time,
+        nullable=False,
+    )
 
     user: Mapped[User] = relationship(back_populates="analysis")
