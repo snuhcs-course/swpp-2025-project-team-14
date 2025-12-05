@@ -205,10 +205,10 @@
                 android:id="@+id/emotionSelectorContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-
+                android:layout_marginBottom="15dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="15dp">
+                android:background="@drawable/bg_emotion_selector">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvEmotionFilterLabel"

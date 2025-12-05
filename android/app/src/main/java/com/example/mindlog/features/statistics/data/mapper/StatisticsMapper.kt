@@ -2,7 +2,6 @@ package com.example.mindlog.features.statistics.data.mapper
 
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.statistics.data.dto.EmotionRateItem
-import com.example.mindlog.features.statistics.data.dto.EmotionRatesResponse
 import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionEvent
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
@@ -50,7 +49,7 @@ class StatisticsMapper @Inject constructor() {
         val emotionEvents = journals.flatMap { journal ->
             (journal.keywords ?: emptyList())
                 .asSequence()
-                .filter { it.weight >= 0.7f } // 키워드 신뢰도 임계값
+                .filter { it.weight >= 0.5f } // 키워드 신뢰도 임계값
                 .mapNotNull { kw ->
                     val emo = Emotion.fromApi(kw.emotion) ?: return@mapNotNull null
                     val text = (kw.summary?.takeIf { it.isNotBlank() } ?: kw.keyword).trim()
@@ -65,18 +64,34 @@ class StatisticsMapper @Inject constructor() {
                 EmotionEvent(emotion = emotion, events = distinctTexts)
             }
 
-        // 키워드 빈도 (모든 일기의 keywords)
+        // 키워드 빈도 (weight 기반 가중치 반영)
         val keywordCount = mutableMapOf<String, Int>()
         for (journal in journals) {
-            journal.keywords?.forEach {
-                keywordCount[it.keyword] = (keywordCount[it.keyword] ?: 0) + 1
+            journal.keywords?.forEach { kw ->
+                // weight 기반 가중치: 0.5~0.65 → +1, 0.65~0.8 → +2, 0.8~1.0 → +3
+                val weightContribution = when (kw.weight) {
+                    in 0.5f..0.65f -> 1
+                    in 0.65f..0.8f -> 2
+                    in 0.8f..1.0f -> 3
+                    else -> 0
+                }
+
+                if (weightContribution > 0) {
+                    val key = kw.keyword
+                    keywordCount[key] = (keywordCount[key] ?: 0) + weightContribution
+                }
             }
         }
 
         val journalKeywords = keywordCount.entries
             .sortedByDescending { it.value }
-            .take(10)
-            .map { (k, v) -> JournalKeyword(keyword = k, count = v) }
+            .take(50)
+            .map { (keyword, count) ->
+                JournalKeyword(
+                    keyword = keyword,
+                    count = count
+                )
+            }
 
         // 최종 조합
         return JournalStatistics(
