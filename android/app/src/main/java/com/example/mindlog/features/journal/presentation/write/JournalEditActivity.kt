@@ -69,6 +69,12 @@ class JournalEditActivity : AppCompatActivity() {
                 viewModel.updateJournal()
             }
         }
+
+        binding.btnEditCancel.setOnClickListener {
+            checkImageGenerationBeforeAction {
+                finish()
+            }
+        }
     }
 
     private fun setupOnBackPressed() {
@@ -124,17 +130,6 @@ class JournalEditActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun showDeleteConfirmDialog() {
-        MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MindLog_AlertDialog)
-            .setTitle("일기 삭제")
-            .setMessage("정말로 이 일기를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.")
-            .setNegativeButton("취소", null)
-            .setPositiveButton("삭제") { _, _ ->
-                viewModel.deleteJournal()
-            }
-            .show()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

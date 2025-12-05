@@ -55,10 +55,13 @@ class JournalWriteViewModel @Inject constructor(
         savedStateHandle[KEY_EMOTION_SCORES] = updatedScores
     }
 
+    fun hasSelectedEmotions(): Boolean {
+        return _emotionScores.value.values.any { it != null }
+    }
+
     private fun getEmotionsForSaving(): Map<String, Int> {
         return _emotionScores.value
-            .mapValues { (_, score) -> score ?: 2 }
-            .filterValues { score -> score != 0 }
+            .mapValues { (_, score) -> score ?: 0 }
     }
 
 

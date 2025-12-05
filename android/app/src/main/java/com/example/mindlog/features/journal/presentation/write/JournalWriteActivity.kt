@@ -56,18 +56,30 @@ class JournalWriteActivity : AppCompatActivity() {
 
         binding.btnNextOrSave.setOnClickListener {
             val currentFragment = supportFragmentManager.findFragmentById(R.id.write_fragment_container)
+
             if (currentFragment is EmotionSelectFragment) {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.write_fragment_container, contentWriteFragment)
-                    .addToBackStack(null)
-                    .commit()
-                updateButtonsForContentWrite()
+                if (viewModel.hasSelectedEmotions()) {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.write_fragment_container, contentWriteFragment)
+                        .addToBackStack(null)
+                        .commit()
+                    updateButtonsForContentWrite()
+                } else {
+                    showEmotionSelectionRequiredDialog()
+                }
             } else {
                 checkImageGenerationBeforeAction {
                     saveJournal()
                 }
             }
         }
+    }
+    private fun showEmotionSelectionRequiredDialog() {
+        MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MindLog_AlertDialog)
+            .setTitle("감정 미선택")
+            .setMessage("오늘의 감정을 하나 이상 선택해주세요.")
+            .setPositiveButton("확인", null)
+            .show()
     }
 
     private fun saveJournal() {

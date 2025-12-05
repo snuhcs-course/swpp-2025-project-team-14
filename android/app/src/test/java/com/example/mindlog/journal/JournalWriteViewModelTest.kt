@@ -78,15 +78,14 @@ class JournalWriteViewModelTest {
     }
 
     @Test
-    fun `saveJournal - 감정 점수 매핑 - null은 2로, 0은 제외된다`() = runTest {
+    fun `saveJournal - 감정 점수 매핑 - null은 0으로 갱신된다`() = runTest {
         // Given
         viewModel.title.value = "제목"
         viewModel.content.value = "내용"
 
         viewModel.updateEmotionScore("happy", 3)
-        viewModel.updateEmotionScore("sad", 0) // 0은 필터링 대상
+        viewModel.updateEmotionScore("sad", 0)
 
-        // ✨ [수정] UseCase가 DTO가 아닌 Int(id)를 반환하도록 Mocking
         whenever(createJournalUseCase.invoke(any(), any(), any(), any())).thenReturn(1)
 
         val results = mutableListOf<Result<Unit>>()
@@ -109,10 +108,9 @@ class JournalWriteViewModelTest {
         )
 
         val emotions = emotionsCaptor.firstValue
-        assertFalse(emotions.containsKey("sad"))
+        assertEquals(0, emotions["sad"])
         assertEquals(3, emotions["happy"])
-        // 나머지 null이었던 값들은 2로 대체되어 들어감 (몇 개만 샘플로)
-        assertEquals(2, emotions["calm"])
+        assertEquals(0, emotions["calm"])
 
         assertTrue(results.first() is Result.Success)
     }
@@ -127,7 +125,6 @@ class JournalWriteViewModelTest {
         viewModel.title.value = "테스트 제목"
         viewModel.content.value = "테스트 내용"
 
-        // ✨ [수정] UseCase가 DTO가 아닌 Int(id)를 반환하도록 Mocking
         whenever(createJournalUseCase.invoke(any(), any(), any(), any())).thenReturn(1)
 
         val results = mutableListOf<Result<Unit>>()
@@ -159,7 +156,6 @@ class JournalWriteViewModelTest {
         viewModel.title.value = "갤러리 제목"
         viewModel.content.value = "갤러리 내용"
 
-        // ✨ [수정] UseCase가 DTO가 아닌 Int(id)를 반환하도록 Mocking
         whenever(createJournalUseCase.invoke(any(), any(), any(), any())).thenReturn(42)
 
         val mockResolver: ContentResolver = mock()
@@ -204,7 +200,6 @@ class JournalWriteViewModelTest {
         viewModel.title.value = "AI 제목"
         viewModel.content.value = "AI 내용"
 
-        // ✨ [수정] UseCase가 DTO가 아닌 Int(id)를 반환하도록 Mocking
         whenever(createJournalUseCase.invoke(any(), any(), any(), any())).thenReturn(7)
 
         val mockBitmap: Bitmap = mock()
@@ -385,7 +380,7 @@ class JournalWriteViewModelTest {
         viewModel.content.value = "내용"
 
         whenever(generateImageUseCase.invoke(any(), any()))
-            .thenThrow(RuntimeException("이미지 실패"))
+            .thenThrow(RuntimeException("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요."))
 
         val errors = mutableListOf<String>()
         val noImageEvents = mutableListOf<Boolean>()
@@ -406,7 +401,7 @@ class JournalWriteViewModelTest {
         // Then
         verify(generateImageUseCase, times(1)).invoke(eq("fancy"), eq("내용"))
 
-        assertEquals(listOf("이미지 실패"), errors)
+        assertEquals(listOf("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요."), errors)
         assertEquals(listOf(true), noImageEvents)
         assertFalse(viewModel.isLoading.value)
         assertNull(viewModel.selectedImageUri.value)
