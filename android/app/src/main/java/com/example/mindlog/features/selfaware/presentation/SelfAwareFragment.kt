@@ -3,6 +3,7 @@ package com.example.mindlog.features.selfaware.presentation
 import android.content.Intent
 import android.app.Activity
 import android.graphics.Color
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
@@ -26,6 +27,7 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
 import android.view.inputmethod.BaseInputConnection
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
@@ -71,14 +73,33 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(editable: Editable?) {
                 if (suppressAnswerTextChange) return
+
+                // 항상 현재 입력 내용을 기준으로 버튼 색상은 바로 변경
+                updateSubmitButtonColors(editable)
+
+                // 한글 조합 중일 때는 ViewModel 상태 업데이트는 건너뜀
                 if (isComposing(editable)) return
+
                 viewModel.updateAnswerText(editable?.toString().orEmpty())
             }
         }
         binding.etAnswer.addTextChangedListener(answerWatcher)
 
         binding.btnSubmit.setOnClickListener {
-            if (!binding.btnSubmit.isEnabled) return@setOnClickListener
+            // 한글 입력기 등에서 조합 중인 텍스트를 먼저 확정(commit)시킴
+            val editable = binding.etAnswer.text
+            if (isComposing(editable)) {
+                BaseInputConnection(binding.etAnswer, true).finishComposingText()
+            }
+
+            val answerText = binding.etAnswer.text?.toString().orEmpty()
+            if (answerText.isBlank()) {
+                Toast.makeText(requireContext(), "답변을 입력해주세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // 최종 문자열을 ViewModel에도 반영해 둠
+            viewModel.updateAnswerText(answerText)
             viewModel.submit()
         }
 
@@ -103,6 +124,22 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
         val start = BaseInputConnection.getComposingSpanStart(sp)
         val end = BaseInputConnection.getComposingSpanEnd(sp)
         return start != -1 && end != -1 && start != end
+    }
+
+    private fun updateSubmitButtonColors(text: CharSequence?) {
+        val hasAnswer = text?.isNotBlank() == true
+
+        if (hasAnswer) {
+            // 답변이 있을 때: 기존 색상
+            binding.btnSubmit.backgroundTintList =
+                ColorStateList.valueOf("#EFE9DE".toColorInt())
+            binding.btnSubmit.setTextColor("#2D3142".toColorInt())
+        } else {
+            // 답변이 없을 때: 회색 배경 + 흰색 텍스트
+            binding.btnSubmit.backgroundTintList =
+                ColorStateList.valueOf("#B0B0B0".toColorInt())
+            binding.btnSubmit.setTextColor(Color.WHITE)
+        }
     }
 
     private fun renderState(s: SelfAwareViewModel.UiState) {
@@ -166,8 +203,12 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
                 suppressAnswerTextChange = false
             }
 
-            binding.btnSubmit.isEnabled =
-                (s.questionId != null) && s.answerText.isNotBlank() && !s.isLoadingQuestion
+            val canSubmit =
+                isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
+            binding.btnSubmit.isEnabled = canSubmit
+
+            // 현재 입력된 텍스트 기준으로 버튼 색상 업데이트
+            updateSubmitButtonColors(binding.etAnswer.text)
         }
 
         // 카테고리/점수 안전 매핑 + 빈 차트/플레이스홀더 처리
