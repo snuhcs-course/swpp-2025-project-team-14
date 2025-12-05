@@ -21,9 +21,6 @@ import com.example.mindlog.R
 import com.example.mindlog.databinding.FragmentSelfAwareHistoryBinding
 import com.example.mindlog.features.home.presentation.HomeActivity
 import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
-import com.example.mindlog.features.selfaware.presentation.adapter.SelfAwareHistoryAdapter
-import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareHistoryViewModel
-import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
