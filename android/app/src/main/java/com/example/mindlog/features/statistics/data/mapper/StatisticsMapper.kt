@@ -71,7 +71,7 @@ class StatisticsMapper @Inject constructor() {
                 // weight 기반 가중치: 0.5~0.65 → +1, 0.65~0.8 → +2, 0.8~1.0 → +3
                 val weightContribution = when (kw.weight) {
                     in 0.5f..0.65f -> 1
-                    in 0.65f..0.8f -> 2
+                    in 0.65f.. 0.8f -> 2
                     in 0.8f..1.0f -> 3
                     else -> 0
                 }

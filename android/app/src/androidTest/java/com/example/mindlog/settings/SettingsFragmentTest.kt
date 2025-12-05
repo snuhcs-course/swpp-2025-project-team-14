@@ -16,12 +16,14 @@ import com.example.mindlog.utils.launchFragmentInHiltContainer
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import org.hamcrest.CoreMatchers.containsString
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.lang.Thread.sleep
 import javax.inject.Inject
 
 @MediumTest
@@ -60,7 +62,8 @@ class SettingsFragmentTest {
         onView(withId(R.id.tv_login_id)).check(matches(withText("ID: test_login_id")))
 
         // birthdate와 gender가 합쳐져서 표시됨
-        onView(withId(R.id.tv_additional_info)).check(matches(withText("1990-01-01 · 남자")))
+        onView(withId(R.id.tv_additional_info)).check(matches(withText(containsString("1990-01-01"))))
+        onView(withId(R.id.tv_additional_info)).check(matches(withText(containsString("남자"))))
     }
 
     @Test

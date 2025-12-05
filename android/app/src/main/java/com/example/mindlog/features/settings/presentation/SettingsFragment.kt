@@ -136,8 +136,8 @@ class SettingsFragment : Fragment(), HomeActivity.FabClickListener {
                     user.birthdate?.let { infoParts.add(it) }
                     user.gender?.let { gender ->
                         val displayGender = when (gender.uppercase()) {
-                            "M", "Male" -> "남자"
-                            "F", "Female" -> "여자"
+                            "M", "MALE" -> "남자"
+                            "F", "FEMALE" -> "여자"
                             else -> "기타"
                         }
                         infoParts.add(displayGender)

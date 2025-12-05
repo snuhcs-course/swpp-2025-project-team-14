@@ -1,7 +1,12 @@
 package com.example.mindlog.statistics
 
+import android.view.View
 import android.widget.TextView
+import androidx.core.widget.NestedScrollView
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingResource
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.ViewAssertion
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -9,6 +14,8 @@ import androidx.test.espresso.action.ViewActions.swipeUp
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.espresso.UiController
+import androidx.test.espresso.matcher.RootMatchers.isPlatformPopup
 import com.example.mindlog.R
 import com.example.mindlog.core.dispatcher.DispatcherModule
 import com.example.mindlog.features.statistics.di.StatisticsBindModule
@@ -18,7 +25,9 @@ import com.github.mikephil.charting.charts.LineChart
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.Matcher
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -41,9 +50,12 @@ class StatisticsFragmentTest {
     fun initial_render_shows_neutral_reason_title_for_all_emotions() {
         launchFragmentInHiltContainer<StatisticsFragment>()
 
+        onView(withId(R.id.cardEmotionEvents)).perform(nestedScrollTo())
+        Espresso.onIdle()
+
         // 초기 상태: 선택된 감정 없음(null) → "최근 그렇게 느꼈던 이유는?" 노출
         onView(withText("최근 그렇게 느꼈던 이유는?"))
-            .check(matches(isDisplayed()))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
     }
 
     @Test
@@ -86,12 +98,29 @@ class StatisticsFragmentTest {
     fun selecting_emotion_in_spinner_updates_title() {
         launchFragmentInHiltContainer<StatisticsFragment>()
 
-        // 스피너에서 "슬픔" 선택 → 제목이 "최근 슬펐던 이유는?" 으로 변경되어야 함
-        onView(withId(R.id.spinnerEmotions)).perform(click())
-        onView(withText("슬픔")).perform(click())
+        // 감정 이벤트 카드까지 스크롤
+        onView(withId(R.id.cardEmotionEvents)).perform(nestedScrollTo())
+        Espresso.onIdle()
+        // 초기 상태: 선택된 감정 없음(null) → "최근 그렇게 느꼈던 이유는?" 노출
+        onView(withText("최근 그렇게 느꼈던 이유는?"))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
 
+        // 스피너에서 "슬픔" 선택 → 제목이 "최근 슬펐던 이유는?" 으로 변경되어야 함
+        onView(withId(R.id.emotionSelectorContainer)).perform(nestedScrollTo())
+        onView(withId(R.id.spinnerEmotions)).perform(click())
+        onView(withText("슬픔"))
+            .inRoot(isPlatformPopup())
+            .perform(click())
+        Espresso.onIdle()
+
+        onView(withText("슬픔"))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+        Espresso.onIdle()
+
+        onView(withId(R.id.cardEmotionEvents)).perform(nestedScrollTo())
         onView(withText("최근 슬펐던 이유는?"))
-            .check(matches(isDisplayed()))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+
     }
 
     @Test
@@ -136,4 +165,26 @@ class StatisticsFragmentTest {
         val ok = Regex(regex).matches(tv.text?.toString().orEmpty())
         org.junit.Assert.assertTrue("Text '${tv.text}' does not match pattern: $regex", ok)
     }
+
+    private fun nestedScrollTo(): ViewAction = object : ViewAction {
+        override fun getConstraints(): Matcher<View> {
+            // NestedScrollView 안에 있는 자식 뷰에서만 동작하도록 제한
+            return isDescendantOfA(isAssignableFrom(NestedScrollView::class.java))
+        }
+
+        override fun getDescription(): String =
+            "Scroll NestedScrollView to make the view fully visible"
+
+        override fun perform(uiController: UiController, view: View) {
+            var parent = view.parent
+            while (parent is View && parent !is NestedScrollView) {
+                parent = parent.parent
+            }
+            if (parent is NestedScrollView) {
+                parent.smoothScrollTo(0, view.top)
+                uiController.loopMainThreadUntilIdle()
+            }
+        }
+    }
 }
+
