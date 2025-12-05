@@ -1,4 +1,4 @@
-package com.example.mindlog.features.selfaware.presentation.fragment
+package com.example.mindlog.features.selfaware.presentation
 
 import android.app.Activity
 import android.content.Intent
@@ -25,8 +25,6 @@ import com.example.mindlog.features.selfaware.presentation.adapter.SelfAwareHist
 import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareHistoryViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneId
 
 @AndroidEntryPoint
 class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history), HomeActivity.FabClickListener {
@@ -49,14 +47,27 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSelfAwareHistoryBinding.bind(view)
         setupFab()
+        setupToolbar()
+        setupRecyclerView()
+
+        // 초기 로드
+        viewModel.refresh()
+
+        collectState()
+    }
+
+    private fun setupToolbar() {
         // Toolbar: 뒤로가기
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
+    }
 
+    private fun setupRecyclerView() {
         // RecyclerView
         binding.recyclerHistory.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerHistory.adapter = adapter
+
         // 무한 스크롤(바닥 도달 시 다음 페이지 로드)
         binding.recyclerHistory.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
@@ -74,18 +85,20 @@ class SelfAwareHistoryFragment : Fragment(R.layout.fragment_self_aware_history),
                     viewModel.loadNext()
                 }
             }
+
             override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
                 tryLoadNext(rv)
             }
+
             override fun onScrollStateChanged(rv: RecyclerView, newState: Int) {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     tryLoadNext(rv)
                 }
             }
         })
-        // 초기 로드
-        viewModel.refresh()
+    }
 
+    private fun collectState() {
         // 상태 구독
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

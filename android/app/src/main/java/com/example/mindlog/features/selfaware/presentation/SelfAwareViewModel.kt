@@ -1,4 +1,4 @@
-package com.example.mindlog.features.selfaware.presentation.viewmodel
+package com.example.mindlog.features.selfaware.presentation
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,6 +36,13 @@ class SelfAwareViewModel @Inject constructor(
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
+    companion object {
+        private const val GENERIC_QUESTION_ERROR =
+            "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요."
+        private const val TIMEOUT_QUESTION_ERROR =
+            "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요."
+    }
+
     data class UiState(
         val date: LocalDate = Time.todayKST(),
         val isAnsweredToday: Boolean = false,
@@ -56,13 +63,27 @@ class SelfAwareViewModel @Inject constructor(
         val error: String? = null
     )
 
+    private fun setQuestionError(message: String, errorMessage: String?) {
+        _state.update {
+            it.copy(
+                questionId = null,
+                questionText = message,
+                isLoadingQuestion = false,
+                isAnsweredToday = false,
+                showCompletionOverlay = false,
+                isQuestionError = true,
+                questionErrorMessage = message,
+                error = errorMessage
+            )
+        }
+    }
+
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state
 
     private var pollJob: Job? = null
 
     fun load() = viewModelScope.launch(dispatcher.io) {
-        // 화면 전체 스피너는 해제, 질문 섹션만 로딩 상태 유지
         val date = _state.value.date
         _state.update {
             it.copy(
@@ -75,7 +96,6 @@ class SelfAwareViewModel @Inject constructor(
             )
         }
 
-        var errorMessage: String? = null
         pollJob?.cancel()
 
         try {
@@ -103,37 +123,27 @@ class SelfAwareViewModel @Inject constructor(
                 when (val todayQARes = todayQA.await()) {
                     is Result.Success -> {
                         val qaRes = todayQARes.data
-                        if (qaRes?.question != null) {
-                            _state.update {
-                                it.copy(
-                                    questionId = qaRes.question.id,
-                                    questionText = qaRes.question.text,
-                                    isAnsweredToday = qaRes.answer != null,
-                                    isLoadingQuestion = false,
-                                    showCompletionOverlay = qaRes.answer != null,
-                                    isQuestionError = false,
-                                    questionErrorMessage = null
-                                )
-                            }
-                        } else startPolling()
+                        _state.update {
+                            it.copy(
+                                questionId = qaRes.question.id,
+                                questionText = qaRes.question.text,
+                                isAnsweredToday = qaRes.answer != null,
+                                isLoadingQuestion = false,
+                                showCompletionOverlay = qaRes.answer != null,
+                                isQuestionError = false,
+                                questionErrorMessage = null
+                            )
+                        }
                     }
                     is Result.Error -> {
                         val code = todayQARes.code
                         if (code == null) {
                             startPolling()
                         } else {
-                            _state.update {
-                                it.copy(
-                                    questionId = null,
-                                    questionText = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
-                                    isLoadingQuestion = false,
-                                    isAnsweredToday = false,
-                                    showCompletionOverlay = false,
-                                    isQuestionError = true,
-                                    questionErrorMessage = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
-                                    error = todayQARes.message
-                                )
-                            }
+                            setQuestionError(
+                                message = GENERIC_QUESTION_ERROR,
+                                errorMessage = todayQARes.message
+                            )
                         }
                     }
                 }
@@ -173,37 +183,27 @@ class SelfAwareViewModel @Inject constructor(
                         when (val res = getTodayQAUseCase(date)) {
                             is Result.Success -> {
                                 val qa = res.data
-                                if (qa?.question != null) {
-                                    _state.update {
-                                        it.copy(
-                                            questionId = qa.question.id,
-                                            questionText = qa.question.text,
-                                            isAnsweredToday = qa.answer != null,
-                                            isLoadingQuestion = false,
-                                            showCompletionOverlay = qa.answer != null,
-                                            isQuestionError = false,
-                                            questionErrorMessage = null,
-                                            error = null
-                                        )
-                                    }
-                                    return@withTimeout
+                                _state.update {
+                                    it.copy(
+                                        questionId = qa.question.id,
+                                        questionText = qa.question.text,
+                                        isAnsweredToday = qa.answer != null,
+                                        isLoadingQuestion = false,
+                                        showCompletionOverlay = qa.answer != null,
+                                        isQuestionError = false,
+                                        questionErrorMessage = null,
+                                        error = null
+                                    )
                                 }
+                                return@withTimeout
                             }
                             is Result.Error -> {
                                 val code = res.code
                                 if (code != null) {
-                                    _state.update {
-                                        it.copy(
-                                            questionId = null,
-                                            questionText = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
-                                            isLoadingQuestion = false,
-                                            isAnsweredToday = false,
-                                            showCompletionOverlay = false,
-                                            isQuestionError = true,
-                                            questionErrorMessage = "질문 생성에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
-                                            error = res.message
-                                        )
-                                    }
+                                    setQuestionError(
+                                        message = GENERIC_QUESTION_ERROR,
+                                        errorMessage = res.message
+                                    )
                                     return@withTimeout
                                 }
                             }
@@ -218,8 +218,8 @@ class SelfAwareViewModel @Inject constructor(
                     it.copy(
                         isLoadingQuestion = false,
                         isQuestionError = true,
-                        questionErrorMessage = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요.",
-                        error = "질문 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요."
+                        questionErrorMessage = TIMEOUT_QUESTION_ERROR,
+                        error = TIMEOUT_QUESTION_ERROR
                     )
                 }
             }

@@ -18,7 +18,7 @@
 
     <fragment
         android:id="@+id/selfAwareFragment"
-        android:name="com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareFragment"
+        android:name="com.example.mindlog.features.selfaware.presentation.SelfAwareFragment"
         android:label="fragment_self_aware"
         tools:layout="@layout/fragment_self_aware">
 
@@ -31,7 +31,7 @@
     <!-- This is the missing destination you need to add -->
     <fragment
         android:id="@+id/selfAwareHistoryFragment"
-        android:name="com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareHistoryFragment"
+        android:name="com.example.mindlog.features.selfaware.presentation.SelfAwareHistoryFragment"
         android:label="fragment_self_aware_history"
         tools:layout="@layout/fragment_self_aware_history" />
 

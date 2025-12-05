@@ -1,6 +1,5 @@
-package com.example.mindlog.features.selfaware.presentation.viewmodel
+package com.example.mindlog.features.selfaware.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mindlog.core.domain.Result
@@ -13,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
@@ -22,9 +22,13 @@ class SelfAwareHistoryViewModel @Inject constructor(
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
 
+    companion object {
+        private const val DEFAULT_LIMIT = 10
+    }
+
     data class UiState(
         val nextCursor: Int? = null,
-        val limit: Int = 10,
+        val limit: Int = DEFAULT_LIMIT,
         val items: List<QAItem> = emptyList(),
         val isRefreshing: Boolean = false,  // 최초/새로고침 로딩
         val isLoading: Boolean = false,     // 다음 페이지 로딩
@@ -34,7 +38,7 @@ class SelfAwareHistoryViewModel @Inject constructor(
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state
 
-    private var loadMutex = kotlinx.coroutines.sync.Mutex()
+    private var loadMutex = Mutex()
     private var refreshJob: Job? = null
     private var loadJob: Job? = null
 

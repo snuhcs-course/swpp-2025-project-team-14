@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">MindLog</string>
+    <string name="selfaware_history_question">Q. %1$s</string>
+    <string name="selfaware_history_answer">A. %1$s</string>
 
     <style name="CardViewStyle" parent="Widget.Material3.CardView.Filled">
         <item name="android:layout_width">match_parent</item>
