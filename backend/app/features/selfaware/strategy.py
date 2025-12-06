@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from abc import ABC, abstractmethod
 
@@ -157,9 +159,9 @@ class MultiStrategy(QuestionStrategy):
         return question
 
 
-class NatigationContext:
+class NavigationContext:
     def __init__(self):
-        self.question_strategy: QuestionStrategy
+        self.question_strategy: QuestionStrategy | None = None  # None 명시
 
     def set_question_strategy(self, question_strategy: QuestionStrategy):
         self.question_strategy = question_strategy
@@ -170,3 +172,6 @@ class NatigationContext:
         return self.question_strategy.generate(
             user_id, journal_repository, question_repository
         )
+
+
+Strategies = [SelfawareStrategy(), SingleStrategy(), MultiStrategy()]

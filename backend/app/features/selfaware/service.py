@@ -24,10 +24,9 @@ from app.features.selfaware.repository import (
     ValueScoreRepository,
 )
 from app.features.selfaware.strategy import (
-    MultiStrategy,
-    NatigationContext,
-    SelfawareStrategy,
+    NavigationContext,
     SingleStrategy,
+    Strategies,
 )
 
 load_dotenv()
@@ -43,14 +42,12 @@ class QuestionService:
         self.question_repository = question_repository
 
     def generate_question(self, user_id: int) -> Question:
-        navigation = NatigationContext()
-        flag = random.randint(0, 2)
-        if flag == 0 and self.journal_repository.list_journals_by_user(user_id, 1):
-            navigation.set_question_strategy(SelfawareStrategy())
-        elif flag == 1:
+        navigation = NavigationContext()
+        flag = random.randint(0, len(Strategies) - 1)
+        if not self.journal_repository.list_journals_by_user(user_id, 1):
             navigation.set_question_strategy(SingleStrategy())
         else:
-            navigation.set_question_strategy(MultiStrategy())
+            navigation.set_question_strategy(Strategies[flag])
         return navigation.perform(
             user_id, self.journal_repository, self.question_repository
         )
