@@ -11,6 +11,15 @@ import com.example.mindlog.features.statistics.domain.model.JournalStatistics
 import javax.inject.Inject
 
 class StatisticsMapper @Inject constructor() {
+
+    private val EMOTION_PAIRS = listOf(
+        Emotion.HAPPY to Emotion.SAD,
+        Emotion.CALM to Emotion.ANXIOUS,
+        Emotion.ANNOYED to Emotion.SATISFIED,
+        Emotion.INTERESTED to Emotion.BORED,
+        Emotion.LETHARGIC to Emotion.ENERGETIC,
+    )
+
     private fun parseEmotion(value: String?): Emotion =
         value?.let { Emotion.fromApi(it) } ?: Emotion.CALM
 
@@ -25,11 +34,33 @@ class StatisticsMapper @Inject constructor() {
         val trendByEmotion = mutableMapOf<Emotion, MutableList<Pair<String, Int>>>()
         for (journal in journals) {
             val date = journal.createdAt.take(10) // "2025-11-09T..." → "2025-11-09"
-            for (emotion in journal.emotions) {
-                val emo = Emotion.fromApi(emotion.emotion) ?: continue
-                trendByEmotion
-                    .getOrPut(emo) { mutableListOf() }
-                    .add(date to emotion.intensity)
+
+            val intensityByEmotion: Map<Emotion, Int> =
+                journal.emotions
+                    .mapNotNull { er ->
+                        val emo = Emotion.fromApi(er.emotion) ?: return@mapNotNull null
+                        emo to er.intensity
+                    }
+                    .toMap()
+
+            for ((e1, e2) in EMOTION_PAIRS) {
+                val i1 = intensityByEmotion[e1]
+                val i2 = intensityByEmotion[e2]
+
+                if (i1 == null && i2 == null) continue
+                if ((i1 ?: 0) == 0 && (i2 ?: 0) == 0) {
+                    continue
+                }
+                if (i1 != null) {
+                    trendByEmotion
+                        .getOrPut(e1) { mutableListOf() }
+                        .add(date to i1)
+                }
+                if (i2 != null) {
+                    trendByEmotion
+                        .getOrPut(e2) { mutableListOf() }
+                        .add(date to i2)
+                }
             }
         }
 
