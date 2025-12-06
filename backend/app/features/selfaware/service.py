@@ -43,7 +43,7 @@ class QuestionService:
 
     def generate_question(self, user_id: int) -> Question:
         navigation = NavigationContext()
-        flag = random.randint(0, len(Strategies)-1)
+        flag = random.randint(0, len(Strategies) - 1)
         if not self.journal_repository.list_journals_by_user(user_id, 1):
             navigation.set_question_strategy(SingleStrategy())
         else:
