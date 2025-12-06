@@ -170,3 +170,5 @@ class NatigationContext:
         return self.question_strategy.generate(
             user_id, journal_repository, question_repository
         )
+
+Strategies = [SelfawareStrategy(), SingleStrategy(), MultiStrategy()]
