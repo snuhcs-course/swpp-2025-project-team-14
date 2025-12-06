@@ -157,7 +157,7 @@ class MultiStrategy(QuestionStrategy):
         return question
 
 
-class NatigationContext:
+class NavigationContext:
     def __init__(self):
         self.question_strategy: QuestionStrategy
 

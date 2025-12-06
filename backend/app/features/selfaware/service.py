@@ -25,7 +25,7 @@ from app.features.selfaware.repository import (
 )
 from app.features.selfaware.strategy import (
     MultiStrategy,
-    NatigationContext,
+    NavigationContext,
     SelfawareStrategy,
     SingleStrategy,
     Strategies
@@ -44,7 +44,7 @@ class QuestionService:
         self.question_repository = question_repository
 
     def generate_question(self, user_id: int) -> Question:
-        navigation = NatigationContext()
+        navigation = NavigationContext()
         flag = random.randint(0, len(Strategies)-1)
         if not self.journal_repository.list_journals_by_user(user_id, 1):
             navigation.set_question_strategy(SingleStrategy())
