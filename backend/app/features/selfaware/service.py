@@ -24,9 +24,7 @@ from app.features.selfaware.repository import (
     ValueScoreRepository,
 )
 from app.features.selfaware.strategy import (
-    MultiStrategy,
     NavigationContext,
-    SelfawareStrategy,
     SingleStrategy,
     Strategies
 )
