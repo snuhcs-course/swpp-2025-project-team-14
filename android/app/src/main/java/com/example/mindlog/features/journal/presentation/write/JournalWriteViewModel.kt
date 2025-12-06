@@ -8,7 +8,7 @@ import android.util.Base64
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.journal.domain.repository.JournalRepository
 import com.example.mindlog.features.journal.domain.usecase.CreateJournalUseCase
 import com.example.mindlog.features.journal.domain.usecase.GenerateImageUseCase
@@ -47,7 +47,7 @@ class JournalWriteViewModel @Inject constructor(
     val emotionScores: StateFlow<Map<String, Int?>> = _emotionScores
 
 
-    fun updateEmotionScore(emotionName: String, score: Int) {
+    fun updateEmotionScore(emotionName: String, score: Int?) {
         val updatedScores = _emotionScores.value.toMutableMap().apply {
             this[emotionName] = score
         }
@@ -55,10 +55,13 @@ class JournalWriteViewModel @Inject constructor(
         savedStateHandle[KEY_EMOTION_SCORES] = updatedScores
     }
 
+    fun hasSelectedEmotions(): Boolean {
+        return _emotionScores.value.values.any { it != null }
+    }
+
     private fun getEmotionsForSaving(): Map<String, Int> {
         return _emotionScores.value
-            .mapValues { (_, score) -> score ?: 2 }
-            .filterValues { score -> score != 0 }
+            .mapValues { (_, score) -> score ?: 0 }
     }
 
 
@@ -135,9 +138,11 @@ class JournalWriteViewModel @Inject constructor(
                     )
                 }
 
-                try {
-                    journalRepository.extractKeywords(journalId)
-                } catch (e: Exception) {
+                viewModelScope.launch {
+                    try {
+                        journalRepository.extractKeywords(journalId)
+                    } catch (e: Exception) {
+                    }
                 }
 
                 _saveResult.emit(Result.Success(Unit))
@@ -150,8 +155,8 @@ class JournalWriteViewModel @Inject constructor(
 
     fun setGalleryImageUri(uri: Uri?) {
         if (uri != null) {
-            selectedImageUri.value = uri
             generatedImageBitmap.value = null
+            selectedImageUri.value = uri
         }
     }
 
@@ -170,11 +175,11 @@ class JournalWriteViewModel @Inject constructor(
                 val base64Image = generateImageUseCase(style, textContent)
                 val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
                 val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                generatedImageBitmap.value = decodedBitmap
                 selectedImageUri.value = null
+                generatedImageBitmap.value = decodedBitmap
 
             } catch (e: Exception) {
-                aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+                aiGenerationError.emit("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
                 noImage.emit(true)
             } finally {
                 isLoading.value = false

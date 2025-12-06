@@ -2,30 +2,28 @@ package com.example.mindlog.features.auth.presentation.signup
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivitySignupBinding
-import com.example.mindlog.core.network.NetworkModule
-import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.network.AuthInterceptor
-import com.example.mindlog.features.auth.data.network.TokenAuthenticator
-import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
-import com.example.mindlog.features.auth.domain.usecase.SignupUseCase
-import com.example.mindlog.features.auth.util.TokenManager
+import com.example.mindlog.features.auth.domain.validation.SignupErrorMapper
+import com.example.mindlog.features.auth.domain.validation.SignupValidator
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
-import dagger.hilt.android.AndroidEntryPoint
+import com.google.android.material.textfield.TextInputLayout
+import java.time.YearMonth
 
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
     private val viewModel: SignupViewModel by viewModels()
+    private val signupValidator = SignupValidator()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,64 +33,129 @@ class SignupActivity : AppCompatActivity() {
 
         SystemUiHelper.hideSystemUI(this)
 
-        binding.etUsername.setOnFocusChangeListener { _, hasFocus ->
-            binding.etUsername.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
-        }
-        binding.etLoginId.setOnFocusChangeListener { _, hasFocus ->
-            binding.etLoginId.hint = if (hasFocus) "" else "아이디를 입력하세요"
-        }
-        binding.etPassword.setOnFocusChangeListener { _, hasFocus ->
-            binding.etPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
-        }
-        binding.etConfirmPassword.setOnFocusChangeListener { _, hasFocus ->
-            binding.etConfirmPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
-        }
+        // 힌트 조작 리스너 제거 (XML 힌트만 사용)
+        // (기존 setOnFocusChangeListener 4개 전부 삭제)
 
-        // 🔹 회원가입 버튼 클릭
+        // 생년월일 드롭다운 어댑터 연결
+        setupBirthDropdowns()
+
+        // 확인 비밀번호 endIcon 동적 전환
+        setupConfirmPasswordEndIcon()
+
+        // 회원가입 버튼
         binding.btnSignup.setOnClickListener {
-            val username = binding.etUsername.text.toString()
-            val id = binding.etLoginId.text.toString()
+            val username = binding.etUsername.text.toString().trim()
+            val id = binding.etLoginId.text.toString().trim()
             val pw = binding.etPassword.text.toString()
             val confirm = binding.etConfirmPassword.text.toString()
 
-            if (id.isBlank() || pw.isBlank() || username.isBlank()) {
-                Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            val gender = when (binding.rgGender.checkedRadioButtonId) {
+                com.example.mindlog.R.id.rbMale -> "Male"
+                com.example.mindlog.R.id.rbFemale -> "Female"
+                else -> null
+            }
+            val birthY = binding.actBirthYear.text.toString().toIntOrNull()
+            val birthM = binding.actBirthMonth.text.toString().toIntOrNull()
+            val birthD = binding.actBirthDay.text.toString().toIntOrNull()
+
+            val validationResult = signupValidator.validate(
+                username = username,
+                loginId = id,
+                password = pw,
+                confirmPassword = confirm,
+                gender = gender,
+                birthYear = birthY,
+                birthMonth = birthM,
+                birthDay = birthD
+            )
+            if (!validationResult.isValid) {
+                showSignupError(validationResult.errorMessage)
                 return@setOnClickListener
             }
 
-            if (pw != confirm) {
-                Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            // 클라이언트 측 검증 통과 시 기존 에러 메시지 제거
+            showSignupError(null)
 
-            viewModel.signup(id, pw, username)
+            val birthDate = java.time.LocalDate.of(birthY!!, birthM!!, birthD!!)
+            viewModel.signup(id, pw, username, gender!!, birthDate)
         }
 
-        // 🔹 로그인 화면 이동
+        // 로그인 화면 이동
         binding.tvGoLogin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }
 
-        // 🔹 회원가입 결과 관찰
-        viewModel.signupResult.observe(this) { success ->
-            if (success) {
+        // ViewModel 관찰
+        viewModel.state.observe(this) { s ->
+            if (s.isSuccess) {
+                // 성공 시 에러 메시지 제거
+                showSignupError(null)
                 Toast.makeText(this, "회원가입 성공! 자동 로그인 중...", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, MainActivity::class.java))
                 finishAffinity()
             } else {
-                Toast.makeText(this, "회원가입 실패. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                // 실패 시 ViewModel의 에러 메시지를 버튼 위에 표시
+                if (s.errorMessage != null) {
+                    showSignupError(s.errorMessage)
+                } else {
+                    showSignupError(null)
+                }
             }
-        }
-
-        viewModel.errorMessage.observe(this) { msg ->
-            msg?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
         }
     }
 
+    private fun setupBirthDropdowns() {
+        val currentYear = java.time.LocalDate.now().year
+        val years = (1900..currentYear).toList().reversed().map { it.toString() }
+        val months = (1..12).map { it.toString() }
+        val days31 = (1..31).map { it.toString() }
+
+        binding.actBirthYear.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, years))
+        binding.actBirthMonth.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, months))
+        binding.actBirthDay.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, days31))
+
+        fun daysInMonth(y: Int, m: Int) = YearMonth.of(y, m).lengthOfMonth()
+
+        fun updateDays() {
+            val y = binding.actBirthYear.text.toString().toIntOrNull() ?: return
+            val m = binding.actBirthMonth.text.toString().toIntOrNull() ?: return
+            val maxD = daysInMonth(y, m)
+            val dayList = (1..maxD).map { it.toString() }
+            binding.actBirthDay.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, dayList))
+            val cur = binding.actBirthDay.text.toString().toIntOrNull()
+            if (cur == null || cur > maxD) binding.actBirthDay.setText("")
+        }
+
+        binding.actBirthYear.setOnItemClickListener { _, _, _, _ -> updateDays() }
+        binding.actBirthMonth.setOnItemClickListener { _, _, _, _ -> updateDays() }
+    }
+
+    private fun setupConfirmPasswordEndIcon() {
+        val tilConfirm = binding.tilConfirmPassword
+        val etConfirm = binding.etConfirmPassword
+
+        etConfirm.setOnFocusChangeListener { _, hasFocus ->
+            tilConfirm.endIconMode = if (hasFocus)
+                TextInputLayout.END_ICON_PASSWORD_TOGGLE
+            else
+                TextInputLayout.END_ICON_CLEAR_TEXT
+        }
+    }
+
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            SystemUiHelper.hideSystemUI(this)
+        if (hasFocus) SystemUiHelper.hideSystemUI(this)
+    }
+
+    private fun showSignupError(message: String?) {
+        val errorText = SignupErrorMapper.map(message)
+        if (errorText.isNullOrBlank()) {
+            binding.tvSignupError.visibility = View.GONE
+            binding.tvSignupError.text = ""
+        } else {
+            binding.tvSignupError.visibility = View.VISIBLE
+            binding.tvSignupError.text = errorText
         }
     }
 }

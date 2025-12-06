@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.example.mindlog.R
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.model.Emotion
 import com.example.mindlog.core.model.Keyword
 import com.example.mindlog.databinding.FragmentJournalDetailBinding

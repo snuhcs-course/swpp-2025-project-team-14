@@ -1,13 +1,13 @@
 package com.example.mindlog.selfaware
 
 import app.cash.turbine.test
-import com.example.mindlog.core.common.Paged
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.data.Paged
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 import com.example.mindlog.features.selfaware.domain.model.Question
 import com.example.mindlog.features.selfaware.domain.usecase.GetQAHistoryUseCase
-import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareHistoryViewModel
+import com.example.mindlog.features.selfaware.presentation.SelfAwareHistoryViewModel
 import com.example.mindlog.utils.MainDispatcherRule
 import com.example.mindlog.utils.TestDispatcherProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi

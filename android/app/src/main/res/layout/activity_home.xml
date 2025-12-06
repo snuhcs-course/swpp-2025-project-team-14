@@ -44,6 +44,7 @@
         android:id="@+id/fabWrite"
         android:layout_width="64dp"
         android:layout_height="64dp"
+        android:contentDescription="write_journal"
         app:layout_anchor="@id/bottomBarContainer"
         app:layout_anchorGravity="center"
         app:useCompatPadding="true"

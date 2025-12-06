@@ -15,6 +15,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers.allOf
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -46,8 +47,13 @@ class JournalWriteActivityTest {
 
         // 2. 감정 선택 화면 (EmotionSelectFragment)
         // '다음' 버튼 클릭
+        onView(
+            allOf(
+                withId(R.id.rb_right),                 // 가장 오른쪽 버튼 (행복 쪽)
+                isDescendantOfA(withId(R.id.row_sad_happy))
+            )
+        ).perform(click())
         onView(withId(R.id.btn_next_or_save)).perform(click())
-
         // 3. 내용 작성 화면 (ContentWriteFragment)
         onView(withId(R.id.et_title)).perform(replaceText("Activity 테스트 제목"))
         onView(withId(R.id.et_content)).perform(replaceText("Activity 테스트 내용"))
@@ -73,6 +79,12 @@ class JournalWriteActivityTest {
         val scenario = ActivityScenario.launch(JournalWriteActivity::class.java)
 
         // 감정 선택 후 이동
+        onView(
+            allOf(
+                withId(R.id.rb_right),                 // 가장 오른쪽 버튼 (행복 쪽)
+                isDescendantOfA(withId(R.id.row_sad_happy))
+            )
+        ).perform(click())
         onView(withId(R.id.btn_next_or_save)).perform(click())
 
         // 제목 비우고 내용만 입력

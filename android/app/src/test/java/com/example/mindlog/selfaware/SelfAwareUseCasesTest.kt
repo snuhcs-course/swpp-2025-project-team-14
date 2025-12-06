@@ -1,6 +1,7 @@
 package com.example.mindlog.features.selfaware.domain.usecase
 
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.data.Paged
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.selfaware.domain.model.*
 import com.example.mindlog.features.selfaware.domain.repository.SelfAwareRepository
 import kotlinx.coroutines.test.runTest
@@ -74,7 +75,7 @@ class SelfAwareUseCasesTest {
     @Test
     fun `getQAHistoryUseCase delegates to repository`() = runTest {
         val expected = Result.Success(
-            com.example.mindlog.core.common.Paged(emptyList<QAItem>(), cursor = 5, size = 10)
+            Paged(emptyList<QAItem>(), cursor = 5, size = 10)
         )
         `when`(repo.getQAHistory(10, null)).thenReturn(expected)
 

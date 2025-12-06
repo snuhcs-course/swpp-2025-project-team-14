@@ -67,17 +67,52 @@ class EmotionSelectFragment : Fragment() {
         rowBinding.rbMidLeft.backgroundTintList = ColorStateList.valueOf(interpolateColor(leftColor, centerGrayColor, 0.5f))
         rowBinding.rbMidRight.backgroundTintList = ColorStateList.valueOf(interpolateColor(centerGrayColor, rightColor, 0.5f))
 
-        // --- 2. 상태 관찰 및 UI 복원 (안전한 코루틴 내에서) ---
+        // --- 2. 클릭 리스너 설정 (선택 취소/토글 로직) ---
+        val radioButtons = listOf(
+            rowBinding.rbLeft,
+            rowBinding.rbMidLeft,
+            rowBinding.rbCenter,
+            rowBinding.rbMidRight,
+            rowBinding.rbRight
+        )
+
+        radioButtons.forEach { rb ->
+            rb.setOnClickListener {
+                // 1) 클릭된 버튼이 의미하는 점수(0~4) 확인
+                val clickedScore = when (rb.id) {
+                    R.id.rb_left -> 4
+                    R.id.rb_mid_left -> 3
+                    R.id.rb_center -> 2
+                    R.id.rb_mid_right -> 1
+                    R.id.rb_right -> 0
+                    else -> return@setOnClickListener
+                }
+
+                // 2) 현재 ViewModel에 저장된 '왼쪽 감정' 점수 확인
+                val currentScore = viewModel.emotionScores.value[leftApiName]
+
+                // 3) 이미 선택된 점수를 다시 눌렀다면 -> 선택 해제 (null 전송)
+                if (currentScore == clickedScore) {
+                    rowBinding.radioGroupEmotion.clearCheck()
+                    viewModel.updateEmotionScore(leftApiName, null)
+                    viewModel.updateEmotionScore(rightApiName, null)
+                } else {
+                    // 4) 새로운 점수 선택 -> ViewModel 업데이트
+                    val rightScore = 4 - clickedScore
+                    viewModel.updateEmotionScore(leftApiName, clickedScore)
+                    viewModel.updateEmotionScore(rightApiName, rightScore)
+                }
+            }
+        }
+
+        // --- 3. 상태 관찰 및 UI 복원 ---
         viewLifecycleOwner.lifecycleScope.launch {
-            // Fragment의 생명주기를 따르는 안전한 실행 블록
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // ViewModel의 전체 scores 맵에서 이 줄에 해당하는 '왼쪽 감정'의 점수만 관찰합니다.
                 viewModel.emotionScores
-                    .map { it[leftApiName] } // 전체 맵에서 내 점수만 추출
-                    .distinctUntilChanged() // 이전 값과 같으면 무시 (불필요한 UI 갱신 방지)
-                    .collect { scoreLeft -> // scoreLeft는 Int? 타입 (null일 수 있음)
-                        // 리스너를 잠시 null로 설정하여 UI 변경 중 이벤트가 발생하지 않도록 합니다.
-                        rowBinding.radioGroupEmotion.setOnCheckedChangeListener(null)
+                    .map { it[leftApiName] }
+                    .distinctUntilChanged()
+                    .collect { scoreLeft ->
+                        // ViewModel의 상태(scoreLeft)에 따라 UI 라디오 버튼 체크 상태 동기화
 
                         val buttonIdToCheck = when (scoreLeft) {
                             4 -> R.id.rb_left
@@ -89,24 +124,13 @@ class EmotionSelectFragment : Fragment() {
                         }
 
                         if (buttonIdToCheck != -1) {
-                            rowBinding.radioGroupEmotion.check(buttonIdToCheck)
-                        } else {
-                            rowBinding.radioGroupEmotion.clearCheck() // 처음 진입 시 또는 값이 없을 때 선택 해제
-                        }
-
-                        // --- 3. 사용자 입력 리스너 다시 설정 ---
-                        rowBinding.radioGroupEmotion.setOnCheckedChangeListener { _, checkedId ->
-                            val newScoreLeft = when (checkedId) {
-                                R.id.rb_left -> 4
-                                R.id.rb_mid_left -> 3
-                                R.id.rb_center -> 2
-                                R.id.rb_mid_right -> 1
-                                R.id.rb_right -> 0
-                                else -> return@setOnCheckedChangeListener
+                            // 현재 UI 상태와 다를 때만 check 호출 (무한 루프 방지 및 리스너 충돌 방지)
+                            if (rowBinding.radioGroupEmotion.checkedRadioButtonId != buttonIdToCheck) {
+                                rowBinding.radioGroupEmotion.check(buttonIdToCheck)
                             }
-                            val newScoreRight = 4 - newScoreLeft
-                            viewModel.updateEmotionScore(leftApiName, newScoreLeft)
-                            viewModel.updateEmotionScore(rightApiName, newScoreRight)
+                        } else {
+                            // 값이 없으면(null) 선택 해제
+                            rowBinding.radioGroupEmotion.clearCheck()
                         }
                     }
             }

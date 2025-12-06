@@ -1,15 +1,15 @@
 package com.example.mindlog.features.statistics.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.example.mindlog.features.statistics.domain.model.JournalKeyword
 import com.example.mindlog.features.statistics.domain.model.JournalStatistics
+import com.example.mindlog.features.statistics.domain.model.toKo
 import com.example.mindlog.features.statistics.domain.usecase.GetEmotionRatesUseCase
 import com.example.mindlog.features.statistics.domain.usecase.GetJournalStatisticsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,13 +73,8 @@ class StatisticsViewModel @Inject constructor(
         val ratios = (ratesRes as? Result.Success)?.data ?: emptyList()
         val stats = (statsRes as? Result.Success)?.data
 
-        // 선택 감정 규칙: 1) 이전 선택 유지 → 2) 비율 1위 → 3) 트렌드 첫 감정 → 4) null
-        val prevSelected = _state.value.selectedEmotion
-        val topFromRatio: Emotion? = ratios.maxByOrNull { it.percentage }?.emotion
-        val firstFromTrends: Emotion? = stats?.EmotionTrends?.firstOrNull()?.emotion
-        val newSelected: Emotion? = prevSelected
-            ?: topFromRatio
-            ?: firstFromTrends
+        // 선택 감정 규칙: 1) 이전 선택 유지 (null이면 "모든 감정")
+        val newSelected: Emotion? = _state.value.selectedEmotion
 
         val (events, trends, keywords) = deriveForUI(stats, newSelected)
 
@@ -113,6 +108,21 @@ class StatisticsViewModel @Inject constructor(
         }
     }
 
+    fun clearEmotionFilter() = viewModelScope.launch(dispatcher.io) {
+        val stats = _state.value.statistics
+        val (events, trends, keywords) = deriveForUI(stats, null)
+
+        _state.update {
+            it.copy(
+                selectedEmotion = null,
+                emotionEvents = events,
+                emotionTrends = trends,
+                journalKeywords = keywords,
+                error = null
+            )
+        }
+    }
+
     /** 기간 바뀌면 상태만 바꾸고 load 재호출은 화면/호출측에서 */
     fun setDateRange(start: LocalDate, end: LocalDate) {
         _state.update { it.copy(startDate = start, endDate = end) }
@@ -126,12 +136,36 @@ class StatisticsViewModel @Inject constructor(
             return Triple(emptyList(), emptyList(), emptyList())
         }
 
-        // 감정 이벤트: 선택 감정에 해당하는 이벤트만
-        val events = if (selectedEmotion != null) {
-            stats.EmotionEvents.firstOrNull { it.emotion == selectedEmotion }?.events ?: emptyList()
-        } else emptyList()
+        // 감정 변화 그래프
+        val trends = if (selectedEmotion != null) {
+            // 특정 감정 선택 시: 해당 감정 라인만
+            stats.EmotionTrends.filter { it.emotion == selectedEmotion }
+        } else {
+            // "전체" 선택 시: 모든 감정 라인
+            stats.EmotionTrends
+        }
 
-        val trends = stats.EmotionTrends
+        // 감정 이벤트
+        val events = if (selectedEmotion != null) {
+            // 특정 감정 선택 시: 해당 감정 이벤트만
+            stats.EmotionEvents
+                .firstOrNull { it.emotion == selectedEmotion }
+                ?.events
+                ?: emptyList()
+        } else {
+            // "전체" 선택 시:
+            // 모든 감정 이벤트를 모아 랜덤 10개 선정,
+            // 각 항목 뒤에 "(감정)" 붙이기
+            stats.EmotionEvents
+                .flatMap { entry ->
+                    val label = toKo(entry.emotion) ?: entry.emotion.name
+                    entry.events.map { "$it ($label)" }
+                }
+                .shuffled()
+                .take(5)
+        }
+
+
         val keywords = stats.JournalKeywords
 
         return Triple(events, trends, keywords)

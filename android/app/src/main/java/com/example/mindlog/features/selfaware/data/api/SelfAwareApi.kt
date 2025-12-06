@@ -6,7 +6,6 @@ import com.example.mindlog.features.selfaware.data.dto.QACursorResponse
 import com.example.mindlog.features.selfaware.data.dto.QAResponse
 import com.example.mindlog.features.selfaware.data.dto.TopValueScoresResponse
 import com.example.mindlog.features.selfaware.data.dto.ValueMapResponse
-import com.example.mindlog.features.selfaware.data.dto.ValueScoreResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

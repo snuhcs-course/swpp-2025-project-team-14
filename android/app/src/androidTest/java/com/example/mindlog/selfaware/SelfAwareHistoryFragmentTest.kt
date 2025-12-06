@@ -13,7 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.R
 import com.example.mindlog.core.dispatcher.DispatcherModule
 import com.example.mindlog.features.selfaware.di.SelfAwareBindModule
-import com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareHistoryFragment
+import com.example.mindlog.features.selfaware.presentation.SelfAwareHistoryFragment
 import com.example.mindlog.utils.launchFragmentInHiltContainer
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest

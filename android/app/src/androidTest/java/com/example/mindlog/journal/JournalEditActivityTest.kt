@@ -1,13 +1,11 @@
 package com.example.mindlog.journal
 
-import android.app.Activity
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.R
@@ -18,6 +16,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -78,44 +77,29 @@ class JournalEditActivityTest {
 
         // 5. 검증
         val updated = repository.getJournalById(journalId)
-        assert(updated.title == "수정된 제목")
+        assertTrue("제목이 수정되어야 합니다", updated.title == "수정된 제목") // 메시지 추가
 
         scenario.onActivity { activity ->
-            assert(activity.isFinishing)
+            assertTrue("Activity가 종료 중이어야 합니다", activity.isFinishing)
         }
 
         scenario.close()
     }
 
     @Test
-    fun editJournal_delete_finishes_activity() = runBlocking {
+    fun editJournal_cancel_finishes_activity() = runBlocking {
         val intent = Intent(ApplicationProvider.getApplicationContext(), JournalEditActivity::class.java).apply {
             putExtra(JournalEditActivity.EXTRA_JOURNAL_ID, journalId)
         }
         val scenario = ActivityScenario.launch<JournalEditActivity>(intent)
 
-        // 1. 삭제 버튼 클릭
-        onView(withId(R.id.btn_edit_delete)).perform(click())
+        // 취소 버튼 클릭
+        onView(withId(R.id.btn_edit_cancel)).perform(click())
 
-        // 2. 다이얼로그 확인 클릭 (클릭 즉시 finish() 호출됨)
-        onView(withText("삭제"))
-            .inRoot(isDialog())
-            .check(matches(isDisplayed()))
-            .perform(click())
-
-        // 3. 검증
-        val exists = try {
-            repository.getJournalById(journalId)
-            true
-        } catch (e: Exception) {
-            false
-        }
-        assert(!exists)
-
+        // Activity 종료 확인
         scenario.onActivity { activity ->
-            assert(activity.isFinishing)
+            assertTrue("Activity가 종료 중이어야 합니다", activity.isFinishing)
         }
-
         scenario.close()
     }
 }

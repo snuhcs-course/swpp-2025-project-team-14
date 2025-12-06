@@ -40,7 +40,7 @@ class JournalMapper @Inject constructor() {
                 summary = keywordDto.summary,
                 weight = keywordDto.weight
             )
-        } ?: emptyList()
+        }?.distinctBy { it.keyword } ?: emptyList()
 
         val emotionsList = dto.emotions.map { toEmotion(it) }
 

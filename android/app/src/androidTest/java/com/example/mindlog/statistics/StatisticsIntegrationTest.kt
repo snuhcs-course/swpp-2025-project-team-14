@@ -1,7 +1,7 @@
 package com.example.mindlog.statistics
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.statistics.data.api.StatisticsApi
 import com.example.mindlog.features.statistics.data.mapper.StatisticsMapper

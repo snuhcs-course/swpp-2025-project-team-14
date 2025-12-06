@@ -4,7 +4,6 @@ import com.example.mindlog.features.analysis.data.dto.ComprehensiveAnalysisRespo
 import com.example.mindlog.features.analysis.data.dto.PersonalizedAdviceResponse
 import com.example.mindlog.features.analysis.data.dto.UserTypeResponse
 import retrofit2.http.GET
-import retrofit2.http.PATCH
 
 interface AnalysisApi {
 

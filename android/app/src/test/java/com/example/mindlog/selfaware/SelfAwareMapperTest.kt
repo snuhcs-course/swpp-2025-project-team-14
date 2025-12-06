@@ -8,11 +8,9 @@ import com.example.mindlog.features.selfaware.data.dto.TopValueScoresResponse
 import com.example.mindlog.features.selfaware.data.dto.ValueMapResponse
 import com.example.mindlog.features.selfaware.data.dto.ValueScoreResponse
 import com.example.mindlog.features.selfaware.data.mapper.SelfAwareMapper
-import com.example.mindlog.features.selfaware.domain.model.Question
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class SelfAwareMapperTest {
     private val mapper = SelfAwareMapper()

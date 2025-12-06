@@ -10,42 +10,47 @@
     app:cardCornerRadius="15dp"
     app:cardBackgroundColor="@color/five_factor_default_bg">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="15dp"
-        android:gravity="center_vertical">
+        android:padding="15dp">
 
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/lottieFactor"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_marginBottom="10dp"
-            android:layout_gravity="center_horizontal"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/anim_analysis" />
-
-        <TextView
-            android:id="@+id/tvFactorTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="성실성 (Conscientiousness)"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#636779"/>
-
-        <TextView
-            android:id="@+id/tvFactorBody"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textSize="13sp"
-            android:textColor="#2D3142"
-            android:lineSpacingExtra="2dp"
-            tools:text="계획을 세우고 끝까지 밀어붙이는 스타일입니다." />
+            android:gravity="center_vertical">
 
-    </LinearLayout>
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/lottieFactor"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginBottom="10dp"
+                android:layout_gravity="center_horizontal"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/anim_analysis" />
+
+            <TextView
+                android:id="@+id/tvFactorTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="성실성 (Conscientiousness)"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#636779"/>
+
+            <TextView
+                android:id="@+id/tvFactorBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="13sp"
+                android:textColor="#2D3142"
+                android:lineSpacingExtra="2dp"
+                tools:text="요청하신 점수의 카테고리로 보아, 활동성(Activity Level)과 주도성(Assertiveness)이 두드러지며 명랑함(Cheerfulness)도 비교적 긍정적인 편입니다. 다만 친근함(Friendliness)과 사교성(Gregariousness)은 낮은 편이라 큰 모임보다는 소수의 가까운 관계를 선호하고 타인과의 즉각적인 친밀감을 형성하는 데 다소 시간이 걸릴 수 있습니다. 흥분추구(Excitement-Seeking)는 중간 이하로, 안정적이고 질서 있는 환경에서 에너지를 잘 발휘하며 긍정적인 분위기를 유지하는 경향이 있습니다." />
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </com.google.android.material.card.MaterialCardView>

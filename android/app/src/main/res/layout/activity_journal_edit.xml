@@ -42,14 +42,15 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <Button
-            android:id="@+id/btn_edit_delete"
+            android:id="@+id/btn_edit_cancel"
             style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="56dp"
-            android:text="삭제"
-            android:textColor="@color/emotion_annoyed"
+            android:layout_weight="1"
+            android:text="취소"
+            android:textColor="@color/text_primary"
             app:cornerRadius="12dp"
-            app:strokeColor="@color/emotion_annoyed" />
+            app:strokeColor="@color/text_secondary" />
 
         <Space
             android:layout_width="12dp"

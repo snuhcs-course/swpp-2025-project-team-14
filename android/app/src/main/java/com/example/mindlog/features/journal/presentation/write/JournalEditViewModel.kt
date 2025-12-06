@@ -9,7 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.model.Emotion
 import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.core.model.Keyword
@@ -70,21 +70,18 @@ class JournalEditViewModel @Inject constructor(
         journalId = id
         viewModelScope.launch {
             try {
-                // ✨ UseCase가 gratitude가 포함된 완전한 JournalEntry 모델을 반환
                 val journal = getJournalByIdUseCase(id)
                 originalJournal = journal
 
-                // ✨ UI 모델의 필드를 LiveData에 바인딩
                 title.value = journal.title
                 content.value = journal.content
-                gratitude.value = journal.gratitude ?: "" // Null일 경우 빈 문자열로 처리
+                gratitude.value = journal.gratitude ?: ""
                 existingImageUrl.value = journal.imageUrl
                 emotions.value = journal.emotions
                 keywords.value = journal.keywords
 
                 _journalState.value = Result.Success(journal)
 
-                // 키워드가 비어있으면 분석 요청 (기존 로직 유지)
                 if (journal.keywords.isEmpty()) {
                     extractJournalKeywords(id)
                 }
@@ -99,10 +96,8 @@ class JournalEditViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 extractKeywordsUseCase(id)
-                // 분석 요청 성공 후, 최신 데이터 다시 로드
                 loadJournalDetails(id, forceRefresh = true)
             } catch (e: Exception) {
-                // 키워드 분석 실패는 치명적이지 않으므로, 에러를 UI에 노출하지 않음
             }
         }
     }
@@ -200,9 +195,9 @@ class JournalEditViewModel @Inject constructor(
 
     fun setGalleryImageUri(uri: Uri?) {
         if (uri != null) {
-            selectedImageUri.value = uri
             generatedImageBitmap.value = null
             existingImageUrl.value = null
+            selectedImageUri.value = uri
         }
     }
 
@@ -221,13 +216,12 @@ class JournalEditViewModel @Inject constructor(
                 val base64Image = generateImageUseCase(style, textContent)
                 val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
                 val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-
-                generatedImageBitmap.value = decodedBitmap
                 selectedImageUri.value = null
                 existingImageUrl.value = null
+                generatedImageBitmap.value = decodedBitmap
 
             } catch (e: Exception) {
-                aiGenerationError.emit(e.message ?: "이미지 생성에 실패했습니다.")
+                aiGenerationError.emit("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
                 noImage.emit(true)
             } finally {
                 isLoading.value = false

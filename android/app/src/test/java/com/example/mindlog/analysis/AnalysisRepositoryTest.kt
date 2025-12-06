@@ -1,6 +1,6 @@
 package com.example.mindlog.analysis
 
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.analysis.data.api.AnalysisApi
 import com.example.mindlog.features.analysis.data.dto.ComprehensiveAnalysisResponse

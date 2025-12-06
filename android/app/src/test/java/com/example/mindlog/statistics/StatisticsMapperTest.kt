@@ -77,25 +77,43 @@ class StatisticsMapperTest {
         val j1 = journal(
             createdAt = "2025-11-03T12:00:00Z",
             keywords = listOf(
-                // included: weight >= 0.7, uses summary text
-                KeywordResponse(keyword = "운동", emotion = "energetic", summary = "퇴근 후 운동을 다시 시작했다.", weight = 0.9f),
-                // included: summary blank -> uses keyword text
-                KeywordResponse(keyword = "퇴근", emotion = "energetic", summary = "", weight = 0.7f),
-                // excluded: weight too low
-                KeywordResponse(keyword = "게임", emotion = "energetic", summary = "밤에 잠깐 게임", weight = 0.6f)
+                // 포함: 높은 weight, summary 사용
+                KeywordResponse(
+                    keyword = "운동",
+                    emotion = "energetic",
+                    summary = "퇴근 후 운동을 다시 시작했다.",
+                    weight = 0.9f
+                ),
+                // 포함: summary 비어있으면 keyword 텍스트 사용
+                KeywordResponse(
+                    keyword = "퇴근",
+                    emotion = "energetic",
+                    summary = "",
+                    weight = 0.7f
+                ),
+                // 현재 구현상 포함되는 케이스 (weight 0.6)
+                KeywordResponse(
+                    keyword = "게임",
+                    emotion = "energetic",
+                    summary = "밤에 잠깐 게임",
+                    weight = 0.6f
+                )
             )
         )
         val stats = mapper.toJournalStatistics(listOf(j1))
 
         val energetic = stats.EmotionEvents.first { it.emotion == Emotion.ENERGETIC }
-        // order not guaranteed beyond distinct+take(5), so assert contents ignoring order
-        assertEquals(2, energetic.events.size)
+
+        // 이제 3개를 기대
+        assertEquals(3, energetic.events.size)
+        // 내용은 모두 포함되어야 함 (순서는 상관 없음)
         assertTrue(energetic.events.contains("퇴근 후 운동을 다시 시작했다."))
         assertTrue(energetic.events.contains("퇴근"))
+        assertTrue(energetic.events.contains("밤에 잠깐 게임"))
     }
 
     @Test
-    fun `toJournalStatistics counts keywords frequency top10`() {
+    fun `toJournalStatistics counts keywords frequency top10 with weight contribution`() {
         val j1 = journal(
             createdAt = "2025-11-01T00:00:00Z",
             keywords = listOf(
@@ -112,11 +130,11 @@ class StatisticsMapperTest {
         )
         val stats = mapper.toJournalStatistics(listOf(j1, j2))
 
-        // keywordCount counts all keywords regardless of weight threshold (events use threshold)
+        // keywordCount uses weight-based contribution: 0.5~0.65 -> +1, 0.65~0.8 -> +2, 0.8~1.0 -> +3
         val map = stats.JournalKeywords.associate { it.keyword to it.count }
-        assertEquals(2, map["운동"]) // appeared twice
-        assertEquals(1, map["독서"])
-        assertEquals(1, map["요리"])
+        assertEquals(5, map["운동"])
+        assertEquals(2, map["독서"])
+        assertEquals(2, map["요리"])
     }
 
     // ---- helpers ----

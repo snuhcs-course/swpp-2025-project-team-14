@@ -1,7 +1,7 @@
 package com.example.mindlog.selfaware
 
-import com.example.mindlog.core.common.Paged
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.data.Paged
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.selfaware.data.api.SelfAwareApi
 import com.example.mindlog.features.selfaware.data.dto.AnswerRequest
 import com.example.mindlog.features.selfaware.data.dto.AnswerResponse
@@ -16,7 +16,6 @@ import com.example.mindlog.features.selfaware.data.mapper.SelfAwareMapper
 import com.example.mindlog.features.selfaware.data.repository.SelfAwareRepositoryImpl
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.CategoryScore
-import com.example.mindlog.features.selfaware.domain.model.PersonalityInsight
 import com.example.mindlog.features.selfaware.domain.model.QAItem
 import com.example.mindlog.features.selfaware.domain.model.Question
 import com.example.mindlog.features.selfaware.domain.model.TopValueScores
@@ -90,7 +89,7 @@ class SelfAwareRepositoryTest {
 
         assertTrue(res is Result.Success)
         res as Result.Success
-        assertEquals(13, res.data?.question?.id)
+        assertEquals(13, res.data.question.id)
         verify(api).getTodayQA(eq(date.toString()))
         verify(mapper).toQAItem(eq(qaDto))
     }
