@@ -203,6 +203,14 @@ class SelfAwareFragment : Fragment(R.layout.fragment_self_aware), HomeActivity.F
                 suppressAnswerTextChange = false
             }
 
+            val hasAnswer = desired.isNotBlank()
+            binding.tilAnswer.isHintEnabled = !hasAnswer
+            if (!hasAnswer) {
+                binding.tilAnswer.hint = "답변을 입력하세요..."
+            } else {
+                binding.tilAnswer.hint = null
+            }
+
             val canSubmit =
                 isQuestionVisible && !s.isLoadingQuestion && !isQuestionError
             binding.btnSubmit.isEnabled = canSubmit
