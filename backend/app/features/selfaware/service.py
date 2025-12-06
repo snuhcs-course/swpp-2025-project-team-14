@@ -26,7 +26,7 @@ from app.features.selfaware.repository import (
 from app.features.selfaware.strategy import (
     NavigationContext,
     SingleStrategy,
-    Strategies
+    Strategies,
 )
 
 load_dotenv()
