@@ -1,11 +1,67 @@
-# SWPP Team 14 - Iteration 5 Working Demo
+# SWPP Team 14 - MindLog : AI-Powered Self-Reflective Journal App
+<img height="200" alt="application_logo" src="https://github.com/user-attachments/assets/90b6e3ca-2e3a-4b2d-add4-0a610a129f67" />
 
-The demo demonstrates the backend API implementation of user authorization, journal features, self‑aware features, journal statistics, personality analysis functionalities. All components are tested in a local Docker‑based environment, and pytest environment. AWS EC2 connection and deployment were successfully completed, and the backend API is now accessible through the EC2 public endpoint.  
-In the Android client, users can user every feature of this app(Mindlog, same as UAT version).
+MindLog is an AI-powered journaling application that helps users record daily emotions, reflect through psychologically grounded self-aware questions, and receive personality-based insights and personalized advice.
+The system integrates secure authentication, journal management, AI analysis, emotion statistics, and personality profiling into a unified Android & FastAPI-based platform.
 
 ---
 
-## 🚀 How to Run the Demo in Local
+## ✨ Core Features
+
+### 🔐 User Authentication & Profile
+- Secure **JWT-based Signup / Login / Logout**
+- **Access & Refresh Token** management
+- Persistent login & automatic token refresh
+- User profile editing
+- Secure password update
+
+### 📝 Journal System
+- Create, edit, delete, and view journals
+- Record **10-dimensional emotion intensities**
+- Keyword-based & date-based journal search
+- AI-based:
+  - Emotion & keyword extraction
+  - Keyword-emotion association analysis
+- Image features:
+  - Secure image upload via **AWS S3 Presigned URL**
+  - AI-based image generation from journal content
+
+### 🧘 Self-Aware Reflection System
+- Daily AI-generated **self-aware questions**
+- User answer storage & history tracking
+- **ValueMap & ValueScore extraction** from psychological models
+- Five-Factor Model based personality data generation
+
+### 📊 Statistics & Visualization
+- Emotion ratio distribution
+- Emotion trend over time
+- Event extraction contributing to specific emotions
+- Keyword frequency **WordCloud analytics**
+
+### 🔍 Personality Analysis & AI Feedback
+- **User Personality Type classification**
+- **Five-Factor Model (FFM) Analysis**
+- Daily AI-generated **personalized advice**
+- Analysis grounded in:
+  - Five-Factor Model (FFM)
+  - IPIP-NEO-PI personality indicators
+
+---
+
+## 🏗 System Architecture
+
+- **Frontend:** Android (Kotlin, MVVM + Clean Architecture)
+- **Backend:** FastAPI (Python 3.10+)
+- **Database:** MySQL
+- **Authentication:** JWT Access & Refresh Tokens
+- **AI Integration:** OpenAI API (LangChain)
+- **Image Storage:** AWS S3
+- **Deployment:** Docker + AWS EC2
+- **Testing:** Pytest, JUnit, Espresso, Mockito
+
+---
+
+## 🚀 How to Run Locally
 
 ### 1. Prerequisites
 Make sure the following tools are installed on your system:
@@ -146,22 +202,25 @@ To run the Android client app connected to the backend:
 
 The app automatically connects to the backend endpoint defined in the environment configuration and synchronizes user data securely.
 
+SDK Info:
+- Minimum SDK: 26
+- Target SDK: 34
+
 ---
 
-## ☁️ AWS EC2 Demo Test (user authorization, journal features)
+## ☁️ Deployment (AWS EC2)
 
 - You can access the FastAPI Swagger UI at:
   ```
   http://ec2-15-164-239-56.ap-northeast-2.compute.amazonaws.com:3000/docs
   ```
 - If the page loads successfully, the backend is running properly.
-- You can only test user authorization feature yet.
 
 ---
 
-## 🧩 What the Demo Demonstrates
+## 🧩 Detail Features
 
-This demo illustrates the following key features:
+Below is the detail of key features:
 
 - **User Signup:** Register new users with secure password handling.
 - **User Login:** Authenticate users and issue JWT access and refresh tokens.
@@ -206,7 +265,9 @@ This feature form analysis feature which gives more accurate psychological insig
 
 - **End-to-End Flow:** Demonstration of how journal data and self-aware answers are combined into statistical summaries and psychological analysis, fully integrated with the Android frontend.
 
-### API Endpoints
+---
+
+### API Overview
 
 #### Auth
 - **User Signup:** `POST /api/v1/auth/signup`
@@ -299,7 +360,6 @@ curl -X POST http://localhost:3000/api/v1/journal/ \
   "gratitude": "맛있는 집밥을 해주신 어머니께 감사하다!"
 }'
 ```
-You should fill all 10 types of emotion levels.
 
 - **Get Today’s Self-Aware Question**
 ```bash
@@ -336,48 +396,8 @@ curl -X GET http://localhost:3000/api/v1/analysis/personalized-advice \
 -H "Authorization: Bearer <your_access_token>"
 ```
 
-
-
 ---
 
-## 🖥️ Environment
-
-This demo is built using the following technologies:
-
-- **FastAPI:** Modern, fast (high-performance) web framework for building APIs with Python 3.10+
-- **MySQL:** Robust relational database for storing user data
-- **Docker & Docker Compose:** Containerization for consistent development environment
-- **JWT Authentication:** Secure, stateless user authentication using JSON Web Tokens
-- **OpenAI API:** For AI-powered keyword extraction and reflection analysis
-
----
-
-## 📜 Notes
-
-This demo serves as a proof-of-concept backend system designed for integration with an Android application.  
-It currently provides a solid foundation for:
-  
-- Implemented secure user authentication flows (Signup, Login, Refresh)
-- Managing user sessions with JWT tokens
-- Journal CRUD + image upload + AI summarization & keyword extraction
-- Self-Aware Q&A features including value extraction
-- Statistics & Analysis API
-    - Emotion trends, keyword summaries, ValueMap aggregation
-    - Personality insights (Five-Factor), daily personalized advice
-- Android integration for all features
-- Tutorials Page
-    - Onboarding-style walkthrough
-    - For new users to understand Journals, Self-Aware, Statistics, and Analysis features
-- Settings Screen
-- Refactoring & Final Testing
-    - Clean up legacy code
-	- Increase test coverage across Android & Backend
-	- API response consistency audit
-	- UI/UX polishing (animation, error states, empty states)
- 	- Extensive Unit & Integration Test coverage (Journal, Self-Aware, Analysis, Statistics, User, Auth)
-- EC2 deployment and stable communication between client & server
-
----
 
 ## 🎥 Demo Video
 
@@ -386,3 +406,24 @@ You can watch the working demo below:
 [▶️ Demo Videos](https://drive.google.com/file/d/1Xdco83sr80qsVEQAtJbNjE5fvYkctAys/view?usp=sharing)
 
 > 💡 If the video doesn’t automatically play, right-click the link and choose **“Open in new tab”** or **“Save link as…”** to download it.
+
+---
+
+## 📘 Academic Background
+
+- Expressive emotional journaling interventions[^1],[^2]
+- Five-Factor Model (FFM)[^3]
+- IPIP-NEO-PI personality indicators[^4],[^5],[^6]
+- CBT-based cognitive restructuring[^7]
+- ACT-based acceptance and value-driven behavior change[^8]
+- Emotional intelligence theory[^9]
+
+[^1]: Pennebaker, J. W., & Chung, C. K. (2011). *Expressive writing: Connections to physical and mental health*. Oxford Handbook of Health Psychology.
+[^2]: Baikie, K. A., & Wilhelm, K. (2005). *Emotional and physical health benefits of expressive writing*. Advances in Psychiatric Treatment, 11(5), 338–346.
+[^3]: McCrae, R. R., & Costa, P. T. (1987). *Validation of the five-factor model of personality across instruments and observers*. Journal of Personality and Social Psychology, 52(1), 81–90.
+[^4]: Goldberg, L. R., Johnson, J. A., Eber, H. W., Hogan, R., Ashton, M. C., Cloninger, C. R., & Gough, H. C. (2006). *The International Personality Item Pool and the future of public-domain personality measures*. Journal of Research in Personality, 40(1), 84–96.
+[^5]: Johnson, J. A. (2014). *Measuring thirty facets of the Five Factor Model with a 120-item public domain inventory: Development of the IPIP-NEO-120*. Journal of Research in Personality, 51, 78–89.
+[^6]: Maples, J. L., Guan, L., Carter, N. T., & Miller, J. D. (2014). *A test of the International Personality Item Pool representation of the revised NEO Personality Inventory and development of a 120-item IPIP-based measure of the Five-Factor Model*. Psychological Assessment, 26(4), 1070–1084.
+[^7]: Beck, A. T. (1976). *Cognitive Therapy and the Emotional Disorders*. New York: International Universities Press.
+[^8]: Hayes, S. C., Strosahl, K. D., & Wilson, K. G. (1999). *Acceptance and Commitment Therapy: An experiential approach to behavior change*. New York: Guilford Press.
+[^9]: Salovey, P., & Mayer, J. D. (1990). *Emotional intelligence*. Imagination, Cognition and Personality, 9(3), 185–211.
