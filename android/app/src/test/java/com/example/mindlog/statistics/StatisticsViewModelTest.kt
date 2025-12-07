@@ -2,6 +2,7 @@ package com.example.mindlog.statistics
 
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.statistics.domain.model.*
+import com.example.mindlog.features.statistics.domain.usecase.GetEmotionRatesUseCase
 import com.example.mindlog.features.statistics.domain.usecase.GetJournalStatisticsUseCase
 import com.example.mindlog.features.statistics.presentation.StatisticsViewModel
 import com.example.mindlog.utils.MainDispatcherRule
@@ -24,6 +25,7 @@ class StatisticsViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private lateinit var getEmotionRatesUseCase: GetEmotionRatesUseCase
     private lateinit var getJournalStatisticsUseCase: GetJournalStatisticsUseCase
     private lateinit var vm: StatisticsViewModel
 
@@ -32,8 +34,10 @@ class StatisticsViewModelTest {
     fun setUp() {
         val testDispatcherProvider = TestDispatcherProvider(mainDispatcherRule.testDispatcher)
 
+        getEmotionRatesUseCase = mock()
         getJournalStatisticsUseCase = mock()
         vm = StatisticsViewModel(
+            getEmotionRatesUseCase,
             getJournalStatisticsUseCase,
             testDispatcherProvider
         )
@@ -51,7 +55,6 @@ class StatisticsViewModelTest {
             EmotionRate(Emotion.CALM, count = 5, percentage = 0.05f),
         )
         val stats = JournalStatistics(
-            EmotionRates = rates,
             EmotionTrends = listOf(
                 EmotionTrend(Emotion.CALM, trend = listOf(1,2,3))
             ),
@@ -62,6 +65,7 @@ class StatisticsViewModelTest {
             JournalKeywords = listOf(JournalKeyword("운동", 3))
         )
 
+        whenever(getEmotionRatesUseCase(any(), any())).thenReturn(Result.Success(rates))
         whenever(getJournalStatisticsUseCase(any(), any())).thenReturn(Result.Success(stats))
 
         // when
@@ -97,7 +101,6 @@ class StatisticsViewModelTest {
 
         val rates = emptyList<EmotionRate>()
         val stats = JournalStatistics(
-            EmotionRates = rates,
             EmotionTrends = listOf(
                 EmotionTrend(Emotion.ANXIOUS, trend = listOf(9,9,9)) // first trend
             ),
@@ -107,6 +110,7 @@ class StatisticsViewModelTest {
             JournalKeywords = emptyList()
         )
 
+        whenever(getEmotionRatesUseCase(any(), any())).thenReturn(Result.Success(rates))
         whenever(getJournalStatisticsUseCase(any(), any())).thenReturn(Result.Success(stats))
 
         // when
@@ -129,7 +133,6 @@ class StatisticsViewModelTest {
     fun `setEmotion updates only UI-derivatives without reloading data`() = runTest {
         // given existing stats in state
         val stats = JournalStatistics(
-            EmotionRates = emptyList(),
             EmotionTrends = listOf(
                 EmotionTrend(Emotion.SAD, listOf(5,4,3))
             ),
@@ -139,6 +142,7 @@ class StatisticsViewModelTest {
             JournalKeywords = listOf(JournalKeyword("시험", 1))
         )
 
+        whenever(getEmotionRatesUseCase(any(), any())).thenReturn(Result.Success(emptyList()))
         whenever(getJournalStatisticsUseCase(any(), any())).thenReturn(Result.Success(stats))
         vm.load()
         advanceUntilIdle()
@@ -175,15 +179,16 @@ class StatisticsViewModelTest {
     }
 
     @Test
-    fun `error from statistics usecase is surfaced in state`() = runTest {
-        whenever(getJournalStatisticsUseCase(any(), any())).thenReturn(
-            Result.Error(500, "Statistics Error")
-        )
+    fun `error from either usecase is surfaced in state`() = runTest {
+        whenever(getEmotionRatesUseCase(any(), any())).thenReturn(Result.Error(404, "Get EmotionRate Error"))
+        whenever(getJournalStatisticsUseCase(any(), any())).thenReturn(Result.Success(
+            JournalStatistics(emptyList(), emptyList(), emptyList())
+        ))
 
         vm.load()
         advanceUntilIdle()
 
         val state = vm.state.value
-        assertEquals("Statistics Error", state.error)
+        assertEquals("Get EmotionRate Error", state.error)
     }
 }

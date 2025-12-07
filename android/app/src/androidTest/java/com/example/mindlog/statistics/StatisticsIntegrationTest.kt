@@ -3,6 +3,7 @@ package com.example.mindlog.statistics
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.journal.data.api.JournalApi
+import com.example.mindlog.features.statistics.data.api.StatisticsApi
 import com.example.mindlog.features.statistics.data.mapper.StatisticsMapper
 import com.example.mindlog.features.statistics.data.repository.StatisticsRepositoryImpl
 import com.example.mindlog.features.statistics.domain.repository.StatisticsRepository
@@ -52,9 +53,11 @@ class StatisticsIntegrationTest {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
+        val statisticsApi = retrofit.create(StatisticsApi::class.java)
         val journalApi = retrofit.create(JournalApi::class.java)
 
         repo = StatisticsRepositoryImpl(
+            statisticsApi = statisticsApi,
             journalApi = journalApi,
             mapper = StatisticsMapper(),
             dispatcher = TestDispatcherProvider()
@@ -64,6 +67,36 @@ class StatisticsIntegrationTest {
     @After
     fun tearDown() {
         mockWebServer.shutdown()
+    }
+
+    @Test
+    fun getEmotionRates_returns_success_and_maps_domain() = runBlocking {
+        val start = "2025-10-09"
+        val end = "2025-11-09"
+
+        val res = repo.getEmotionRates(start, end)
+        assertTrue(res is Result.Success)
+
+        val data = (res as Result.Success).data
+        assertEquals(10, data.size)
+        assertEquals("HAPPY", data.first().emotion.name)
+    }
+
+    @Test
+    fun getEmotionRates_sends_expected_query_params() = runBlocking {
+        val start = "2025-10-09"
+        val end = "2025-11-09"
+
+        // call through repository (which calls the API)
+        repo.getEmotionRates(start, end)
+
+        val req = mockWebServer.takeRequest()
+        assertEquals("GET", req.method)
+        val url = req.requestUrl!!
+        val pathWithQuery = url.encodedPath + "?" + (url.query ?: "")
+        assert(pathWithQuery.startsWith("/statistics/emotion-rate"))
+        assert(pathWithQuery.contains("start_date=$start"))
+        assert(pathWithQuery.contains("end_date=$end"))
     }
 
     @Test

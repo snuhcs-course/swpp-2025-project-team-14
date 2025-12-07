@@ -4,11 +4,17 @@ import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.journal.data.dto.JournalListResponse
+import com.example.mindlog.features.statistics.data.api.StatisticsApi
+import com.example.mindlog.features.statistics.data.dto.EmotionRateItem
+import com.example.mindlog.features.statistics.data.dto.EmotionRatesResponse
 import com.example.mindlog.features.statistics.data.mapper.StatisticsMapper
 import com.example.mindlog.features.statistics.data.repository.StatisticsRepositoryImpl
+import com.example.mindlog.features.statistics.domain.model.Emotion
+import com.example.mindlog.features.statistics.domain.model.EmotionRate
 import com.example.mindlog.features.statistics.domain.model.JournalStatistics
 import com.example.mindlog.utils.MainDispatcherRule
 import com.example.mindlog.utils.TestDispatcherProvider
+import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -20,6 +26,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -29,6 +36,7 @@ class StatisticsRepositoryTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private lateinit var statisticsApi: StatisticsApi
     private lateinit var journalApi: JournalApi
     private lateinit var mapper: StatisticsMapper
     private lateinit var repo: StatisticsRepositoryImpl
@@ -37,10 +45,59 @@ class StatisticsRepositoryTest {
 
     @Before
     fun setUp() {
+        statisticsApi = mock()
         journalApi = mock()
         mapper = mock()
         dispatcherProvider =  TestDispatcherProvider(mainDispatcherRule.testDispatcher)
-        repo = StatisticsRepositoryImpl(journalApi, mapper, dispatcherProvider)
+        repo = StatisticsRepositoryImpl(statisticsApi, journalApi, mapper, dispatcherProvider)
+    }
+
+    @Test
+    fun `getEmotionRates maps api response and returns Success`() = runTest{
+        // given
+        val start = "2025-10-01"
+        val end = "2025-10-07"
+        val dto = EmotionRatesResponse(
+            totalCount = 100,
+            statistics = listOf(
+                EmotionRateItem(emotion = "happy", count = 20, percentage = 10.0f),
+                EmotionRateItem(emotion = "sad", count = 10, percentage = 5.0f)
+            )
+        )
+        whenever(statisticsApi.getEmotionRates(eq(start), eq(end))).thenReturn(dto)
+
+        val mapped0 = EmotionRate(Emotion.HAPPY, count = 20, percentage = 0.10f)
+        val mapped1 = EmotionRate(Emotion.SAD, count = 10, percentage = 0.05f)
+        whenever(mapper.toEmotionRate(dto.statistics[0])).thenReturn(mapped0)
+        whenever(mapper.toEmotionRate(dto.statistics[1])).thenReturn(mapped1)
+
+        // when
+        val res = repo.getEmotionRates(start, end)
+
+        // then
+        verify(statisticsApi).getEmotionRates(eq(start), eq(end))
+        verify(mapper).toEmotionRate(dto.statistics[0])
+        verify(mapper).toEmotionRate(dto.statistics[1])
+
+        assertTrue(res is Result.Success)
+        val data = (res as Result.Success).data
+        assertEquals(listOf(mapped0, mapped1), data)
+    }
+
+    @Test
+    fun `getEmotionRates returns Error when api throws`() = runTest {
+        // given
+        whenever(statisticsApi.getEmotionRates(any(), any())).thenThrow(RuntimeException("boom"))
+
+        // when
+        val res = repo.getEmotionRates("2025-10-01", "2025-10-07")
+
+        // then
+        assertTrue(res is Result.Error)
+        res as Result.Error
+        TestCase.assertTrue(res.message?.contains("boom") == true)
+        verify(statisticsApi).getEmotionRates(eq("2025-10-01"), eq("2025-10-07"))
+        verifyNoInteractions(mapper)
     }
 
     @Test
@@ -83,12 +140,7 @@ class StatisticsRepositoryTest {
             )
         ).thenReturn(fakeResponse)
 
-        val mapped = JournalStatistics(
-            EmotionRates = emptyList(),
-            EmotionTrends = emptyList(),
-            EmotionEvents = emptyList(),
-            JournalKeywords = emptyList()
-        )
+        val mapped = JournalStatistics(emptyList(), emptyList(), emptyList())
         whenever(mapper.toJournalStatistics(items)).thenReturn(mapped)
 
         // when

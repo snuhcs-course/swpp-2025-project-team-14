@@ -20,6 +20,35 @@ class StatisticsMapperTest {
     }
 
     @Test
+    fun `toEmotionRate normalizes percent to fraction and maps emotion`() {
+        // given
+        val dto = EmotionRateItem(
+            emotion = "happy",
+            count = 10,
+            percentage = 10.86f // percent from backend
+        )
+
+        // when
+        val res = mapper.toEmotionRate(dto)
+
+        // then
+        assertEquals(Emotion.HAPPY, res.emotion)
+        assertEquals(10, res.count)
+        assertEquals(0.1086f, res.percentage, 0.0001f)
+    }
+
+    @Test
+    fun `toEmotionRate falls back to CALM on unknown emotion`() {
+        val dto = EmotionRateItem(
+            emotion = "unknown_x",
+            count = 1,
+            percentage = 1.0f
+        )
+        val res = mapper.toEmotionRate(dto)
+        assertEquals(Emotion.CALM, res.emotion)
+    }
+
+    @Test
     fun `toJournalStatistics builds trends averaged by day and sorted by date`() {
         // given two journals: same day with different intensities for HAPPY and next day one value
         val j1 = journal(
