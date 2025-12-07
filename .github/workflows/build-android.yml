@@ -2,9 +2,9 @@ name: Build Android App
 
 on:
   push:
-    branches: [ main, UAT ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, UAT ]
+    branches: [ main ]
 
 jobs:
   build:
