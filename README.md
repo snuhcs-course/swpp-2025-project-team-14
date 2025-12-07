@@ -403,7 +403,7 @@ curl -X GET http://localhost:3000/api/v1/analysis/personalized-advice \
 
 You can watch the working demo below:
 
-[▶️ Demo Videos](https://drive.google.com/file/d/1Xdco83sr80qsVEQAtJbNjE5fvYkctAys/view?usp=sharing)
+[▶️ Demo Videos](https://drive.google.com/file/d/1IMbpqaK48SfNk-fm_Zu5fktJ4GHUruWZ/view?usp=drive_link)
 
 > 💡 If the video doesn’t automatically play, right-click the link and choose **“Open in new tab”** or **“Save link as…”** to download it.
 
