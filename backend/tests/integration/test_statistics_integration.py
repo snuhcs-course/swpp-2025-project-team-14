@@ -18,7 +18,7 @@ def test_get_emotion_rates(client, db_session, test_user, auth_headers):
     db_session.flush()
 
     # Emotion 생성 (happy)
-    emotion = JournalEmotion(journal_id=journal.id, emotion="happy", intensity=5)
+    emotion = JournalEmotion(journal_id=journal.id, emotion="happy", intensity=4)
     db_session.add(emotion)
     db_session.commit()
 
@@ -35,7 +35,7 @@ def test_get_emotion_rates(client, db_session, test_user, auth_headers):
     assert "total_count" in data
     assert "statistics" in data
 
-    assert data["total_count"] == 1
+    assert data["total_count"] == 4
     assert len(data["statistics"]) == 1
     assert data["statistics"][0]["emotion"] == "happy"
     assert data["statistics"][0]["percentage"] == 100.0
