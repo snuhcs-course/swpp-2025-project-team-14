@@ -2,33 +2,21 @@ package com.example.mindlog.features.auth.presentation.main
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.example.mindlog.core.common.SystemUiHelper
-import com.example.mindlog.core.network.NetworkModule
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivityMainBinding
-import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.network.AuthInterceptor
-import com.example.mindlog.features.auth.data.network.TokenAuthenticator
-import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
-import com.example.mindlog.features.auth.domain.repository.AuthRepository
 import com.example.mindlog.features.auth.presentation.login.LoginActivity
-import com.example.mindlog.features.auth.presentation.signup.SignupActivity
-import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.home.presentation.HomeActivity
+import com.example.mindlog.features.tutorial.TutorialActivity
+import com.example.mindlog.features.tutorial.TutorialMenuActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
-    @Inject lateinit var authRepository: AuthRepository
-    @Inject lateinit var tokenManager: TokenManager
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,40 +25,33 @@ class MainActivity : AppCompatActivity() {
 
         SystemUiHelper.hideSystemUI(this)
 
-        lifecycleScope.launch {
-            checkAutoLogin()
+        observeState()
+
+        val completed = hasCompletedTutorial()
+        viewModel.checkAutoLogin(completed)
+    }
+
+    private fun observeState() {
+        viewModel.state.observe(this) { state ->
+            when (state) {
+                MainState.GoLogin -> goToLogin()
+                MainState.GoTutorial -> goToTutorial()
+                MainState.GoHome -> goToJournal()
+            }
         }
     }
 
-    private suspend fun checkAutoLogin() {
-        val access = tokenManager.getAccessToken()
-        val refresh = tokenManager.getRefreshToken()
+    private fun hasCompletedTutorial(): Boolean {
+        val prefs = getSharedPreferences("tutorial_prefs", MODE_PRIVATE)
+        return prefs.getBoolean("completed", false)
+    }
 
-        when {
-            access.isNullOrEmpty() || refresh.isNullOrEmpty() -> {
-                // 토큰 없음 → 로그인 화면으로
-                goToLogin()
-            }
-            tokenManager.isAccessTokenExpired() -> {
-                // 토큰 만료 → refresh 시도
-                refresh.let { token ->
-                    if (authRepository.refresh(token)) {
-                        goToJournal()
-                    } else {
-                        tokenManager.clearTokens()
-                        goToLogin()
-                    }
-                }
-            }
-            else -> {
-                if (authRepository.verify()) {
-                    goToJournal()
-                } else {
-                    tokenManager.clearTokens()
-                    goToLogin()
-                }
-            }
+    private fun goToTutorial() {
+        val intent = Intent(this, TutorialActivity::class.java).apply {
+            putExtra(TutorialActivity.EXTRA_GO_TO_MENU, true)
         }
+        startActivity(intent)
+        finish()
     }
 
     private fun goToLogin() {
@@ -81,12 +62,5 @@ class MainActivity : AppCompatActivity() {
     private fun goToJournal() {
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            SystemUiHelper.hideSystemUI(this)
-        }
     }
 }

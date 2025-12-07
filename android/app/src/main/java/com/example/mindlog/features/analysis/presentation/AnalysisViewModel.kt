@@ -2,7 +2,7 @@ package com.example.mindlog.features.analysis.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.dispatcher.DispatcherProvider
 import com.example.mindlog.features.analysis.domain.model.ComprehensiveAnalysis
 import com.example.mindlog.features.analysis.domain.model.PersonalizedAdvice

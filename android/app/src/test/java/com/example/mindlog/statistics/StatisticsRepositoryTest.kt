@@ -1,6 +1,6 @@
 package com.example.mindlog.statistics
 
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.journal.data.api.JournalApi
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.journal.data.dto.JournalListResponse

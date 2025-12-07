@@ -7,20 +7,13 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.example.mindlog.core.network.NetworkModule
 import com.example.mindlog.databinding.ActivityLoginBinding
-import com.example.mindlog.features.auth.data.api.AuthApi
-import com.example.mindlog.features.auth.data.api.RefreshApi
-import com.example.mindlog.features.auth.data.network.AuthInterceptor
-import com.example.mindlog.features.auth.data.network.TokenAuthenticator
-import com.example.mindlog.features.auth.data.repository.AuthRepositoryImpl
-import com.example.mindlog.features.auth.domain.usecase.LoginUseCase
-import com.example.mindlog.features.auth.util.TokenManager
 import com.example.mindlog.features.auth.presentation.signup.SignupActivity
 import com.example.mindlog.features.auth.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.mindlog.R
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.ui.SystemUiHelper
+import com.example.mindlog.features.auth.domain.validation.LoginValidator
 
 
 @AndroidEntryPoint
@@ -28,6 +21,8 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private val viewModel: LoginViewModel by viewModels()
+    private val loginValidator = LoginValidator()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,66 +35,68 @@ class LoginActivity : AppCompatActivity() {
             val id = binding.etLoginId.text.toString()
             val password = binding.etPassword.text.toString()
 
-            var isIdEmpty = false
-            var isPasswordEmpty = false
+            updateLoginIdBackground(id)
+            updatePasswordBackground(password)
 
-            if (id.isEmpty()) {
-                binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg_error)
-                isIdEmpty = true
+            val validationResult = loginValidator.validate(id, password)
+            if (!validationResult.isValid) {
+                binding.tvError.text = validationResult.errorMessage
+                binding.tvError.visibility = View.VISIBLE
+                return@setOnClickListener
             } else {
-                binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg)
-            }
-
-            // 비밀번호 검증
-            if (password.isEmpty()) {
-                binding.etPassword.setBackgroundResource(R.drawable.edittext_bg_error)
-                isPasswordEmpty = true
-            } else {
-                binding.etPassword.setBackgroundResource(R.drawable.edittext_bg)
-            }
-
-            if (isIdEmpty && isPasswordEmpty) {
-                binding.tvError.text = "아이디와 비밀번호를 입력해주세요"
-                binding.tvError.visibility = View.VISIBLE
-                return@setOnClickListener
-            } else if (isIdEmpty) {
-                binding.tvError.text = "아이디를 입력해주세요"
-                binding.tvError.visibility = View.VISIBLE
-                return@setOnClickListener
-            } else if (isPasswordEmpty) {
-                binding.tvError.text = "비밀번호를 입력해주세요"
-                binding.tvError.visibility = View.VISIBLE
-                return@setOnClickListener
+                binding.tvError.visibility = View.GONE
             }
 
             viewModel.login(id, password)
         }
 
+        setupHintListeners()
+
+        binding.tvGoSignup.setOnClickListener {
+            startActivity(Intent(this, SignupActivity::class.java))
+        }
+
+        viewModel.state.observe(this) { s ->
+            if (s.isSuccess) {
+                Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MainActivity::class.java))
+                finishAffinity()
+            }
+
+            if (s.errorMessage != null) {
+                // ViewModel에서 내려온 에러 메시지 우선 사용
+                binding.tvError.text = "아이디와 비밀번호를 확인해주세요"
+                binding.tvError.visibility = View.VISIBLE
+            } else {
+                // 초기 상태 또는 성공 시에는 에러 숨김
+                binding.tvError.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun updateLoginIdBackground(id: String) {
+        if (id.isEmpty()) {
+            binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg_error)
+        } else {
+            binding.etLoginId.setBackgroundResource(R.drawable.edittext_bg)
+        }
+    }
+
+    private fun updatePasswordBackground(password: String) {
+        if (password.isEmpty()) {
+            binding.etPassword.setBackgroundResource(R.drawable.edittext_bg_error)
+        } else {
+            binding.etPassword.setBackgroundResource(R.drawable.edittext_bg)
+        }
+    }
+
+    private fun setupHintListeners() {
         binding.etLoginId.setOnFocusChangeListener { _, hasFocus ->
             binding.etLoginId.hint = if (hasFocus) "" else "아이디를 입력하세요"
         }
         binding.etPassword.setOnFocusChangeListener { _, hasFocus ->
             binding.etPassword.hint = if (hasFocus) "" else "비밀번호를 입력하세요"
         }
-
-        binding.tvGoSignup.setOnClickListener {
-            startActivity(Intent(this, SignupActivity::class.java))
-        }
-
-        viewModel.loginResult.observe(this, Observer { success ->
-            if (success) {
-                Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, MainActivity::class.java))
-                finishAffinity()
-            } else {
-                binding.tvError.text = "아이디와 비밀번호를 확인해주세요"
-                binding.tvError.visibility = View.VISIBLE
-            }
-        })
-
-        viewModel.errorMessage.observe(this, Observer { message ->
-            message?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
-        })
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

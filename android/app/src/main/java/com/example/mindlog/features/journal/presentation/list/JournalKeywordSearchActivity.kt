@@ -3,7 +3,7 @@ package com.example.mindlog.features.journal.presentation.list
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mindlog.R
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivityJournalKeywordSearchBinding
 import dagger.hilt.android.AndroidEntryPoint
 

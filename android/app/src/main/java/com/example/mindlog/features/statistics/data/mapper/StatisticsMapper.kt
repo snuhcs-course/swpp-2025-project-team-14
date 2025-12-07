@@ -2,7 +2,6 @@ package com.example.mindlog.features.statistics.data.mapper
 
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
 import com.example.mindlog.features.statistics.data.dto.EmotionRateItem
-import com.example.mindlog.features.statistics.data.dto.EmotionRatesResponse
 import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionEvent
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
@@ -12,13 +11,22 @@ import com.example.mindlog.features.statistics.domain.model.JournalStatistics
 import javax.inject.Inject
 
 class StatisticsMapper @Inject constructor() {
+
+    private val EMOTION_PAIRS = listOf(
+        Emotion.HAPPY to Emotion.SAD,
+        Emotion.CALM to Emotion.ANXIOUS,
+        Emotion.ANNOYED to Emotion.SATISFIED,
+        Emotion.INTERESTED to Emotion.BORED,
+        Emotion.LETHARGIC to Emotion.ENERGETIC,
+    )
+
     private fun parseEmotion(value: String?): Emotion =
         value?.let { Emotion.fromApi(it) } ?: Emotion.CALM
 
     fun toEmotionRate(dto: EmotionRateItem) = EmotionRate(
         emotion = Emotion.fromApi(dto.emotion) ?: Emotion.CALM,
         count = dto.count,
-        percentage = if (dto.percentage > 1f) dto.percentage / 100f else dto.percentage
+        percentage = dto.percentage / 100f
     )
 
     fun toJournalStatistics(journals: List<JournalItemResponse>): JournalStatistics {
@@ -26,11 +34,33 @@ class StatisticsMapper @Inject constructor() {
         val trendByEmotion = mutableMapOf<Emotion, MutableList<Pair<String, Int>>>()
         for (journal in journals) {
             val date = journal.createdAt.take(10) // "2025-11-09T..." → "2025-11-09"
-            for (emotion in journal.emotions) {
-                val emo = Emotion.fromApi(emotion.emotion) ?: continue
-                trendByEmotion
-                    .getOrPut(emo) { mutableListOf() }
-                    .add(date to emotion.intensity)
+
+            val intensityByEmotion: Map<Emotion, Int> =
+                journal.emotions
+                    .mapNotNull { er ->
+                        val emo = Emotion.fromApi(er.emotion) ?: return@mapNotNull null
+                        emo to er.intensity
+                    }
+                    .toMap()
+
+            for ((e1, e2) in EMOTION_PAIRS) {
+                val i1 = intensityByEmotion[e1]
+                val i2 = intensityByEmotion[e2]
+
+                if (i1 == null && i2 == null) continue
+                if ((i1 ?: 0) == 0 && (i2 ?: 0) == 0) {
+                    continue
+                }
+                if (i1 != null) {
+                    trendByEmotion
+                        .getOrPut(e1) { mutableListOf() }
+                        .add(date to i1)
+                }
+                if (i2 != null) {
+                    trendByEmotion
+                        .getOrPut(e2) { mutableListOf() }
+                        .add(date to i2)
+                }
             }
         }
 
@@ -50,7 +80,7 @@ class StatisticsMapper @Inject constructor() {
         val emotionEvents = journals.flatMap { journal ->
             (journal.keywords ?: emptyList())
                 .asSequence()
-                .filter { it.weight >= 0.7f } // 키워드 신뢰도 임계값
+                .filter { it.weight >= 0.5f } // 키워드 신뢰도 임계값
                 .mapNotNull { kw ->
                     val emo = Emotion.fromApi(kw.emotion) ?: return@mapNotNull null
                     val text = (kw.summary?.takeIf { it.isNotBlank() } ?: kw.keyword).trim()
@@ -65,18 +95,34 @@ class StatisticsMapper @Inject constructor() {
                 EmotionEvent(emotion = emotion, events = distinctTexts)
             }
 
-        // 키워드 빈도 (모든 일기의 keywords)
+        // 키워드 빈도 (weight 기반 가중치 반영)
         val keywordCount = mutableMapOf<String, Int>()
         for (journal in journals) {
-            journal.keywords?.forEach {
-                keywordCount[it.keyword] = (keywordCount[it.keyword] ?: 0) + 1
+            journal.keywords?.forEach { kw ->
+                // weight 기반 가중치: 0.5~0.65 → +1, 0.65~0.8 → +2, 0.8~1.0 → +3
+                val weightContribution = when (kw.weight) {
+                    in 0.5f..0.65f -> 1
+                    in 0.65f.. 0.8f -> 2
+                    in 0.8f..1.0f -> 3
+                    else -> 0
+                }
+
+                if (weightContribution > 0) {
+                    val key = kw.keyword
+                    keywordCount[key] = (keywordCount[key] ?: 0) + weightContribution
+                }
             }
         }
 
         val journalKeywords = keywordCount.entries
             .sortedByDescending { it.value }
-            .take(10)
-            .map { (k, v) -> JournalKeyword(keyword = k, count = v) }
+            .take(50)
+            .map { (keyword, count) ->
+                JournalKeyword(
+                    keyword = keyword,
+                    count = count
+                )
+            }
 
         // 최종 조합
         return JournalStatistics(

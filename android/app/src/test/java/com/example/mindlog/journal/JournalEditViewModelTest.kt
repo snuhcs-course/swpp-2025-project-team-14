@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.core.model.Emotion
 import com.example.mindlog.core.model.JournalEntry
 import com.example.mindlog.core.model.Keyword
@@ -406,7 +406,7 @@ class JournalEditViewModelTest {
     @Test
     fun `generateImage - 실패 시 - 에러 메시지와 noImage 이벤트를 방출한다`() = runTest {
         // Given: UseCase가 예외를 던지도록 설정
-        val errorMessage = "AI 서버 연결 실패"
+        val errorMessage = "이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요."
         whenever(generateImageUseCase.invoke(any(), any())).thenThrow(RuntimeException(errorMessage))
 
         viewModel.content.value = "AI 그림 생성 테스트"

@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mindlog.R
-import com.example.mindlog.core.common.SystemUiHelper
+import com.example.mindlog.core.ui.SystemUiHelper
 import com.example.mindlog.databinding.ActivityHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -57,5 +57,9 @@ class HomeActivity : AppCompatActivity() {
         if (hasFocus) {
             SystemUiHelper.hideSystemUI(this)
         }
+    }
+
+    fun navigateToJournalTab() {
+        binding.bottomNav.selectedItemId = R.id.journalFragment
     }
 }

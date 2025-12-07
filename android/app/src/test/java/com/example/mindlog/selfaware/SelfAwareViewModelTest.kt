@@ -1,7 +1,6 @@
 package com.example.mindlog.selfaware
 
-import app.cash.turbine.test
-import com.example.mindlog.core.common.Result
+import com.example.mindlog.core.domain.Result
 import com.example.mindlog.features.selfaware.domain.model.Answer
 import com.example.mindlog.features.selfaware.domain.model.CategoryScore
 import com.example.mindlog.features.selfaware.domain.model.QAItem
@@ -13,7 +12,7 @@ import com.example.mindlog.features.selfaware.domain.usecase.GetTodayQAUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetTopValueScoresUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.GetValueMapUseCase
 import com.example.mindlog.features.selfaware.domain.usecase.SubmitAnswerUseCase
-import com.example.mindlog.features.selfaware.presentation.viewmodel.SelfAwareViewModel
+import com.example.mindlog.features.selfaware.presentation.SelfAwareViewModel
 import com.example.mindlog.utils.MainDispatcherRule
 import com.example.mindlog.utils.TestDispatcherProvider
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +32,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

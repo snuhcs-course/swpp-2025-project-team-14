@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,10 +15,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mindlog.R
@@ -28,11 +32,12 @@ import com.example.mindlog.features.journal.presentation.detail.JournalDetailAct
 import com.example.mindlog.features.journal.presentation.write.JournalWriteActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
-// HomeActivity의 FAB 클릭 이벤트를 받기 위해 인터페이스 구현
 class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private var _binding: FragmentJournalListBinding? = null
@@ -43,37 +48,31 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
-    // 새 글 작성 후 또는 검색 조건 변경 후 맨 위로 스크롤하기 위한 플래그
     private var scrollToTopOnNextSubmit = false
+    private var isEmpty = true
+    private var isLoad = false
 
-    // HomeActivity의 FAB(작성 버튼)가 클릭되면 이 메서드가 호출됨
     override fun onFabClick() {
         val intent = Intent(requireContext(), JournalWriteActivity::class.java)
-        // 결과를 돌려받기 위해 반드시 launcher로 액티비티를 시작
         activityResultLauncher.launch(intent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 화면이 생성될 때 ActivityResultLauncher를 등록
         activityResultLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
-            // 다른 화면에서 돌아왔을 때, 결과 코드가 OK인 경우에만 처리
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
                 val updatedId = data?.getIntExtra(JournalDetailActivity.EXTRA_UPDATED_JOURNAL_ID, -1) ?: -1
                 val deletedId = data?.getIntExtra(JournalDetailActivity.EXTRA_DELETED_JOURNAL_ID, -1) ?: -1
 
                 when {
-                    // 케이스 1: 새 글 작성 후 메인으로 (Intent에 ID가 없음)
                     updatedId == -1 && deletedId == -1 -> {
-                        scrollToTopOnNextSubmit = true // 다음 목록 업데이트 시 맨 위로 스크롤하도록 플래그 설정
-                        viewModel.clearSearchAndReload() // 검색 조건 초기화 후 `journal/me` API 호출
+                        scrollToTopOnNextSubmit = true
+                        viewModel.clearSearchAndReload()
                     }
-                    // 케이스 3: 수정 또는 삭제 후 메인으로 (Intent에 ID가 있음)
                     else -> {
-                        // 스크롤 위치 유지를 위해 특정 아이템만 업데이트/삭제
                         viewModel.updateOrRemoveJournalEntry(
                             updatedId = if (updatedId == -1) null else updatedId,
                             deletedId = if (deletedId == -1) null else deletedId
@@ -81,8 +80,6 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
                     }
                 }
             }
-            // 케이스 2: 단순 뒤로가기, 작성 취소 등 (RESULT_OK가 아님)
-            // -> 아무 작업도 하지 않으므로 스크롤 위치가 자동으로 유지됨
         }
     }
 
@@ -108,6 +105,10 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private fun setupClickListeners() {
         val topBar = binding.topBarLayout
+
+        topBar.btnSettings.setOnClickListener {
+            findNavController().navigate(R.id.action_journalFragment_to_settingsFragment)
+        }
 
         topBar.btnSearch.setOnClickListener {
             toggleSearchView(true)
@@ -182,6 +183,8 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
     private fun showDateRangePicker() {
         val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
             .setTitleText("기간으로 검색")
+            .setTheme(R.style.ThemeOverlay_MindLog_DatePicker)
+            .setPositiveButtonText("검색")
             .build()
 
         dateRangePicker.addOnPositiveButtonClickListener { selection: Pair<Long, Long> ->
@@ -221,7 +224,6 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
 
     private fun setupRecyclerView() {
-        // 어댑터 아이템 클릭 시, Launcher를 통해 DetailActivity 실행
         journalAdapter = JournalAdapter { journalId ->
             val intent = Intent(requireContext(), JournalDetailActivity::class.java).apply {
                 putExtra(JournalDetailActivity.EXTRA_JOURNAL_ID, journalId)
@@ -251,19 +253,26 @@ class JournalFragment : Fragment(), HomeActivity.FabClickListener {
 
     private fun observeViewModel() {
         viewModel.journals.observe(viewLifecycleOwner, Observer { journalList ->
-            // submitList의 콜백에서 플래그를 확인하고 스크롤 처리
+            isEmpty = journalList.isNullOrEmpty()
+            isLoad = viewModel.isLoading.value == true
+
+            binding.rvDiaryFeed.visibility = if (!isLoad && isEmpty) View.GONE else View.VISIBLE
+            binding.emptyView.visibility = if (!isLoad && isEmpty) View.VISIBLE else View.GONE
+
             journalAdapter.submitList(journalList.toList()) {
                 if (scrollToTopOnNextSubmit) {
                     binding.rvDiaryFeed.post {
                         linearLayoutManager.scrollToPositionWithOffset(0, 0)
                     }
-                    // 플래그를 다시 false로 바꿔서, 다음번 업데이트 시에는 실행되지 않도록 함
                     scrollToTopOnNextSubmit = false
                 }
             }
         })
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // 로딩 처리
+            isLoad = isLoading
+
+            binding.rvDiaryFeed.visibility = if (!isLoad && isEmpty) View.GONE else View.VISIBLE
+            binding.emptyView.visibility = if (!isLoad && isEmpty) View.VISIBLE else View.GONE
         }
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
             if (message != null) {

@@ -4,7 +4,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.mindlog.features.selfaware.presentation.fragment.SelfAwareFragment
+import com.example.mindlog.features.selfaware.presentation.SelfAwareFragment
 import com.example.mindlog.R
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltAndroidRule
