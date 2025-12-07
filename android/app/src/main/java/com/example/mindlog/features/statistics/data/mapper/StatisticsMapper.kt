@@ -1,7 +1,6 @@
 package com.example.mindlog.features.statistics.data.mapper
 
 import com.example.mindlog.features.journal.data.dto.JournalItemResponse
-import com.example.mindlog.features.statistics.data.dto.EmotionRateItem
 import com.example.mindlog.features.statistics.domain.model.Emotion
 import com.example.mindlog.features.statistics.domain.model.EmotionEvent
 import com.example.mindlog.features.statistics.domain.model.EmotionRate
@@ -23,13 +22,38 @@ class StatisticsMapper @Inject constructor() {
     private fun parseEmotion(value: String?): Emotion =
         value?.let { Emotion.fromApi(it) } ?: Emotion.CALM
 
-    fun toEmotionRate(dto: EmotionRateItem) = EmotionRate(
-        emotion = Emotion.fromApi(dto.emotion) ?: Emotion.CALM,
-        count = dto.count,
-        percentage = if (dto.percentage > 1f) dto.percentage / 100f else dto.percentage
-    )
-
     fun toJournalStatistics(journals: List<JournalItemResponse>): JournalStatistics {
+        // 감정 비율 (PieChart용) - 각 감정 intensity 누적 기반
+        val intensitySumByEmotion = mutableMapOf<Emotion, Int>()
+        for (journal in journals) {
+            journal.emotions.forEach { er ->
+                val emo = Emotion.fromApi(er.emotion) ?: return@forEach
+                val intensity = er.intensity
+                // 0 intensity는 누적에 영향 없음
+                if (intensity > 0) {
+                    intensitySumByEmotion[emo] = (intensitySumByEmotion[emo] ?: 0) + intensity
+                }
+            }
+        }
+
+        val totalIntensity = intensitySumByEmotion.values.sum().coerceAtLeast(0)
+        val emotionRates = intensitySumByEmotion
+            .entries
+            .sortedByDescending { it.value }
+            .map { (emotion, sum) ->
+                val percentage = if (totalIntensity > 0) {
+                    sum.toFloat() / totalIntensity.toFloat()
+                } else {
+                    0f
+                }
+                EmotionRate(
+                    emotion = emotion,
+                    count = sum,
+                    percentage = percentage
+                )
+            }
+
+
         // 감정 트렌드 (날짜별 감정 intensity 평균)
         val trendByEmotion = mutableMapOf<Emotion, MutableList<Pair<String, Int>>>()
         for (journal in journals) {
@@ -126,6 +150,7 @@ class StatisticsMapper @Inject constructor() {
 
         // 최종 조합
         return JournalStatistics(
+            EmotionRates = emotionRates,
             EmotionTrends = emotionTrends,
             EmotionEvents = emotionEvents,
             JournalKeywords = journalKeywords

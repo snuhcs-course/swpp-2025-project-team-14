@@ -10,7 +10,6 @@ import com.example.mindlog.features.statistics.domain.model.EmotionTrend
 import com.example.mindlog.features.statistics.domain.model.JournalKeyword
 import com.example.mindlog.features.statistics.domain.model.JournalStatistics
 import com.example.mindlog.features.statistics.domain.model.toKo
-import com.example.mindlog.features.statistics.domain.usecase.GetEmotionRatesUseCase
 import com.example.mindlog.features.statistics.domain.usecase.GetJournalStatisticsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -23,7 +22,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
-    private val getEmotionRatesUseCase: GetEmotionRatesUseCase,
     private val getJournalStatistics: GetJournalStatisticsUseCase,
     private val dispatcher: DispatcherProvider
 ) : ViewModel() {
@@ -56,22 +54,15 @@ class StatisticsViewModel @Inject constructor(
         val start = _state.value.startDate.toString()
         val end = _state.value.endDate.toString()
 
-        // 병렬 로드
-        val ratesDeferred = async { getEmotionRatesUseCase(start, end) }
-        val statsDeferred = async { getJournalStatistics(start, end) }
+        // 통합 통계만 로드 (EmotionRates 포함)
+        val statsRes = getJournalStatistics(start, end)
 
-        val ratesRes = ratesDeferred.await()
-        val statsRes = statsDeferred.await()
-
-        // 에러 메시지 모으기
-        val firstError = listOfNotNull(
-            (ratesRes as? Result.Error)?.message,
-            (statsRes as? Result.Error)?.message
-        ).firstOrNull()
+        // 에러 메시지
+        val firstError = (statsRes as? Result.Error)?.message
 
         // 성공 데이터 추출
-        val ratios = (ratesRes as? Result.Success)?.data ?: emptyList()
         val stats = (statsRes as? Result.Success)?.data
+        val ratios = stats?.EmotionRates ?: emptyList()
 
         // 선택 감정 규칙: 1) 이전 선택 유지 (null이면 "모든 감정")
         val newSelected: Emotion? = _state.value.selectedEmotion
@@ -92,7 +83,6 @@ class StatisticsViewModel @Inject constructor(
         }
     }
 
-    /** 감정 Chip 선택 시 호출 */
     fun setEmotion(emotion: Emotion) = viewModelScope.launch(dispatcher.io) {
         val stats = _state.value.statistics
         val (events, trends, keywords) = deriveForUI(stats, emotion)
@@ -123,7 +113,6 @@ class StatisticsViewModel @Inject constructor(
         }
     }
 
-    /** 기간 바뀌면 상태만 바꾸고 load 재호출은 화면/호출측에서 */
     fun setDateRange(start: LocalDate, end: LocalDate) {
         _state.update { it.copy(startDate = start, endDate = end) }
     }

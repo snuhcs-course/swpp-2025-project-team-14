@@ -186,6 +186,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
                 if (suppressEmotionSelectionCallback) return
 
                 if (position == 0) {
+                    // "모든 감정" 선택 → 필터 해제
                     viewModel.clearEmotionFilter()
                 } else {
                     val emotion = emotionOptions.getOrNull(position - 1) ?: return
@@ -376,12 +377,21 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
             wordCloud = WordCloud(requireActivity().application, null)
             frame.addView(wordCloud)
         }
-        val words = ArrayList(keywords.map { it.keyword })
-        try {
-            wordCloud?.setWords(words, topN = 10)
-        } catch (_: Exception) {
-            /* ignore rendering errors in tests */
+
+        // 키워드 리스트 구성 (가중치만 반영)
+        val words = ArrayList<String>()
+        keywords.forEach { k ->
+            val weight = k.count.coerceAtLeast(1)
+            repeat(weight * 2) {
+                words.add(k.keyword)
+            }
         }
+
+        try {
+            wordCloud?.apply {
+                setWords(words, topN = 30)
+            }
+        } catch (_: Exception) { }
     }
 
     // ------------------------------
@@ -528,7 +538,7 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
         suppressEmotionSelectionCallback = false
     }
 
-    // 감정별 고정 색상 (그래프 라인 색) - 명확히 구분되는 팔레트 (Hue / 밝기 모두 차이 크게)
+    // 감정별 고정 색상 (그래프 라인 색)
     private fun emotionColorFor(emotion: Emotion): Int = when (emotion) {
         Emotion.HAPPY      -> "#FFB300".toColorInt()  // 따뜻하고 밝은 앰버 (행복)
         Emotion.SAD        -> "#1E88E5".toColorInt()  // 깊은 블루 (슬픔)

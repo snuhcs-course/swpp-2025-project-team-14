@@ -11,25 +11,24 @@ import com.example.mindlog.features.statistics.domain.repository.StatisticsRepos
 import javax.inject.Inject
 
 class TestStatisticsRepository @Inject constructor() : StatisticsRepository {
-    override suspend fun getEmotionRates(startDate: String, endDate: String): Result<List<EmotionRate>> {
-        // Fixed, deterministic fake data for UI tests
-        val rates = listOf(
-            EmotionRate(Emotion.HAPPY, count = 20, percentage = 0.20f),
-            EmotionRate(Emotion.SAD, count = 10, percentage = 0.10f),
-            EmotionRate(Emotion.CALM, count = 5,  percentage = 0.05f),
-            EmotionRate(Emotion.ANXIOUS, count = 8, percentage = 0.08f),
-            EmotionRate(Emotion.ENERGETIC, count = 12, percentage = 0.12f),
-            EmotionRate(Emotion.SATISFIED, count = 15, percentage = 0.15f),
-            EmotionRate(Emotion.ANNOYED, count = 6, percentage = 0.06f),
-            EmotionRate(Emotion.BORED, count = 4, percentage = 0.04f),
-            EmotionRate(Emotion.INTERESTED, count = 9, percentage = 0.09f),
-            EmotionRate(Emotion.LETHARGIC, count = 11, percentage = 0.11f)
-        )
-        return Result.Success(rates)
-    }
+
+    private fun fakeEmotionRates(): List<EmotionRate> = listOf(
+        EmotionRate(Emotion.HAPPY, count = 20, percentage = 0.20f),
+        EmotionRate(Emotion.SAD, count = 10, percentage = 0.10f),
+        EmotionRate(Emotion.CALM, count = 5,  percentage = 0.05f),
+        EmotionRate(Emotion.ANXIOUS, count = 8, percentage = 0.08f),
+        EmotionRate(Emotion.ENERGETIC, count = 12, percentage = 0.12f),
+        EmotionRate(Emotion.SATISFIED, count = 15, percentage = 0.15f),
+        EmotionRate(Emotion.ANNOYED, count = 6, percentage = 0.06f),
+        EmotionRate(Emotion.BORED, count = 4, percentage = 0.04f),
+        EmotionRate(Emotion.INTERESTED, count = 9, percentage = 0.09f),
+        EmotionRate(Emotion.LETHARGIC, count = 11, percentage = 0.11f)
+    )
 
     override suspend fun getJournalStatisics(startDate: String, endDate: String): Result<JournalStatistics> {
         // Trends are averaged-per-day series; keep lengths small for quick UI rendering
+        val rates = fakeEmotionRates()
+
         val trends = listOf(
             EmotionTrend(Emotion.CALM, listOf(1, 2, 3, 2, 4)),
             EmotionTrend(Emotion.HAPPY, listOf(3, 4, 5, 4, 5)),
@@ -52,6 +51,7 @@ class TestStatisticsRepository @Inject constructor() : StatisticsRepository {
 
         return Result.Success(
             JournalStatistics(
+                EmotionRates = rates,
                 EmotionTrends = trends,
                 EmotionEvents = events,
                 JournalKeywords = keywords

@@ -11,32 +11,6 @@ class TestStatisticsDispatcher : Dispatcher() {
         val path = request.path ?: ""
 
         return when {
-            // GET /statistics/emotion-rate?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
-            path.startsWith("/statistics/emotion-rate") -> {
-                MockResponse()
-                    .setResponseCode(200)
-                    .setHeader("Content-Type", "application/json")
-                    .setBody(
-                        """
-                        {
-                          "total_count": 6885,
-                          "statistics": [
-                            { "emotion": "happy",       "count": 748, "percentage": 10.86 },
-                            { "emotion": "sad",         "count": 714, "percentage": 10.37 },
-                            { "emotion": "anxious",     "count": 714, "percentage": 10.37 },
-                            { "emotion": "calm",        "count": 680, "percentage": 9.88  },
-                            { "emotion": "annoyed",     "count": 629, "percentage": 9.14  },
-                            { "emotion": "satisfied",   "count": 765, "percentage": 11.11 },
-                            { "emotion": "bored",       "count": 629, "percentage": 9.14  },
-                            { "emotion": "interested",  "count": 629, "percentage": 9.14  },
-                            { "emotion": "lethargic",   "count": 663, "percentage": 9.63  },
-                            { "emotion": "energetic",   "count": 714, "percentage": 10.37 }
-                          ]
-                        }
-                        """.trimIndent()
-                    )
-            }
-
             path.startsWith("/journal/search") -> {
                 MockResponse()
                     .setResponseCode(200)
