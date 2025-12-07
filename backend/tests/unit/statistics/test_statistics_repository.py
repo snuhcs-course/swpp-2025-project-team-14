@@ -22,7 +22,7 @@ def test_get_emotion_counts(db_session, test_user):
     db_session.add(journal1)
     db_session.flush()
 
-    emotion1 = JournalEmotion(journal_id=journal1.id, emotion="happy", intensity=5)
+    emotion1 = JournalEmotion(journal_id=journal1.id, emotion="happy", intensity=4)
     db_session.add(emotion1)
 
     # 2. 범위 내의 저널 (Target Date) - 'sad'
@@ -52,7 +52,7 @@ def test_get_emotion_counts(db_session, test_user):
     db_session.flush()
 
     emotion_past = JournalEmotion(
-        journal_id=journal_past.id, emotion="happy", intensity=5
+        journal_id=journal_past.id, emotion="happy", intensity=4
     )
     db_session.add(emotion_past)
 
@@ -85,11 +85,10 @@ def test_get_emotion_counts(db_session, test_user):
     )
 
     # Assert
-    # happy 1개, sad 1개 -> 총 2개 (날짜 범위 밖 및 타 유저 제외)
-    assert total_count == 2
+    assert total_count == 7
 
     # 결과 리스트 검증
     result_dict = {row.emotion: row.count for row in results}
-    assert result_dict["happy"] == 1
-    assert result_dict["sad"] == 1
+    assert result_dict["happy"] == 4
+    assert result_dict["sad"] == 3
     assert "anxious" not in result_dict

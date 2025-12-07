@@ -1,5 +1,6 @@
 import json
 import logging
+import unicodedata
 from datetime import date
 from functools import partial
 from typing import Annotated
@@ -302,12 +303,15 @@ class JournalOpenAIService:
 
         for item in res:
             normalized_keyword = item.keyword.strip()
+            normalized_keyword = unicodedata.normalize("NFC", normalized_keyword)
             normalized_keyword = normalized_keyword.lower()
 
             if normalized_keyword not in set_keywords:
                 set_keywords.add(normalized_keyword)
                 item.keyword = normalized_keyword
                 unique_res.append(item)
+            else:
+                logger.info(f"Duplicate keyword removed: {normalized_keyword}")
 
         created_keywords = await self._db_runner(
             self.journal_repository.add_keywords_emotion_associations,
