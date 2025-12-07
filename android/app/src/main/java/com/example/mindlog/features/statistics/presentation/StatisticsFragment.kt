@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -376,9 +377,15 @@ class StatisticsFragment : Fragment(R.layout.fragment_statistics), HomeActivity.
             wordCloud = WordCloud(requireActivity().application, null)
             frame.addView(wordCloud)
         }
-        val words = ArrayList(keywords.map { it.keyword })
+        val words = ArrayList<String>()
+        keywords.forEach { k ->
+            val weight = k.count.coerceAtLeast(1)
+            repeat(weight * 2) {
+                words.add(k.keyword)
+            }
+        }
         try {
-            wordCloud?.setWords(words, topN = 10)
+            wordCloud?.setWords(words, topN = 30)
         } catch (_: Exception) {
             /* ignore rendering errors in tests */
         }

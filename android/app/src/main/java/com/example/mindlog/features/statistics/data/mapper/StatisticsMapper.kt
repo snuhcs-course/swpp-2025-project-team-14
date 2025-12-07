@@ -26,7 +26,7 @@ class StatisticsMapper @Inject constructor() {
     fun toEmotionRate(dto: EmotionRateItem) = EmotionRate(
         emotion = Emotion.fromApi(dto.emotion) ?: Emotion.CALM,
         count = dto.count,
-        percentage = if (dto.percentage > 1f) dto.percentage / 100f else dto.percentage
+        percentage = dto.percentage / 100f
     )
 
     fun toJournalStatistics(journals: List<JournalItemResponse>): JournalStatistics {
