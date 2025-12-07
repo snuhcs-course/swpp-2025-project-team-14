@@ -24,7 +24,7 @@ class StatisticsRepository:
         query = (
             self.session.query(
                 JournalEmotion.emotion,
-                func.count(JournalEmotion.intensity).label("count"),
+                func.sum(JournalEmotion.intensity).label("count"),
             )
             .join(Journal)
             .filter(
@@ -37,5 +37,5 @@ class StatisticsRepository:
 
         results = query.all()
 
-        total_count = sum(row.count for row in results)
+        total_count = sum((row.count or 0) for row in results)
         return results, total_count
